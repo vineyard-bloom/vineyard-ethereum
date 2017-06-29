@@ -3,6 +3,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+var PredefinedAddressSource = (function () {
+    function PredefinedAddressSource(addresses) {
+        this.index = 0;
+        this.addresses = addresses;
+    }
+    PredefinedAddressSource.prototype.generateAddress = function () {
+        return Promise.resolve(this.addresses[this.index++]);
+    };
+    return PredefinedAddressSource;
+}());
+exports.PredefinedAddressSource = PredefinedAddressSource;
+var MockEthereumClient = (function () {
+    function MockEthereumClient(addressSource) {
+        this.addressSource = addressSource;
+    }
+    MockEthereumClient.prototype.generateAddress = function () {
+        var _this = this;
+        return this.addressSource.generateAddress()
+            .then(function (address) {
+            _this.addresses[address] = 0;
+            return address;
+        });
+    };
+    MockEthereumClient.prototype.getBalance = function (address) {
+        return Promise.resolve(this.addresses[address]);
+    };
+    MockEthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
+        if (this.addresses[fromAddress] < amount)
+            throw new Error('not enough funds');
+        this.addresses[fromAddress] -= amount;
+        this.addresses[toAddress] += amount;
+        return Promise.resolve({});
+    };
+    return MockEthereumClient;
+}());
+exports.MockEthereumClient = MockEthereumClient;
 var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
         web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));

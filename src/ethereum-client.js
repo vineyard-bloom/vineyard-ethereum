@@ -14,6 +14,7 @@ var Web3EthereumClient = (function () {
         return web3.toWei(amount);
     };
     Web3EthereumClient.prototype.generateAddress = function () {
+        return web3.eth.newAccount();
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
         return new Promise(function (resolve, reject) {

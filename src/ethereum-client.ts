@@ -45,7 +45,7 @@ export class MockEthereumClient implements EthereumClient {
     return this.addressSource.generateAddress()
       .then(address => {
         this.addresses[address] = 0
-        return address
+        return Promise.resolve(address);
       })
   }
 

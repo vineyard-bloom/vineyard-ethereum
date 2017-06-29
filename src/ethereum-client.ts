@@ -2,14 +2,18 @@ import * as Web3 from 'web3'
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
+export interface EthereumTransaction {
+  
+}
+
 export interface EthereumConfig {
   http: string
 }
 
 export interface EthereumClient {
   generateAddress(): Promise<string>
-  getBalance(address): Promise<number>
-  send(fromAddress: string, toAddress: string, amount: number): Promise<any>
+  getBalance(address:string): Promise<number>
+  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>
 }
 
 export interface AddressSource {
@@ -17,19 +21,46 @@ export interface AddressSource {
 }
 
 export class PredefinedAddressSource implements AddressSource {
+  private addresses: string[]
+  private index: number = 0
+
+  constructor(addresses:string[]) {
+    this.addresses = addresses;
+  }
+
   generateAddress(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      resolve "exampleaddress";
-    });
+    return Promise.resolve(this.address[this.index++]);
   }
 }
 
 export class MockEthereumClient implements EthereumClient {
-  constructor(ethereumConfig: EthereumConfig, addressSource: PredefinedAddressSource) {
+  private addressSource: AddressSource
+  private addresses: { key: string; value: number; }
 
+  constructor(addressSource: AddressSource) {
+    this.addressSource = addressSource
   }
 
-  
+  generateAddress(): Promise<string> {
+    const address = this.addressSource.generateAddress();
+    this.address[address] = 0;
+    return Promise.resolve(address);
+  }
+
+  getBalance(address:string): Promise<number> {
+    return Promise.resolve(this.addresses[address]);
+  }
+
+  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
+    if (this.fromAddress -= amount) {
+      throw new Error('not enough funds');
+    }
+
+    this.addresses[fromAddress] -= amount;
+    this.addresses[toAddress] += amount;
+
+    return Promise.resolve(new EthereumTransaction());
+  }
 }
 
 export class Web3EthereumClient implements EthereumClient {
@@ -51,7 +82,7 @@ export class Web3EthereumClient implements EthereumClient {
 
   }
 
-  getBalance(address): Promise<number> {
+  getBalance(address:string): Promise<number> {
     return new Promise((resolve, reject) => {
       web3.eth.getBalance(address, (err, result) => {
         if (err)
@@ -61,7 +92,7 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(fromAddress: string, toAddress: string, amount: number): Promise<any> {
+  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
     const transaction = {from: fromAddress, to: toAddress, amount: web3.toWei(amount)}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {

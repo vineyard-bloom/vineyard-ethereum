@@ -45,7 +45,7 @@ export class MockEthereumClient implements EthereumClient {
     return this.addressSource.generateAddress()
       .then(address => {
         this.addresses[address] = 0
-        return address
+        return Promise.resolve(address);
       })
   }
 
@@ -80,7 +80,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   generateAddress(): Promise<string> {
-    return web3.eth.newAccount()
+    return Promise.resolve(web3.personal.newAccount())
   }
 
   getBalance(address: string): Promise<number> {

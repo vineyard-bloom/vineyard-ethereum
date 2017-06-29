@@ -9,7 +9,7 @@ var PredefinedAddressSource = (function () {
         this.addresses = addresses;
     }
     PredefinedAddressSource.prototype.generateAddress = function () {
-        return Promise.resolve(this.address[this.index++]);
+        return Promise.resolve(this.addresses[this.index++]);
     };
     return PredefinedAddressSource;
 }());
@@ -19,20 +19,22 @@ var MockEthereumClient = (function () {
         this.addressSource = addressSource;
     }
     MockEthereumClient.prototype.generateAddress = function () {
-        var address = this.addressSource.generateAddress();
-        this.address[address] = 0;
-        return Promise.resolve(address);
+        var _this = this;
+        return this.addressSource.generateAddress()
+            .then(function (address) {
+            _this.addresses[address] = 0;
+            return address;
+        });
     };
     MockEthereumClient.prototype.getBalance = function (address) {
         return Promise.resolve(this.addresses[address]);
     };
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
-        if (this.fromAddress -= amount) {
+        if (this.addresses[fromAddress] < amount)
             throw new Error('not enough funds');
-        }
         this.addresses[fromAddress] -= amount;
         this.addresses[toAddress] += amount;
-        return Promise.resolve(new EthereumTransaction());
+        return Promise.resolve({});
     };
     return MockEthereumClient;
 }());
@@ -48,6 +50,7 @@ var Web3EthereumClient = (function () {
         return web3.toWei(amount);
     };
     Web3EthereumClient.prototype.generateAddress = function () {
+        return web3.eth.newAccount();
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
         return new Promise(function (resolve, reject) {

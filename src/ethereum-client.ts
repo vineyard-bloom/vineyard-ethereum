@@ -12,6 +12,26 @@ export interface EthereumClient {
   send(fromAddress: string, toAddress: string, amount: number): Promise<any>
 }
 
+export interface AddressSource {
+  generateAddress(): Promise<string>
+}
+
+export class PredefinedAddressSource implements AddressSource {
+  generateAddress(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      resolve "exampleaddress";
+    });
+  }
+}
+
+export class MockEthereumClient implements EthereumClient {
+  constructor(ethereumConfig: EthereumConfig, addressSource: PredefinedAddressSource) {
+
+  }
+
+  
+}
+
 export class Web3EthereumClient implements EthereumClient {
   private client
 

@@ -80,7 +80,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   generateAddress(): Promise<string> {
-    return web3.eth.newAccount()
+    return Promise.resolve(web3.personal.newAccount())
   }
 
   getBalance(address: string): Promise<number> {

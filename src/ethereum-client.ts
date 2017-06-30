@@ -6,7 +6,7 @@ export interface EthereumTransaction {
 
 }
 
-export interface EthereumConfig {
+export interface Web3EthereumClientConfig {
   http: string
 }
 
@@ -30,6 +30,12 @@ export class PredefinedAddressSource implements AddressSource {
 
   generateAddress(): Promise<string> {
     return Promise.resolve(this.addresses[this.index++])
+  }
+}
+
+export class RandomAddressSource implements AddressSource {
+  generateAddress(): Promise<string> {
+    return Promise.resolve('fake-eth-address-' + Math.floor((Math.random() * 100000) + 1))
   }
 }
 
@@ -67,7 +73,7 @@ export class MockEthereumClient implements EthereumClient {
 export class Web3EthereumClient implements EthereumClient {
   private client
 
-  constructor(ethereumConfig: EthereumConfig) {
+  constructor(ethereumConfig: Web3EthereumClientConfig) {
     web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http))
   }
 

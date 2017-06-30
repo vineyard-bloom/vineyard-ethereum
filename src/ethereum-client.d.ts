@@ -1,6 +1,6 @@
 export interface EthereumTransaction {
 }
-export interface EthereumConfig {
+export interface Web3EthereumClientConfig {
     http: string;
 }
 export interface EthereumClient {
@@ -17,6 +17,9 @@ export declare class PredefinedAddressSource implements AddressSource {
     constructor(addresses: string[]);
     generateAddress(): Promise<string>;
 }
+export declare class RandomAddressSource implements AddressSource {
+    generateAddress(): Promise<string>;
+}
 export declare class MockEthereumClient implements EthereumClient {
     private addressSource;
     private addresses;
@@ -27,7 +30,7 @@ export declare class MockEthereumClient implements EthereumClient {
 }
 export declare class Web3EthereumClient implements EthereumClient {
     private client;
-    constructor(ethereumConfig: EthereumConfig);
+    constructor(ethereumConfig: Web3EthereumClientConfig);
     getClient(): any;
     toWei(amount: number): any;
     generateAddress(): Promise<string>;

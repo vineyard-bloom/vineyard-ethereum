@@ -14,6 +14,15 @@ var PredefinedAddressSource = (function () {
     return PredefinedAddressSource;
 }());
 exports.PredefinedAddressSource = PredefinedAddressSource;
+var RandomAddressSource = (function () {
+    function RandomAddressSource() {
+    }
+    RandomAddressSource.prototype.generateAddress = function () {
+        return Promise.resolve('fake-eth-address-' + Math.floor((Math.random() * 100000) + 1));
+    };
+    return RandomAddressSource;
+}());
+exports.RandomAddressSource = RandomAddressSource;
 var MockEthereumClient = (function () {
     function MockEthereumClient(addressSource) {
         this.addressSource = addressSource;

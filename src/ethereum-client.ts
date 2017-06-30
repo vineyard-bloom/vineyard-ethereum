@@ -41,7 +41,7 @@ export class RandomAddressSource implements AddressSource {
 
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
-  private addresses: { key: string; value: number }
+  private addresses: { key: string; value: number } = {}
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource

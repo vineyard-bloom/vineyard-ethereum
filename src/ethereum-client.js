@@ -23,7 +23,7 @@ var MockEthereumClient = (function () {
         return this.addressSource.generateAddress()
             .then(function (address) {
             _this.addresses[address] = 0;
-            return address;
+            return Promise.resolve(address);
         });
     };
     MockEthereumClient.prototype.getBalance = function (address) {
@@ -50,7 +50,7 @@ var Web3EthereumClient = (function () {
         return web3.toWei(amount);
     };
     Web3EthereumClient.prototype.generateAddress = function () {
-        return web3.eth.newAccount();
+        return Promise.resolve(web3.personal.newAccount());
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
         return new Promise(function (resolve, reject) {

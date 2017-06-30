@@ -25,6 +25,7 @@ var RandomAddressSource = (function () {
 exports.RandomAddressSource = RandomAddressSource;
 var MockEthereumClient = (function () {
     function MockEthereumClient(addressSource) {
+        this.addresses = {};
         this.addressSource = addressSource;
     }
     MockEthereumClient.prototype.generateAddress = function () {

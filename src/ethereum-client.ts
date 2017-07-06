@@ -13,7 +13,7 @@ export interface Web3EthereumClientConfig {
 export interface EthereumClient {
   generateAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>
+  send(fromAddress: string, toAddress: string, value: number): Promise<EthereumTransaction>
 }
 
 export interface AddressSource {
@@ -55,16 +55,24 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
+  generatePoolAddress(): Promise<string> {
+    return this.addressSource.generateAddress()
+      .then(address => {
+        this.addresses[address] = 0
+        return Promise.resolve(address);
+      })
+  }
+
   getBalance(address: string): Promise<number> {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
-    if (this.addresses[fromAddress] < amount)
+  send(fromAddress: string, toAddress: string, value: number, gasPrice: number): Promise<EthereumTransaction> {
+    if (this.addresses[fromAddress] < value)
       throw new Error('not enough funds')
 
-    this.addresses[fromAddress] -= amount
-    this.addresses[toAddress] += amount
+    this.addresses[fromAddress] -= value
+    this.addresses[toAddress] += value
 
     return Promise.resolve({})
   }
@@ -85,8 +93,16 @@ export class Web3EthereumClient implements EthereumClient {
     return web3.toWei(amount)
   }
 
+  fromWei(amount:number) {
+    return amount * 1000000000000000000
+  }
+
   generateAddress(): Promise<string> {
     return Promise.resolve(web3.personal.newAccount())
+  }
+
+  getAccounts(): Promise<string> {
+    return Promise.resolve(web3.eth.accounts)
   }
 
   getBalance(address: string): Promise<number> {
@@ -100,7 +116,8 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
-    const transaction = {from: fromAddress, to: toAddress, amount: web3.toWei(amount)}
+    web3.personal.unlockAccount(fromAddress)
+    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
@@ -110,3 +127,8 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 }
+
+
+
+
+// web3.personal.sendTransaction({from: web3.personal.defaultAccount, to: web3.eth.accounts[1], amount: 100}, function(tx){console.log(tx)})

@@ -3,8 +3,6 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./ethereum-client"));
-__export(require("./ethereum-transaction-monitor"));
-__export(require("./utility"));
-__export(require("./lab"));
+__export(require("./gethLab"));
+__export(require("./gethServer"));
 //# sourceMappingURL=index.js.map

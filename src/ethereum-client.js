@@ -77,11 +77,13 @@ var Web3EthereumClient = (function () {
     };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
         web3.personal.unlockAccount(fromAddress);
-        var transaction = { from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000 };
+        amount = web3.toHex(amount);
+        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: 21000 };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)
-                    resolve('Error sending to: ' + address);
+                    console.error(err);
+                reject('Error sending to: ' + address);
                 resolve(transaction);
             });
         });
@@ -89,5 +91,4 @@ var Web3EthereumClient = (function () {
     return Web3EthereumClient;
 }());
 exports.Web3EthereumClient = Web3EthereumClient;
-// web3.personal.sendTransaction({from: web3.personal.defaultAccount, to: web3.eth.accounts[1], amount: 100}, function(tx){console.log(tx)}) 
 //# sourceMappingURL=ethereum-client.js.map

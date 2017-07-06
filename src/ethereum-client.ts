@@ -117,11 +117,13 @@ export class Web3EthereumClient implements EthereumClient {
 
   send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
-    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000}
+    amount = web3.toHex(amount)
+    const transaction = { from: fromAddress, to: toAddress, value: amount, gas: 21000 }
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
-          resolve('Error sending to: ' + address)
+          console.error(err)
+          reject('Error sending to: ' + address)
         resolve(transaction)
       })
     })
@@ -131,4 +133,3 @@ export class Web3EthereumClient implements EthereumClient {
 
 
 
-// web3.personal.sendTransaction({from: web3.personal.defaultAccount, to: web3.eth.accounts[1], amount: 100}, function(tx){console.log(tx)})

@@ -37,11 +37,11 @@ var MockEthereumClient = (function () {
     MockEthereumClient.prototype.getBalance = function (address) {
         return Promise.resolve(this.addresses[address]);
     };
-    MockEthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
-        if (this.addresses[fromAddress] < amount)
+    MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gasPrice) {
+        if (this.addresses[fromAddress] < value)
             throw new Error('not enough funds');
-        this.addresses[fromAddress] -= amount;
-        this.addresses[toAddress] += amount;
+        this.addresses[fromAddress] -= value;
+        this.addresses[toAddress] += value;
         return Promise.resolve({});
     };
     return MockEthereumClient;
@@ -77,7 +77,7 @@ var Web3EthereumClient = (function () {
     };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
         web3.personal.unlockAccount(fromAddress);
-        var transaction = { from: fromAddress, to: toAddress, amount: web3.toWei(amount) };
+        var transaction = { from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000 };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)

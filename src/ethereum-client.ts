@@ -13,7 +13,7 @@ export interface EthereumConfig {
 export interface EthereumClient {
   generateAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>
+  send(fromAddress: string, toAddress: string, value: number): Promise<EthereumTransaction>
 }
 
 export interface AddressSource {
@@ -61,12 +61,12 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
-    if (this.addresses[fromAddress] < amount)
+  send(fromAddress: string, toAddress: string, value: number, gasPrice: number): Promise<EthereumTransaction> {
+    if (this.addresses[fromAddress] < value)
       throw new Error('not enough funds')
 
-    this.addresses[fromAddress] -= amount
-    this.addresses[toAddress] += amount
+    this.addresses[fromAddress] -= value
+    this.addresses[toAddress] += value
 
     return Promise.resolve({})
   }
@@ -111,7 +111,7 @@ export class Web3EthereumClient implements EthereumClient {
 
   send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
-    const transaction = {from: fromAddress, to: toAddress, amount: web3.toWei(amount)}
+    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)

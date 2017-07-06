@@ -6,7 +6,7 @@ export interface EthereumConfig {
 export interface EthereumClient {
     generateAddress(): Promise<string>;
     getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>;
+    send(fromAddress: string, toAddress: string, value: number): Promise<EthereumTransaction>;
 }
 export interface AddressSource {
     generateAddress(): Promise<string>;
@@ -24,7 +24,7 @@ export declare class MockEthereumClient implements EthereumClient {
     generateAddress(): Promise<string>;
     generatePoolAddress(): Promise<string>;
     getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>;
+    send(fromAddress: string, toAddress: string, value: number, gasPrice: number): Promise<EthereumTransaction>;
 }
 export declare class Web3EthereumClient implements EthereumClient {
     private client;

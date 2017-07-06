@@ -111,7 +111,8 @@ export class Web3EthereumClient implements EthereumClient {
 
   send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
-    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gasPrice: 200000000}
+    amount = web3.toHex(amount)
+    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gas: 21000}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)

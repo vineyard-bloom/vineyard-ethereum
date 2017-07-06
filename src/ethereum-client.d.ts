@@ -22,6 +22,7 @@ export declare class MockEthereumClient implements EthereumClient {
     private addresses;
     constructor(addressSource: AddressSource);
     generateAddress(): Promise<string>;
+    generatePoolAddress(): Promise<string>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>;
 }
@@ -30,7 +31,9 @@ export declare class Web3EthereumClient implements EthereumClient {
     constructor(ethereumConfig: EthereumConfig);
     getClient(): any;
     toWei(amount: number): any;
+    fromWei(amount: number): number;
     generateAddress(): Promise<string>;
+    getAccounts(): Promise<string>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction>;
 }

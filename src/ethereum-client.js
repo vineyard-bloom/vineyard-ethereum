@@ -23,7 +23,15 @@ var MockEthereumClient = (function () {
         return this.addressSource.generateAddress()
             .then(function (address) {
             _this.addresses[address] = 0;
-            return address;
+            return Promise.resolve(address);
+        });
+    };
+    MockEthereumClient.prototype.generatePoolAddress = function () {
+        var _this = this;
+        return this.addressSource.generateAddress()
+            .then(function (address) {
+            _this.addresses[address] = 0;
+            return Promise.resolve(address);
         });
     };
     MockEthereumClient.prototype.getBalance = function (address) {
@@ -49,8 +57,14 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.toWei = function (amount) {
         return web3.toWei(amount);
     };
+    Web3EthereumClient.prototype.fromWei = function (amount) {
+        return amount * 1000000000000000000;
+    };
     Web3EthereumClient.prototype.generateAddress = function () {
-        return web3.eth.newAccount();
+        return Promise.resolve(web3.personal.newAccount());
+    };
+    Web3EthereumClient.prototype.getAccounts = function () {
+        return Promise.resolve(web3.eth.accounts);
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
         return new Promise(function (resolve, reject) {
@@ -62,6 +76,7 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
+        web3.personal.unlockAccount(fromAddress);
         var transaction = { from: fromAddress, to: toAddress, amount: web3.toWei(amount) };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
@@ -74,4 +89,5 @@ var Web3EthereumClient = (function () {
     return Web3EthereumClient;
 }());
 exports.Web3EthereumClient = Web3EthereumClient;
+// web3.personal.sendTransaction({from: web3.personal.defaultAccount, to: web3.eth.accounts[1], amount: 100}, function(tx){console.log(tx)}) 
 //# sourceMappingURL=ethereum-client.js.map

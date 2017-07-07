@@ -5,4 +5,5 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./gethLab"));
 __export(require("./gethServer"));
+__export(require("./pretend-eth-lab"));
 //# sourceMappingURL=index.js.map

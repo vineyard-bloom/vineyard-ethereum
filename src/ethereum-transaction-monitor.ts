@@ -5,6 +5,7 @@ export interface GenericEthereumManager<Transaction> {
   getAddresses(): Promise<string[]>
   saveTransaction(transaction: Transaction)
   getLastBlock(): Promise<string>
+  setLastBlock(lastblock:string): Promise<void>
 }
 
 export class EthereumTransactionMonitor<Transaction> {
@@ -29,7 +30,7 @@ export class EthereumTransactionMonitor<Transaction> {
                 return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
                   .then(transactions => {
                     const newLastBlock = transactions[transactions.length-1].blockNumber.toString()
-                    this.manage.setLastBlock(newLastBlock)
+                    this.manager.setLastBlock(newLastBlock)
                     return promiseEach(transactions, tx => {
                       this.manager.saveTransaction(transaction)
                     })

@@ -4,6 +4,7 @@ import {each as promiseEach} from 'promise-each2'
 export interface GenericEthereumManager<Transaction> {
   getAddresses(): Promise<string[]>
   saveTransaction(transaction: Transaction)
+  getLastBlock(): Promise<number>
 }
 
 export class EthereumTransactionMonitor<Transaction> {
@@ -22,7 +23,17 @@ export class EthereumTransactionMonitor<Transaction> {
     return this.ethereumClient.getBalance(address)
       .then((balance) => {
         return this.ethereumClient.send(address, this.sweepAddress, balance)
-          .then(transaction => this.manager.saveTransaction(transaction))
+          .then(transaction => {
+            return this.manager.getLastBlock()
+              .then(lastblock => {
+                return this.ethereumClient.listAllTransactions(address, lastblock)
+                  .then(transactions => {
+                    return promiseEach(transactions, tx => {
+                      this.manager.saveTransaction(transaction)
+                    })
+                  })
+              })
+          })
       })
   }
 

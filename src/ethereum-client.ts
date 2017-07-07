@@ -1,5 +1,7 @@
 import * as Web3 from 'web3'
+import {getTransactions} from "../../../src/external-services/mambu/index";
 const web3 = new Web3()
+import {getTransactionsByAccount} from './utility'
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
 export interface EthereumTransaction {
@@ -127,6 +129,10 @@ export class Web3EthereumClient implements EthereumClient {
         resolve(transaction)
       })
     })
+  }
+
+  listAllTransaction(address: string, lastblock: number) {
+    return getTransactionsByAccount(web3.eth, address, lastblock)
   }
 }
 

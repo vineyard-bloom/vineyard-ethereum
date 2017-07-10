@@ -36,23 +36,23 @@ var MockEthereumClient = (function () {
             return Promise.resolve(address);
         });
     };
-    MockEthereumClient.prototype.generatePoolAddress = function () {
-        var _this = this;
-        return this.addressSource.generateAddress()
-            .then(function (address) {
-            _this.addresses[address] = 0;
-            return Promise.resolve(address);
-        });
+    MockEthereumClient.prototype.generate = function (address, amount) {
+        this.addresses[address] += amount;
     };
     MockEthereumClient.prototype.getBalance = function (address) {
         return Promise.resolve(this.addresses[address]);
     };
-    MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gasPrice) {
+    MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
+        if (gas === void 0) { gas = 2100; }
         if (this.addresses[fromAddress] < value)
             throw new Error('not enough funds');
         this.addresses[fromAddress] -= value;
         this.addresses[toAddress] += value;
         return Promise.resolve({});
+    };
+    MockEthereumClient.prototype.importAddress = function (address) {
+        this.addresses[address] = 0;
+        return Promise.resolve();
     };
     return MockEthereumClient;
 }());
@@ -85,10 +85,11 @@ var Web3EthereumClient = (function () {
             });
         });
     };
-    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
+    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gas) {
+        if (gas === void 0) { gas = 21000; }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
-        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: 21000 };
+        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)
@@ -97,6 +98,12 @@ var Web3EthereumClient = (function () {
                 resolve(transaction);
             });
         });
+    };
+    Web3EthereumClient.prototype.generate = function (address, amount) {
+        throw new Error("Not implemented");
+    };
+    Web3EthereumClient.prototype.importAddress = function (address) {
+        throw new Error("Not implemented");
     };
     return Web3EthereumClient;
 }());

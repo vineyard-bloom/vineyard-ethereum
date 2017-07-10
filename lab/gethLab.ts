@@ -1,17 +1,18 @@
 import {GethServer} from "./gethServer"
 import {EthereumClient} from "vineyard-ethereum"
+import {EthLab} from "./eth-lab";
 const child_process = require('child_process')
 const fs = require('fs')
-const rimraf = require('rimraf')
 
 export interface GethLabConfig {
   address: string
 }
 
-export class GethLab {
+export class GethLab implements EthLab {
   server: GethServer
   client: EthereumClient
   config: GethLabConfig
+  defaultAddress: string = ""
 
   constructor(config: GethLabConfig, client: EthereumClient, server: GethServer = new GethServer()) {
     this.config = config
@@ -19,7 +20,7 @@ export class GethLab {
     this.server = server
   }
 
-  start(): Promise<any> {
+  start(): Promise<void> {
     return this.server.start()
   }
 
@@ -30,8 +31,8 @@ export class GethLab {
   reset(): Promise<any> {
     return this.deleteWallet()
     // return this.stop()
-      // .then(() => this.deleteWallet())
-      // .then(() => this.start())
+    // .then(() => this.deleteWallet())
+    // .then(() => this.start())
   }
 
   generate(blockCount: number): Promise<void> {
@@ -45,11 +46,11 @@ export class GethLab {
     })
   }
 
-  send(address: string, amount: number){
+  send(address: string, amount: number) {
     return new Promise<void>((resolve, reject) => {
       this.client.getClient().send(defaultAddress, address, amount)
-      .then(result => console.log(result))
-      .catch(error => console.log(error)) 
+        .then(result => console.log(result))
+        .catch(error => console.log(error))
     })
   }
 }

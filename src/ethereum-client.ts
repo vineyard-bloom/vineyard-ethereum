@@ -15,7 +15,9 @@ export interface Web3EthereumClientConfig {
 export interface EthereumClient {
   generateAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, value: number): Promise<EthereumTransaction>
+  send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
+  generate(address: string, amount: number): Promise<void>
+  importAddress(address: string): Promise<void>
 }
 
 export interface AddressSource {
@@ -57,19 +59,15 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
-  generatePoolAddress(): Promise<string> {
-    return this.addressSource.generateAddress()
-      .then(address => {
-        this.addresses[address] = 0
-        return Promise.resolve(address);
-      })
+  generate(address: string, amount: number): Promise<void> {
+    this.addresses[address] += amount
   }
 
   getBalance(address: string): Promise<number> {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, value: number, gasPrice: number): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, value: number, gas: number = 2100): Promise<EthereumTransaction> {
     if (this.addresses[fromAddress] < value)
       throw new Error('not enough funds')
 
@@ -77,6 +75,11 @@ export class MockEthereumClient implements EthereumClient {
     this.addresses[toAddress] += value
 
     return Promise.resolve({})
+  }
+
+  importAddress(address: string): Promise<void> {
+    this.addresses[address] = 0
+    return Promise.resolve()
   }
 }
 
@@ -95,7 +98,7 @@ export class Web3EthereumClient implements EthereumClient {
     return web3.toWei(amount)
   }
 
-  fromWei(amount:number) {
+  fromWei(amount: number) {
     return amount * 1000000000000000000
   }
 
@@ -117,22 +120,30 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(fromAddress: string, toAddress: string, amount: number): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, amount: number, gas: number = 21000): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = { from: fromAddress, to: toAddress, value: amount, gas: 21000 }
+    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
           console.error(err)
-          reject('Error sending to: ' + address)
+        reject('Error sending to: ' + address)
         resolve(transaction)
       })
     })
   }
 
+
   listAllTransaction(address: string, lastblock: number) {
     return getTransactionsByAccount(web3.eth, address, lastblock)
+  }
+  generate(address: string, amount: number): Promise<void> {
+    throw new Error("Not implemented")
+  }
+
+  importAddress(address: string): Promise<void> {
+    throw new Error("Not implemented")
   }
 }
 

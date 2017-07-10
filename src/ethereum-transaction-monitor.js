@@ -13,7 +13,17 @@ var EthereumTransactionMonitor = (function () {
         return this.ethereumClient.getBalance(address)
             .then(function (balance) {
             return _this.ethereumClient.send(address, _this.sweepAddress, balance)
-                .then(function (transaction) { return _this.manager.saveTransaction(transaction); });
+                .then(function (transaction) {
+                return _this.manager.getLastBlock()
+                    .then(function (lastblock) {
+                    return _this.ethereumClient.listAllTransactions(address, lastblock)
+                        .then(function (transactions) {
+                        return promise_each2_1.each(transactions, function (tx) {
+                            _this.manager.saveTransaction(transaction);
+                        });
+                    });
+                });
+            });
         });
     };
     EthereumTransactionMonitor.prototype.sweep = function () {

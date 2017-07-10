@@ -11,6 +11,9 @@ var PretendEthLab = (function () {
     PretendEthLab.prototype.generate = function (amount) {
         return this.client.generate('', amount);
     };
+    PretendEthLab.prototype.send = function (amount) {
+        return this.client.send('', '', amount);
+    };
     return PretendEthLab;
 }());
 exports.PretendEthLab = PretendEthLab;

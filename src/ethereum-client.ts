@@ -13,7 +13,7 @@ export interface Web3EthereumClientConfig {
 }
 
 export interface EthereumClient {
-  generateAddress(): Promise<string>
+  createAddress(): Promise<string>
   getBalance(address: string): Promise<number>
   send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
   generate(address: string, amount: number): Promise<void>
@@ -51,7 +51,7 @@ export class MockEthereumClient implements EthereumClient {
     this.addressSource = addressSource
   }
 
-  generateAddress(): Promise<string> {
+  createAddress(): Promise<string> {
     return this.addressSource.generateAddress()
       .then(address => {
         this.addresses[address] = 0
@@ -102,7 +102,7 @@ export class Web3EthereumClient implements EthereumClient {
     return amount * 1000000000000000000
   }
 
-  generateAddress(): Promise<string> {
+  createAddress(): Promise<string> {
     return Promise.resolve(web3.personal.newAccount())
   }
 
@@ -145,7 +145,3 @@ export class Web3EthereumClient implements EthereumClient {
     throw new Error("Not implemented")
   }
 }
-
-
-
-

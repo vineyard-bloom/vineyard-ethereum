@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var web3 = new Web3();
+var utility_1 = require("./utility");
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
@@ -28,7 +29,7 @@ var MockEthereumClient = (function () {
         this.addresses = {};
         this.addressSource = addressSource;
     }
-    MockEthereumClient.prototype.generateAddress = function () {
+    MockEthereumClient.prototype.createAddress = function () {
         var _this = this;
         return this.addressSource.generateAddress()
             .then(function (address) {
@@ -70,7 +71,7 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.fromWei = function (amount) {
         return amount * 1000000000000000000;
     };
-    Web3EthereumClient.prototype.generateAddress = function () {
+    Web3EthereumClient.prototype.createAddress = function () {
         return Promise.resolve(web3.personal.newAccount());
     };
     Web3EthereumClient.prototype.getAccounts = function () {
@@ -98,6 +99,9 @@ var Web3EthereumClient = (function () {
                 resolve(transaction);
             });
         });
+    };
+    Web3EthereumClient.prototype.listAllTransaction = function (address, lastblock) {
+        return utility_1.getTransactionsByAccount(web3.eth, address, lastblock);
     };
     Web3EthereumClient.prototype.generate = function (address, amount) {
         throw new Error("Not implemented");

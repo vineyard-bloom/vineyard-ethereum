@@ -1,20 +1,20 @@
 import {EthereumClient} from './ethereum-client'
 import {each as promiseEach} from 'promise-each2'
 
-export interface GenericEthereumManager<Transaction> {
+export interface GenericEthereumManager<EthereumTransaction> {
   getAddresses(): Promise<string[]>
-  saveTransaction(transaction: Transaction)
+  saveTransaction(transaction: EthereumTransaction)
   getLastBlock(): Promise<string>
   setLastBlock(lastblock:string): Promise<void>
 }
 
-export class EthereumTransactionMonitor<Transaction> {
+export class EthereumTransactionMonitor<EthereumTransaction> {
   private ethereumClient;
   private minimumConfirmations: number = 2;
   private sweepAddress: string
-  private manager: GenericEthereumManager<Transaction>
+  private manager: GenericEthereumManager<EthereumTransaction>
 
-  constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string) {
+  constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string) {
     this.manager = model
     this.ethereumClient = ethereumClient
     this.sweepAddress = sweepAddress
@@ -37,6 +37,33 @@ export class EthereumTransactionMonitor<Transaction> {
                   })
               })
           })
+      })
+  }
+
+  sweep(): Promise<void> {
+    return this.manager.getAddresses()
+      .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
+      )
+  }
+}
+
+export class EthereumBalanceMonitor<EthereumTransaction>  {
+  private ethereumClient;
+  private minimumConfirmations: number = 2;
+  private sweepAddress: string
+  private manager: GenericEthereumManager<EthereumTransaction> 
+
+  constructor(model: GenericEthereumManager<EthereumTransaction> , ethereumClient: EthereumClient, sweepAddress: string) {
+    this.manager = model
+    this.ethereumClient = ethereumClient
+    this.sweepAddress = sweepAddress
+  }
+
+ private saveNewTransaction(address): Promise<void> {
+    return this.ethereumClient.getBalance(address)
+      .then((balance) => {
+        return this.ethereumClient.send(address, this.sweepAddress, balance)
+          .then(transaction => this.manager.saveTransaction(transaction))
       })
   }
 

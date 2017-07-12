@@ -18,6 +18,7 @@ export interface EthereumClient {
   send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
   generate(address: string, amount: number): Promise<void>
   importAddress(address: string): Promise<void>
+  listAllTransactions(): Promise<any[]>
 }
 
 export interface AddressSource {
@@ -43,9 +44,19 @@ export class RandomAddressSource implements AddressSource {
   }
 }
 
+export interface PretendTransaction {
+  wei: number
+}
+
+export interface PretendBlock {
+  id: string
+  transactions: PretendTransaction[]
+}
+
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
+  private blockchain: PretendBlock[]
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource
@@ -139,6 +150,7 @@ export class Web3EthereumClient implements EthereumClient {
   listAllTransaction(address: string, lastblock: number) {
     return getTransactionsByAccount(web3.eth, address, lastblock)
   }
+
   generate(address: string, amount: number): Promise<void> {
     throw new Error("Not implemented")
   }

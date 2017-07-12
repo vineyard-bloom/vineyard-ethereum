@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var web3 = new Web3();
+var utility_1 = require("./utility");
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
@@ -99,6 +100,9 @@ var Web3EthereumClient = (function () {
                 resolve(transaction);
             });
         });
+    };
+    Web3EthereumClient.prototype.listAllTransaction = function (address, lastblock) {
+        return utility_1.getTransactionsByAccount(web3.eth, address, lastblock);
     };
     Web3EthereumClient.prototype.generate = function (address, amount) {
         throw new Error("Not implemented");

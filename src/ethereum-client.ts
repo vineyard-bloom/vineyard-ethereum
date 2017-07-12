@@ -16,7 +16,7 @@ export interface Web3EthereumClientConfig {
 export interface EthereumClient {
   generateAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
+  send(fromAddress: string, toAddress: string, value: string, gas?: number): Promise<EthereumTransaction>
   generate(address: string, amount: string): Promise<void>
   importAddress(address: string): Promise<void>
   listAllTransactions(): Promise<any[]>
@@ -80,7 +80,7 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, value: number, gas: number = 2100): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, value: string, gas: number = 2100): Promise<EthereumTransaction> {
     if (new BigNumber(this.addresses[fromAddress]).lessThan(value))
       throw new Error('not enough funds')
 

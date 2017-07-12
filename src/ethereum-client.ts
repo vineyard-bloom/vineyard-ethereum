@@ -61,6 +61,7 @@ export class MockEthereumClient implements EthereumClient {
 
   generate(address: string, amount: number): Promise<void> {
     this.addresses[address] += amount
+    return Promise.resolve()
   }
 
   getBalance(address: string): Promise<number> {

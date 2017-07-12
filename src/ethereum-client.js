@@ -38,6 +38,7 @@ var MockEthereumClient = (function () {
     };
     MockEthereumClient.prototype.generate = function (address, amount) {
         this.addresses[address] += amount;
+        return Promise.resolve();
     };
     MockEthereumClient.prototype.getBalance = function (address) {
         return Promise.resolve(this.addresses[address]);

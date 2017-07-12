@@ -16,4 +16,8 @@ export class PretendEthLab implements EthLab {
   generate(amount: number): Promise<void> {
     return this.client.generate('', amount)
   }
+
+  getSweepAddress(): string {
+    return ""
+  }
 }

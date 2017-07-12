@@ -5,4 +5,5 @@ export declare class PretendEthLab implements EthLab {
     constructor(client: MockEthereumClient);
     start(): Promise<void>;
     generate(amount: number): Promise<void>;
+    getSweepAddress(): string;
 }

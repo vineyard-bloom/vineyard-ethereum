@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var web3 = new Web3();
 var utility_1 = require("./utility");
+var bignumber_js_1 = require("bignumber.js");
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
@@ -38,7 +39,7 @@ var MockEthereumClient = (function () {
         });
     };
     MockEthereumClient.prototype.generate = function (address, amount) {
-        this.addresses[address] += amount;
+        this.addresses[address] = new bignumber_js_1.default(this.addresses[address]).plus(new bignumber_js_1.default(amount));
         return Promise.resolve();
     };
     MockEthereumClient.prototype.getBalance = function (address) {
@@ -46,10 +47,10 @@ var MockEthereumClient = (function () {
     };
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
         if (gas === void 0) { gas = 2100; }
-        if (this.addresses[fromAddress] < value)
+        if (new bignumber_js_1.default(this.addresses[fromAddress]).lessThan(value))
             throw new Error('not enough funds');
-        this.addresses[fromAddress] -= value;
-        this.addresses[toAddress] += value;
+        this.addresses[fromAddress] = new bignumber_js_1.default(this.addresses[fromAddress]).minus(new bignumber_js_1.default(value));
+        this.addresses[toAddress] = new bignumber_js_1.default(this.addresses[toAddress]).plus(new bignumber_js_1.default(value));
         return Promise.resolve({});
     };
     MockEthereumClient.prototype.importAddress = function (address) {

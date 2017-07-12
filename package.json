@@ -10,8 +10,9 @@
   "repository": "git@github.com:vineyard-bloom/vineyard-ethereum.git",
   "license": "MIT",
   "dependencies": {
-    "vineyard-ground": "0.2.14",
+    "bignumber.js": "^4.0.2",
     "promise-each2": "^1.0.0",
+    "vineyard-ground": "0.2.14",
     "web3": "0.19.1"
   },
   "devDependencies": {

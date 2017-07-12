@@ -2,6 +2,7 @@ import * as Web3 from 'web3'
 import {getTransactions} from "../../../src/external-services/mambu/index";
 const web3 = new Web3()
 import {getTransactionsByAccount} from './utility'
+import BigNumber from 'bignumber.js';
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
 export interface EthereumTransaction {
@@ -15,8 +16,8 @@ export interface Web3EthereumClientConfig {
 export interface EthereumClient {
   generateAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
-  generate(address: string, amount: number): Promise<void>
+  send(fromAddress: string, toAddress: string, value: string, gas?: number): Promise<EthereumTransaction>
+  generate(address: string, amount: string): Promise<void>
   importAddress(address: string): Promise<void>
   listAllTransactions(): Promise<any[]>
 }
@@ -70,8 +71,8 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
-  generate(address: string, amount: number): Promise<void> {
-    this.addresses[address] += amount
+  generate(address: string, amount: string): Promise<void> {
+    this.addresses[address] = new BigNumber(this.addresses[address]).plus(new BigNumber(amount))
     return Promise.resolve()
   }
 
@@ -79,12 +80,12 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, value: number, gas: number = 2100): Promise<EthereumTransaction> {
-    if (this.addresses[fromAddress] < value)
+  send(fromAddress: string, toAddress: string, value: string, gas: number = 2100): Promise<EthereumTransaction> {
+    if (new BigNumber(this.addresses[fromAddress]).lessThan(value))
       throw new Error('not enough funds')
 
-    this.addresses[fromAddress] -= value
-    this.addresses[toAddress] += value
+    this.addresses[fromAddress] = new BigNumber(this.addresses[fromAddress]).minus(new BigNumber(value))
+    this.addresses[toAddress] = new BigNumber(this.addresses[toAddress]).plus(new BigNumber(value))
 
     return Promise.resolve({})
   }

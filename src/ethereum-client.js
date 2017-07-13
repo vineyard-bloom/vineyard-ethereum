@@ -46,7 +46,7 @@ var MockEthereumClient = (function () {
         return Promise.resolve(this.addresses[address]);
     };
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
-        if (gas === void 0) { gas = 2100; }
+        if (gas === void 0) { gas = "2100"; }
         if (new bignumber_js_1.default(this.addresses[fromAddress]).lessThan(value))
             throw new Error('not enough funds');
         this.addresses[fromAddress] = new bignumber_js_1.default(this.addresses[fromAddress]).minus(new bignumber_js_1.default(value));
@@ -54,7 +54,7 @@ var MockEthereumClient = (function () {
         return Promise.resolve({
             from: '',
             to: fromAddress,
-            value: value,
+            wei: value,
             gas: gas
         });
     };

@@ -6,7 +6,10 @@ import BigNumber from 'bignumber.js';
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
 export interface EthereumTransaction {
-  
+  to:string
+  from:string
+  wei:string
+  gas:string
 }
 
 export interface Web3EthereumClientConfig {
@@ -87,7 +90,17 @@ export class MockEthereumClient implements EthereumClient {
     this.addresses[fromAddress] = new BigNumber(this.addresses[fromAddress]).minus(new BigNumber(value))
     this.addresses[toAddress] = new BigNumber(this.addresses[toAddress]).plus(new BigNumber(value))
 
-    return Promise.resolve({})
+    return Promise.resolve({
+      from: '',
+      to: fromAddress, // Treating sweep transactions like an external transaction so this needs to be backwards
+      value: value,
+      gas: gas
+    })
+  }
+
+
+  listAllTransactions(): Promise<any[]> {
+    throw new Error("Not yet implemented.")
   }
 
   importAddress(address: string): Promise<void> {
@@ -133,10 +146,10 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(fromAddress: string, toAddress: string, amount: number, gas: number = 21000): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, amount: string, gas: string = "21000"): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
+    const transaction = {from: fromAddress, to: toAddress, amount: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)

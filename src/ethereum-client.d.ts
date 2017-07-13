@@ -1,4 +1,8 @@
 export interface EthereumTransaction {
+    to: string;
+    from: string;
+    wei: string;
+    gas: string;
 }
 export interface Web3EthereumClientConfig {
     http: string;
@@ -39,6 +43,7 @@ export declare class MockEthereumClient implements EthereumClient {
     generate(address: string, amount: string): Promise<void>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, value: string, gas?: number): Promise<EthereumTransaction>;
+    listAllTransactions(): Promise<any[]>;
     importAddress(address: string): Promise<void>;
 }
 export declare class Web3EthereumClient implements EthereumClient {
@@ -50,7 +55,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     generateAddress(): Promise<string>;
     getAccounts(): Promise<string>;
     getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, amount: number, gas?: number): Promise<EthereumTransaction>;
+    send(fromAddress: string, toAddress: string, amount: string, gas?: string): Promise<EthereumTransaction>;
     listAllTransaction(address: string, lastblock: number): any;
     generate(address: string, amount: number): Promise<void>;
     importAddress(address: string): Promise<void>;

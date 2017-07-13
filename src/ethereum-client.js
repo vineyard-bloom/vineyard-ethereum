@@ -51,7 +51,15 @@ var MockEthereumClient = (function () {
             throw new Error('not enough funds');
         this.addresses[fromAddress] = new bignumber_js_1.default(this.addresses[fromAddress]).minus(new bignumber_js_1.default(value));
         this.addresses[toAddress] = new bignumber_js_1.default(this.addresses[toAddress]).plus(new bignumber_js_1.default(value));
-        return Promise.resolve({});
+        return Promise.resolve({
+            from: '',
+            to: fromAddress,
+            value: value,
+            gas: gas
+        });
+    };
+    MockEthereumClient.prototype.listAllTransactions = function () {
+        throw new Error("Not yet implemented.");
     };
     MockEthereumClient.prototype.importAddress = function (address) {
         this.addresses[address] = 0;
@@ -89,10 +97,10 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gas) {
-        if (gas === void 0) { gas = 21000; }
+        if (gas === void 0) { gas = "21000"; }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
-        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
+        var transaction = { from: fromAddress, to: toAddress, amount: amount, gas: gas };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)

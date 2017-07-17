@@ -21,4 +21,7 @@ export class PretendEthLab implements EthLab {
   send(amount: number): Promise<EthereumTransaction> {
     return this.client.send('', '', amount)
   }
+  getSweepAddress(): string {
+    return ""
+  }
 }

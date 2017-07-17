@@ -2,10 +2,14 @@ import * as Web3 from 'web3'
 import {getTransactions} from "../../../src/external-services/mambu/index";
 const web3 = new Web3()
 import {getTransactionsByAccount} from './utility'
+import BigNumber from 'bignumber.js';
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
 export interface EthereumTransaction {
-
+  to:string
+  from:string
+  wei:string
+  gas:string
 }
 
 export interface Web3EthereumClientConfig {
@@ -15,9 +19,10 @@ export interface Web3EthereumClientConfig {
 export interface EthereumClient {
   createAddress(): Promise<string>
   getBalance(address: string): Promise<number>
-  send(fromAddress: string, toAddress: string, value: number, gas?: number): Promise<EthereumTransaction>
-  generate(address: string, amount: number): Promise<void>
+  send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>
+  generate(address: string, amount: string): Promise<void>
   importAddress(address: string): Promise<void>
+  listAllTransactions(): Promise<any[]>
 }
 
 export interface AddressSource {
@@ -43,9 +48,19 @@ export class RandomAddressSource implements AddressSource {
   }
 }
 
+export interface PretendTransaction {
+  wei: number
+}
+
+export interface PretendBlock {
+  id: string
+  transactions: PretendTransaction[]
+}
+
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
+  private blockchain: PretendBlock[]
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource
@@ -59,22 +74,33 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
-  generate(address: string, amount: number): Promise<void> {
-    this.addresses[address] += amount
+  generate(address: string, amount: string): Promise<void> {
+    this.addresses[address] = new BigNumber(this.addresses[address]).plus(new BigNumber(amount))
+    return Promise.resolve()
   }
 
   getBalance(address: string): Promise<number> {
     return Promise.resolve(this.addresses[address])
   }
 
-  send(fromAddress: string, toAddress: string, value: number, gas: number = 2100): Promise<EthereumTransaction> {
-    if (this.addresses[fromAddress] < value)
+  send(fromAddress: string, toAddress: string, value: string, gas: string = "2100"): Promise<EthereumTransaction> {
+    if (new BigNumber(this.addresses[fromAddress]).lessThan(value))
       throw new Error('not enough funds')
 
-    this.addresses[fromAddress] -= value
-    this.addresses[toAddress] += value
+    this.addresses[fromAddress] = new BigNumber(this.addresses[fromAddress]).minus(new BigNumber(value))
+    this.addresses[toAddress] = new BigNumber(this.addresses[toAddress]).plus(new BigNumber(value))
 
-    return Promise.resolve({})
+    return Promise.resolve({
+      from: '',
+      to: fromAddress, // Using sweep transactions as external transactions so to/from is backwards.
+      wei: value,
+      gas: gas
+    })
+  }
+
+
+  listAllTransactions(): Promise<any[]> {
+    throw new Error("Not yet implemented.")
   }
 
   importAddress(address: string): Promise<void> {
@@ -120,10 +146,10 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(fromAddress: string, toAddress: string, amount: number, gas: number = 21000): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, amount: string, gas: string = "21000"): Promise<EthereumTransaction> {
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
+    const transaction = {from: fromAddress, to: toAddress, amount: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
@@ -137,6 +163,7 @@ export class Web3EthereumClient implements EthereumClient {
   listAllTransaction(address: string, lastblock: number) {
     return getTransactionsByAccount(web3.eth, address, lastblock)
   }
+
   generate(address: string, amount: number): Promise<void> {
     throw new Error("Not implemented")
   }

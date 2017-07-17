@@ -27,10 +27,12 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
           .then(transaction => {
             return this.manager.getLastBlock()
               .then(lastblock => {
+
                 return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
                   .then(transactions => {
                     const newLastBlock = transactions[transactions.length-1].blockNumber.toString()
                     this.manager.setLastBlock(newLastBlock)
+
                     return promiseEach(transactions, tx => {
                       this.manager.saveTransaction(transaction)
                     })

@@ -30,7 +30,7 @@ var MockEthereumClient = (function () {
         this.addresses = {};
         this.addressSource = addressSource;
     }
-    MockEthereumClient.prototype.generateAddress = function () {
+    MockEthereumClient.prototype.createAddress = function () {
         var _this = this;
         return this.addressSource.generateAddress()
             .then(function (address) {
@@ -81,7 +81,7 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.fromWei = function (amount) {
         return amount * 1000000000000000000;
     };
-    Web3EthereumClient.prototype.generateAddress = function () {
+    Web3EthereumClient.prototype.createAddress = function () {
         return Promise.resolve(web3.personal.newAccount());
     };
     Web3EthereumClient.prototype.getAccounts = function () {

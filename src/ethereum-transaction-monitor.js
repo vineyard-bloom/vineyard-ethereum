@@ -16,10 +16,12 @@ var EthereumTransactionMonitor = (function () {
                 .then(function (transaction) {
                 return _this.manager.getLastBlock()
                     .then(function (lastblock) {
+
                     return _this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
                         .then(function (transactions) {
                         var newLastBlock = transactions[transactions.length - 1].blockNumber.toString();
                         _this.manager.setLastBlock(newLastBlock);
+
                         return promise_each2_1.each(transactions, function (tx) {
                             _this.manager.saveTransaction(transaction);
                         });

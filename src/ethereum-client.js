@@ -73,7 +73,7 @@ var Web3EthereumClient = (function () {
         web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
     }
     Web3EthereumClient.prototype.getClient = function () {
-        return this.client;
+        return this;
     };
     Web3EthereumClient.prototype.toWei = function (amount) {
         return web3.toWei(amount);

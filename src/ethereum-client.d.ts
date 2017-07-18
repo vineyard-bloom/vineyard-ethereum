@@ -49,7 +49,7 @@ export declare class MockEthereumClient implements EthereumClient {
 export declare class Web3EthereumClient implements EthereumClient {
     private client;
     constructor(ethereumConfig: Web3EthereumClientConfig);
-    getClient(): any;
+    getClient(): this;
     toWei(amount: number): any;
     fromWei(amount: number): number;
     createAddress(): Promise<string>;

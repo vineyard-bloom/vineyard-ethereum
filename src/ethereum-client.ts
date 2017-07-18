@@ -117,7 +117,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getClient() {
-    return this.client
+    return this
   }
 
   toWei(amount: number) {

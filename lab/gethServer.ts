@@ -23,7 +23,7 @@ export class GethServer {
 
   start() {
     console.log('Starting Geth')
-    const childProcess = this.childProcess = child_process.exec('geth --dev --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
+    const childProcess = this.childProcess = child_process.exec('geth --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores --datadir init genesis.json console')
 
     childProcess.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);

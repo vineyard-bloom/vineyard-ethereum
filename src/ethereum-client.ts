@@ -1,7 +1,7 @@
 import * as Web3 from 'web3'
 import {getTransactions} from "../../../src/external-services/mambu/index";
 const web3 = new Web3()
-import {getTransactionsByAccount} from './utility'
+import {getTransactionsByAccount, checkBalances} from './utility'
 import BigNumber from 'bignumber.js';
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 

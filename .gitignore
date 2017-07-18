@@ -7,3 +7,6 @@ test/**/*.d.ts
 config.json
 yarn.lock
 yarn-*
+init
+config/geth
+config/genesis.json

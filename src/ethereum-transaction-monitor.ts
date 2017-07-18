@@ -69,7 +69,9 @@ export class EthereumBalanceMonitor<EthereumTransaction>  {
 
   sweep(): Promise<void> {
     return this.manager.getAddresses()
-      .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
+      .then(addresses => {
+        promiseEach(addresses, address => this.saveNewTransaction(address))
+        }
       )
   }
 }

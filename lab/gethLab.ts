@@ -29,10 +29,10 @@ export class GethLab implements EthLab {
   }
 
   reset(): Promise<any> {
-    return this.deleteWallet()
-    // return this.stop()
+    // return this.deleteWallet()
+    return this.stop()
     // .then(() => this.deleteWallet())
-    // .then(() => this.start())
+    .then(() => this.start())
   }
 
   generate(blockCount: number): Promise<void> {

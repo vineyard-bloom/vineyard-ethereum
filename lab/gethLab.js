@@ -18,10 +18,10 @@ var GethLab = (function () {
         return this.server.stop();
     };
     GethLab.prototype.reset = function () {
-        return this.deleteWallet();
-        // return this.stop()
-        // .then(() => this.deleteWallet())
-        // .then(() => this.start())
+        var _this = this;
+        // return this.deleteWallet()
+        return this.stop()
+            .then(function () { return _this.start(); });
     };
     GethLab.prototype.generate = function (blockCount) {
         var _this = this;

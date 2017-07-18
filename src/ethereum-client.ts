@@ -165,8 +165,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   generate(address: string, amount: number): Promise<void> {
-    console.log(checkAllBalances(web3.eth, web3))
-    throw new Error("Not implemented")
+     this.send(web3.eth.coinbase, address, amount.toString())
   }
 
   importAddress(address: string): Promise<void> {

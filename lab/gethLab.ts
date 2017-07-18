@@ -35,9 +35,9 @@ export class GethLab implements EthLab {
     .then(() => this.start())
   }
 
-  generate(blockCount: number): Promise<void> {
+  generate(address: string, amount: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.client.getClient().generate(blockCount, (error) => {
+      this.client.getClient().generate(address, amount, (error) => {
         if (error)
           reject(new Error(error));
         else

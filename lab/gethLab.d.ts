@@ -13,6 +13,6 @@ export declare class GethLab implements EthLab {
     start(): Promise<void>;
     stop(): Promise<any>;
     reset(): Promise<any>;
-    generate(blockCount: number): Promise<void>;
+    generate(address: string, amount: number): Promise<void>;
     send(address: string, amount: number): Promise<void>;
 }

@@ -23,10 +23,10 @@ var GethLab = (function () {
         return this.stop()
             .then(function () { return _this.start(); });
     };
-    GethLab.prototype.generate = function (blockCount) {
+    GethLab.prototype.generate = function (address, amount) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.client.getClient().generate(blockCount, function (error) {
+            _this.client.getClient().generate(address, amount, function (error) {
                 if (error)
                     reject(new Error(error));
                 else

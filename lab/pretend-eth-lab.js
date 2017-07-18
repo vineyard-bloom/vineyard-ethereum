@@ -8,9 +8,6 @@ var PretendEthLab = (function () {
     PretendEthLab.prototype.start = function () {
         return null;
     };
-    PretendEthLab.prototype.generate = function (amount) {
-        return this.client.generate('', amount);
-    };
     PretendEthLab.prototype.send = function (amount) {
         return this.client.send('', '', amount);
     };

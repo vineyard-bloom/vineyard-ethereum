@@ -14,10 +14,6 @@ export class PretendEthLab implements EthLab {
     return null
   }
 
-  generate(amount: number): Promise<void> {
-    return this.client.generate('', amount)
-  }
-
   send(amount: number): Promise<EthereumTransaction> {
     return this.client.send('', '', amount)
   }

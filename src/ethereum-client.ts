@@ -20,9 +20,9 @@ export interface EthereumClient {
   createAddress(): Promise<string>
   getBalance(address: string): Promise<number>
   send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>
-  generate(address: string, amount: string): Promise<void>
   importAddress(address: string): Promise<void>
   listAllTransactions(): Promise<any[]>
+  getCoinbase(): Promise<any[]>
 }
 
 export interface AddressSource {
@@ -74,11 +74,6 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
-  generate(address: string, amount: string): Promise<void> {
-    this.addresses[address] = new BigNumber(this.addresses[address]).plus(new BigNumber(amount))
-    return Promise.resolve()
-  }
-
   getBalance(address: string): Promise<number> {
     return Promise.resolve(this.addresses[address])
   }
@@ -120,6 +115,10 @@ export class Web3EthereumClient implements EthereumClient {
     return this
   }
 
+  getCoinbase() {
+    return Promise.resolve(web3.eth.coinbase)
+  }
+
   toWei(amount: number) {
     return web3.toWei(amount)
   }
@@ -147,6 +146,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, amount: string, gas: string = "21000"): Promise<EthereumTransaction> {
+    if(fromAddress === '') {fromAddress = web3.eth.coinbase}
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
     const transaction = {from: fromAddress, to: toAddress, amount: amount, gas: gas}
@@ -162,10 +162,6 @@ export class Web3EthereumClient implements EthereumClient {
 
   listAllTransaction(address: string, lastblock: number) {
     return getTransactionsByAccount(web3.eth, address, lastblock)
-  }
-
-  generate(address: string, amount: number): Promise<void> {
-     this.send(web3.eth.coinbase, address, amount.toString())
   }
 
   importAddress(address: string): Promise<void> {

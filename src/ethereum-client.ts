@@ -1,7 +1,7 @@
 import * as Web3 from 'web3'
 import {getTransactions} from "../../../src/external-services/mambu/index";
 const web3 = new Web3()
-import {getTransactionsByAccount, checkBalances} from './utility'
+import {getTransactionsByAccount, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
@@ -165,6 +165,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   generate(address: string, amount: number): Promise<void> {
+    console.log(checkAllBalances(web3.eth, web3))
     throw new Error("Not implemented")
   }
 

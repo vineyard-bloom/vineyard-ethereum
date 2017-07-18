@@ -114,7 +114,7 @@ var Web3EthereumClient = (function () {
         return utility_1.getTransactionsByAccount(web3.eth, address, lastblock);
     };
     Web3EthereumClient.prototype.generate = function (address, amount) {
-        console.log(web3.eth.accounts, 'accounts')
+        console.log(utility_1.checkAllBalances(web3.eth, web3));
         throw new Error("Not implemented");
     };
     Web3EthereumClient.prototype.importAddress = function (address) {

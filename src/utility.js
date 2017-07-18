@@ -4,6 +4,18 @@ function fromWei(amount) {
     return amount * 1000000000000000000;
 }
 exports.fromWei = fromWei;
+function checkAllBalances(eth, web3) {
+    var totalBal = 0;
+    for (var acctNum in eth.accounts) {
+        var acct = eth.accounts[acctNum];
+        var acctBal = web3.fromWei(eth.getBalance(acct), "ether");
+        totalBal += parseFloat(acctBal);
+        console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
+    }
+    console.log("  Total balance: " + totalBal + " ether");
+}
+exports.checkAllBalances = checkAllBalances;
+;
 function getTransactionsByAccount(eth, account, startBlockNumber, endBlockNumber) {
     if (startBlockNumber === void 0) { startBlockNumber = 0; }
     if (endBlockNumber === void 0) { endBlockNumber = eth.blockNumber; }

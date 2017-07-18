@@ -2,7 +2,7 @@ export function fromWei(amount: number) {
   return amount * 1000000000000000000
 }
 
-export function checkAllBalances() {
+export function checkAllBalances(eth, web3) {
     var totalBal = 0;
     for (var acctNum in eth.accounts) {
         var acct = eth.accounts[acctNum];

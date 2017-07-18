@@ -29,26 +29,15 @@ export class GethLab implements EthLab {
   }
 
   reset(): Promise<any> {
-    return this.deleteWallet()
-    // return this.stop()
+    // return this.deleteWallet()
+    return this.stop()
     // .then(() => this.deleteWallet())
-    // .then(() => this.start())
-  }
-
-  generate(blockCount: number): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.client.getClient().generate(blockCount, (error) => {
-        if (error)
-          reject(new Error(error));
-        else
-          resolve()
-      })
-    })
+    .then(() => this.start())
   }
 
   send(address: string, amount: number) {
     return new Promise<void>((resolve, reject) => {
-      this.client.getClient().send(defaultAddress, address, amount)
+      this.client.getClient().send('', address, amount)
         .then(result => console.log(result))
         .catch(error => console.log(error))
     })

@@ -21,7 +21,8 @@ var GethServer = (function () {
     }
     GethServer.prototype.start = function () {
         console.log('Starting Geth');
-        var childProcess = this.childProcess = child_process.exec('geth --dev --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console');
+        child_process.exec('geth --networkid 100 --identity node1 --verbosity 3 --nodiscover --nat none --datadir=~/myBlockchain/node1 init ./config/genesis.json');
+        var childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });

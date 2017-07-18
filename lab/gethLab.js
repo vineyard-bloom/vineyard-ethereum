@@ -18,26 +18,15 @@ var GethLab = (function () {
         return this.server.stop();
     };
     GethLab.prototype.reset = function () {
-        return this.deleteWallet();
-        // return this.stop()
-        // .then(() => this.deleteWallet())
-        // .then(() => this.start())
-    };
-    GethLab.prototype.generate = function (blockCount) {
         var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.client.getClient().generate(blockCount, function (error) {
-                if (error)
-                    reject(new Error(error));
-                else
-                    resolve();
-            });
-        });
+        // return this.deleteWallet()
+        return this.stop()
+            .then(function () { return _this.start(); });
     };
     GethLab.prototype.send = function (address, amount) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.client.getClient().send(defaultAddress, address, amount)
+            _this.client.getClient().send('', address, amount)
                 .then(function (result) { return console.log(result); })
                 .catch(function (error) { return console.log(error); });
         });

@@ -38,10 +38,6 @@ var MockEthereumClient = (function () {
             return Promise.resolve(address);
         });
     };
-    MockEthereumClient.prototype.generate = function (address, amount) {
-        this.addresses[address] = new bignumber_js_1.default(this.addresses[address]).plus(new bignumber_js_1.default(amount));
-        return Promise.resolve();
-    };
     MockEthereumClient.prototype.getBalance = function (address) {
         return Promise.resolve(this.addresses[address]);
     };
@@ -73,7 +69,10 @@ var Web3EthereumClient = (function () {
         web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
     }
     Web3EthereumClient.prototype.getClient = function () {
-        return this.client;
+        return this;
+    };
+    Web3EthereumClient.prototype.getCoinbase = function () {
+        return Promise.resolve(web3.eth.coinbase);
     };
     Web3EthereumClient.prototype.toWei = function (amount) {
         return web3.toWei(amount);
@@ -98,6 +97,9 @@ var Web3EthereumClient = (function () {
     };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gas) {
         if (gas === void 0) { gas = "21000"; }
+        if (fromAddress === '') {
+            fromAddress = web3.eth.coinbase;
+        }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
         var transaction = { from: fromAddress, to: toAddress, amount: amount, gas: gas };
@@ -112,9 +114,6 @@ var Web3EthereumClient = (function () {
     };
     Web3EthereumClient.prototype.listAllTransaction = function (address, lastblock) {
         return utility_1.getTransactionsByAccount(web3.eth, address, lastblock);
-    };
-    Web3EthereumClient.prototype.generate = function (address, amount) {
-        throw new Error("Not implemented");
     };
     Web3EthereumClient.prototype.importAddress = function (address) {
         throw new Error("Not implemented");

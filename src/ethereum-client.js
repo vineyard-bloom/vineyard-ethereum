@@ -61,6 +61,9 @@ var MockEthereumClient = (function () {
         this.addresses[address] = 0;
         return Promise.resolve();
     };
+    MockEthereumClient.prototype.getAccounts = function () {
+        throw new Error("Not implemented.");
+    };
     return MockEthereumClient;
 }());
 exports.MockEthereumClient = MockEthereumClient;

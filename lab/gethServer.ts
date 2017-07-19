@@ -11,7 +11,7 @@ function waitUntilRunning() {
           console.log('Geth is now running')
           resolve()
         }
-    setTimeout(poll, 3000)
+    setTimeout(poll, 10000)
   })
 }
 
@@ -23,7 +23,6 @@ export class GethServer {
 
   start() {
     console.log('Starting Geth')
-    child_process.exec('geth --networkid 100 --identity node1 --verbosity 3 --nodiscover --nat none --datadir=~/myBlockchain/node1 init ./config/genesis.json')
     const childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
 
     childProcess.stdout.on('data', (data) => {

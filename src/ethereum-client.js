@@ -102,6 +102,8 @@ var Web3EthereumClient = (function () {
         }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
+        console.log(fromAddress, "im the from address")
+        console.log(this.getBalance(fromAddress), "im the balance")
         var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {

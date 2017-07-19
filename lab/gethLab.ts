@@ -20,6 +20,11 @@ export class GethLab implements EthLab {
     this.server = server
   }
 
+
+  getSweepAddress(): string {
+    return this.config.ethereum.sweepAdress
+  }
+
   start(): Promise<void> {
     return this.server.start()
   }

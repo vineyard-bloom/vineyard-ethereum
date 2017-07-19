@@ -10,6 +10,7 @@ export declare class GethLab implements EthLab {
     config: GethLabConfig;
     defaultAddress: string;
     constructor(config: GethLabConfig, client: EthereumClient, server?: GethServer);
+    getSweepAddress(): string;
     start(): Promise<void>;
     stop(): Promise<any>;
     reset(): Promise<any>;

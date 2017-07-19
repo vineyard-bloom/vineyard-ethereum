@@ -11,6 +11,9 @@ var GethLab = (function () {
         this.client = client;
         this.server = server;
     }
+    GethLab.prototype.getSweepAddress = function () {
+        return this.config.ethereum.sweepAdress;
+    };
     GethLab.prototype.start = function () {
         return this.server.start();
     };

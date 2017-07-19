@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
-var web3 = new Web3();
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+var web3 = new Web3();
 var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
         this.index = 0;

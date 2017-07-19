@@ -54,9 +54,7 @@ var EthereumBalanceMonitor = (function () {
     EthereumBalanceMonitor.prototype.sweep = function () {
         var _this = this;
         return this.manager.getAddresses()
-            .then(function (addresses) {
-            promise_each2_1.each(addresses, function (address) { return _this.saveNewTransaction(address); });
-        });
+            .then(function (addresses) { return promise_each2_1.each(addresses, function (address) { return _this.saveNewTransaction(address); }); });
     };
     return EthereumBalanceMonitor;
 }());

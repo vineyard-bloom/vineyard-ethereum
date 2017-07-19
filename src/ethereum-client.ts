@@ -22,7 +22,7 @@ export interface EthereumClient {
   send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>
   importAddress(address: string): Promise<void>
   listAllTransactions(): Promise<any[]>
-  getCoinbase(): Promise<any[]>
+  getAccounts(): Promise<string>
 }
 
 export interface AddressSource {
@@ -101,6 +101,10 @@ export class MockEthereumClient implements EthereumClient {
   importAddress(address: string): Promise<void> {
     this.addresses[address] = 0
     return Promise.resolve()
+  }
+
+  getAccounts(): Promise<string> {
+    throw new Error("Not implemented.")
   }
 }
 

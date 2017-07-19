@@ -115,7 +115,7 @@ export class Web3EthereumClient implements EthereumClient {
     return this
   }
 
-  getCoinbase() {
+  getSweepAddress() {
     return Promise.resolve(web3.eth.coinbase)
   }
 
@@ -149,12 +149,11 @@ export class Web3EthereumClient implements EthereumClient {
     if(fromAddress === '') {fromAddress = web3.eth.coinbase}
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
+    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
-          console.error(err)
-        reject('Error sending to: ' + address)
+          reject('Error sending to: ' + address)
         resolve(transaction)
       })
     })

@@ -49,7 +49,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     private client;
     constructor(ethereumConfig: Web3EthereumClientConfig);
     getClient(): this;
-    getCoinbase(): Promise<any>;
+    getSweepAddress(): Promise<any>;
     toWei(amount: number): any;
     fromWei(amount: number): number;
     createAddress(): Promise<string>;

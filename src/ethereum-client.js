@@ -71,7 +71,7 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.getClient = function () {
         return this;
     };
-    Web3EthereumClient.prototype.getCoinbase = function () {
+    Web3EthereumClient.prototype.getSweepAddress = function () {
         return Promise.resolve(web3.eth.coinbase);
     };
     Web3EthereumClient.prototype.toWei = function (amount) {
@@ -102,14 +102,11 @@ var Web3EthereumClient = (function () {
         }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
-        console.log(fromAddress, "im the from address")
-        console.log(this.getBalance(fromAddress), "im the balance")
-        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
+        var transaction = { from: fromAddress, to: toAddress, value: web3.toWei(amount), gas: gas };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)
-                    console.error(err);
-                reject('Error sending to: ' + address);
+                    reject('Error sending to: ' + address);
                 resolve(transaction);
             });
         });

@@ -149,7 +149,7 @@ export class Web3EthereumClient implements EthereumClient {
     if(fromAddress === '') {fromAddress = web3.eth.coinbase}
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, amount: amount, gas: gas}
+    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)

@@ -23,22 +23,26 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   private saveNewTransaction(address): Promise<void> {
     return this.ethereumClient.getBalance(address)
       .then((balance) => {
-        return this.ethereumClient.send(address, this.sweepAddress, balance)
-          .then(transaction => {
-            return this.manager.getLastBlock()
-              .then(lastblock => {
+        if(balance === undefined) {
+          console.error('No account found with address: ', address)
+        } else {
+          return this.ethereumClient.send(address, this.sweepAddress, balance)
+            .then(transaction => {
+              return this.manager.getLastBlock()
+                .then(lastblock => {
 
-                return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
-                  .then(transactions => {
-                    const newLastBlock = transactions[transactions.length-1].blockNumber.toString()
-                    this.manager.setLastBlock(newLastBlock)
+                  return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
+                    .then(transactions => {
+                      const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
+                      this.manager.setLastBlock(newLastBlock)
 
-                    return promiseEach(transactions, tx => {
-                      this.manager.saveTransaction(transaction)
+                      return promiseEach(transactions, tx => {
+                        this.manager.saveTransaction(transaction)
+                      })
                     })
-                  })
-              })
-          })
+                })
+            })
+        }
       })
   }
 

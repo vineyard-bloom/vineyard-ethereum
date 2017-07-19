@@ -12,20 +12,25 @@ var EthereumTransactionMonitor = (function () {
         var _this = this;
         return this.ethereumClient.getBalance(address)
             .then(function (balance) {
-            return _this.ethereumClient.send(address, _this.sweepAddress, balance)
-                .then(function (transaction) {
-                return _this.manager.getLastBlock()
-                    .then(function (lastblock) {
-                    return _this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
-                        .then(function (transactions) {
-                        var newLastBlock = transactions[transactions.length - 1].blockNumber.toString();
-                        _this.manager.setLastBlock(newLastBlock);
-                        return promise_each2_1.each(transactions, function (tx) {
-                            _this.manager.saveTransaction(transaction);
+            if (balance === undefined) {
+                console.error('No account found with address: ', address);
+            }
+            else {
+                return _this.ethereumClient.send(address, _this.sweepAddress, balance)
+                    .then(function (transaction) {
+                    return _this.manager.getLastBlock()
+                        .then(function (lastblock) {
+                        return _this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
+                            .then(function (transactions) {
+                            var newLastBlock = transactions[transactions.length - 1].blockNumber.toString();
+                            _this.manager.setLastBlock(newLastBlock);
+                            return promise_each2_1.each(transactions, function (tx) {
+                                _this.manager.saveTransaction(transaction);
+                            });
                         });
                     });
                 });
-            });
+            }
         });
     };
     EthereumTransactionMonitor.prototype.sweep = function () {

@@ -22,7 +22,7 @@ export class GethLab implements EthLab {
 
 
   getSweepAddress(): string {
-    return this.config.ethereum.sweepAdress
+    return this.config.ethereum.sweepAddress
   }
 
   start(): Promise<void> {

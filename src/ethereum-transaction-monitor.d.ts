@@ -1,4 +1,4 @@
-import { EthereumClient } from './ethereum-client';
+import { EthereumClient } from "./types";
 export interface GenericEthereumManager<EthereumTransaction> {
     getAddresses(): Promise<string[]>;
     saveTransaction(transaction: EthereumTransaction): any;

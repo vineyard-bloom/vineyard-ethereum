@@ -1,63 +1,24 @@
-export interface EthereumTransaction {
-    to: string;
-    from: string;
-    wei: string;
-    gas: string;
-}
+import { EthereumClient, EthereumTransaction } from "./types";
 export interface Web3EthereumClientConfig {
     http: string;
 }
-export interface EthereumClient {
-    createAddress(): Promise<string>;
-    getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
-    importAddress(address: string): Promise<void>;
-    listAllTransactions(): Promise<any[]>;
-    getAccounts(): Promise<string>;
-}
-export interface AddressSource {
-    generateAddress(): Promise<string>;
-}
-export declare class PredefinedAddressSource implements AddressSource {
-    private addresses;
-    private index;
-    constructor(addresses: string[]);
-    generateAddress(): Promise<string>;
-}
-export declare class RandomAddressSource implements AddressSource {
-    generateAddress(): Promise<string>;
-}
-export interface PretendTransaction {
-    wei: number;
-}
-export interface PretendBlock {
-    id: string;
-    transactions: PretendTransaction[];
-}
-export declare class MockEthereumClient implements EthereumClient {
-    private addressSource;
-    private addresses;
-    private blockchain;
-    constructor(addressSource: AddressSource);
-    createAddress(): Promise<string>;
-    getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
-    listAllTransactions(): Promise<any[]>;
-    importAddress(address: string): Promise<void>;
-    getAccounts(): Promise<string>;
-}
 export declare class Web3EthereumClient implements EthereumClient {
     private client;
+<<<<<<< HEAD
     private config;
+=======
+    private web3;
+>>>>>>> 09c572b67b76ea31aa0e77fcf55ceb1cf0c4633d
     constructor(ethereumConfig: Web3EthereumClientConfig);
     getClient(): this;
     getSweepAddress(): Promise<any>;
     toWei(amount: number): any;
-    fromWei(amount: number): number;
+    fromWei(amount: number): any;
     createAddress(): Promise<string>;
     getAccounts(): Promise<string>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, amount: string, gas?: string): Promise<EthereumTransaction>;
-    listAllTransaction(address: string, lastblock: number): any;
+    listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]>;
     importAddress(address: string): Promise<void>;
+    generate(blockCount: number): Promise<void>;
 }

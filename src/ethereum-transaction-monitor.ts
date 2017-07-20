@@ -1,5 +1,6 @@
-import {EthereumClient} from './ethereum-client'
 import {each as promiseEach} from 'promise-each2'
+import BigNumber from 'bignumber.js'
+import {gasWei, EthereumClient} from "./types";
 
 export interface GenericEthereumManager<EthereumTransaction> {
   getAddresses(): Promise<string[]>
@@ -26,18 +27,24 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
         if(balance === undefined) {
           console.error('No account found with address: ', address)
         } else {
-          return this.ethereumClient.send(address, this.sweepAddress, balance)
-            .then(transaction => {
+          if (balance.equals(0))
+            return Promise.resolve()
+
+          return this.ethereumClient.send(address, this.sweepAddress, new BigNumber(balance) - gasWei)
+            .then(sweepTransaction => {
               return this.manager.getLastBlock()
                 .then(lastblock => {
 
                   return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
                     .then(transactions => {
+                      if (transactions.length == 0)
+                        throw new Error("Could not find transactions for sweep.")
+
                       const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
                       this.manager.setLastBlock(newLastBlock)
 
                       return promiseEach(transactions, tx => {
-                        this.manager.saveTransaction(transaction)
+                        this.manager.saveTransaction(tx)
                       })
                     })
                 })

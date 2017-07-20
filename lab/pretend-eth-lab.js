@@ -6,10 +6,10 @@ var PretendEthLab = (function () {
         client.importAddress('');
     }
     PretendEthLab.prototype.start = function () {
-        return null;
+        return Promise.resolve();
     };
     PretendEthLab.prototype.stop = function () {
-        return null;
+        return Promise.resolve();
     };
     PretendEthLab.prototype.reset = function () {
         // return this.deleteWallet()
@@ -17,11 +17,14 @@ var PretendEthLab = (function () {
         // .then(() => this.deleteWallet())
         // .then(() => this.start())
     };
-    PretendEthLab.prototype.send = function (amount) {
-        return this.client.send('', '', amount);
+    PretendEthLab.prototype.send = function (address, amount) {
+        return this.client.send('', address, amount);
     };
     PretendEthLab.prototype.getSweepAddress = function () {
         return "";
+    };
+    PretendEthLab.prototype.generate = function (blockCount) {
+        return this.client.generate(blockCount);
     };
     return PretendEthLab;
 }());

@@ -1,6 +1,5 @@
 import {EthLab} from "./eth-lab";
-import {MockEthereumClient} from "../src/ethereum-client";
-import {EthereumTransaction} from "../src";
+import {EthereumTransaction, MockEthereumClient} from "../src";
 
 export class PretendEthLab implements EthLab {
   client: MockEthereumClient
@@ -10,12 +9,12 @@ export class PretendEthLab implements EthLab {
     client.importAddress('')
   }
 
- start(): Promise<void> {
-    return null
+  start(): Promise<void> {
+    return Promise.resolve()
   }
 
   stop(): Promise<any> {
-    return null
+    return Promise.resolve()
   }
 
   reset(): Promise<any> {
@@ -25,10 +24,15 @@ export class PretendEthLab implements EthLab {
     // .then(() => this.start())
   }
 
-  send(amount: number): Promise<EthereumTransaction> {
-    return this.client.send('', '', amount)
+  send(address: string, amount: string): Promise<EthereumTransaction> {
+    return this.client.send('', address, amount)
   }
+
   getSweepAddress(): string {
     return ""
+  }
+
+  generate(blockCount: number): Promise<any> {
+    return this.client.generate(blockCount)
   }
 }

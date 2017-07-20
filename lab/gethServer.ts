@@ -23,7 +23,8 @@ export class GethServer {
 
   start() {
     console.log('Starting Geth')
-    const childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
+    // const childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
+      const childProcess = this.childProcess = child_process.exec('node scripts/all')
 
     childProcess.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);

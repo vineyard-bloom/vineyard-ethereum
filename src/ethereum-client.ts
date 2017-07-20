@@ -90,6 +90,14 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve({})
   }
 
+  toWei(amount: number) {
+    return new BigNumber(amount).times(Math.pow(10,18)).toString();
+  }
+
+  fromWei(amount: number) {
+    return new BigNumber(amount).dividedBy(1000000000000000000).toString();
+  }
+
   importAddress(address: string): Promise<void> {
     this.addresses[address] = 0
     return Promise.resolve()

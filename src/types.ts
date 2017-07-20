@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 
 export interface EthereumTransaction {
   to: string
@@ -19,3 +20,5 @@ export interface EthereumClient {
 export interface AddressSource {
   generateAddress(): Promise<string>
 }
+
+export const gasWei = new BigNumber('21000000000000')

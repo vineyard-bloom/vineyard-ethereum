@@ -16,3 +16,4 @@ export interface EthereumClient {
 export interface AddressSource {
     generateAddress(): Promise<string>;
 }
+export declare const gasWei: any;

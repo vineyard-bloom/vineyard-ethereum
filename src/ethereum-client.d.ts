@@ -48,6 +48,7 @@ export declare class MockEthereumClient implements EthereumClient {
 }
 export declare class Web3EthereumClient implements EthereumClient {
     private client;
+    private config;
     constructor(ethereumConfig: Web3EthereumClientConfig);
     getClient(): this;
     getSweepAddress(): Promise<any>;

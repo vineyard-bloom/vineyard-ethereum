@@ -68,6 +68,7 @@ var MockEthereumClient = (function () {
 exports.MockEthereumClient = MockEthereumClient;
 var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
+        this.config = ethereumConfig;
         web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
     }
     Web3EthereumClient.prototype.getClient = function () {
@@ -100,9 +101,9 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gas) {
         if (gas === void 0) { gas = "21000"; }
         if (fromAddress === '') {
-            fromAddress = web3.eth.coinbase;
+            fromAddress = this.config.sweepAddress;
         }
-        web3.personal.unlockAccount(fromAddress);
+        web3.personal.unlockAccount(fromAddress, "");
         amount = web3.toHex(amount);
         var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
         return new Promise(function (resolve, reject) {

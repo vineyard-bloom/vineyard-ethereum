@@ -14,6 +14,7 @@ export interface EthereumTransaction {
 
 export interface Web3EthereumClientConfig {
   http: string
+  sweepAddress: string
 }
 
 export interface EthereumClient {
@@ -110,8 +111,10 @@ export class MockEthereumClient implements EthereumClient {
 
 export class Web3EthereumClient implements EthereumClient {
   private client
+  private config
 
   constructor(ethereumConfig: Web3EthereumClientConfig) {
+    this.config = ethereumConfig
     web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http))
   }
 
@@ -150,8 +153,8 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, amount: string, gas: string = "21000"): Promise<EthereumTransaction> {
-    if(fromAddress === '') {fromAddress = web3.eth.coinbase}
-    web3.personal.unlockAccount(fromAddress)
+    if(fromAddress === '') {fromAddress = this.config.sweepAddress}
+    web3.personal.unlockAccount(fromAddress, "")
     amount = web3.toHex(amount)
     const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {

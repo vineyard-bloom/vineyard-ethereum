@@ -120,7 +120,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   fromWei(amount: number) {
-    return amount * 1000000000000000000
+    return new BigNumber(amount).dividedBy(1000000000000000000).toString();
   }
 
   generateAddress(): Promise<string> {

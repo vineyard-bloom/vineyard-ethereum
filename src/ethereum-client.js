@@ -5,8 +5,13 @@ var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
 var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
+<<<<<<< HEAD
+        this.config = ethereumConfig;
+        web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
+=======
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
+>>>>>>> 09c572b67b76ea31aa0e77fcf55ceb1cf0c4633d
     }
     Web3EthereumClient.prototype.getClient = function () {
         return this;
@@ -40,10 +45,17 @@ var Web3EthereumClient = (function () {
         var _this = this;
         if (gas === void 0) { gas = "21000"; }
         if (fromAddress === '') {
+<<<<<<< HEAD
+            fromAddress = this.config.sweepAddress;
+        }
+        web3.personal.unlockAccount(fromAddress, "");
+        amount = web3.toHex(amount);
+=======
             fromAddress = this.web3.eth.coinbase;
         }
         this.web3.personal.unlockAccount(fromAddress);
         amount = this.web3.toHex(amount);
+>>>>>>> 09c572b67b76ea31aa0e77fcf55ceb1cf0c4633d
         var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
         return new Promise(function (resolve, reject) {
             _this.web3.eth.sendTransaction(transaction, function (err, address) {

@@ -57,6 +57,7 @@ var EthereumBalanceMonitor = (function () {
         var _this = this;
         return this.ethereumClient.getBalance(address)
             .then(function (balance) {
+            console.log(address, _this.sweepAddress, balance, "IM THE STUFFFFFFFFHJFHJHFJHFJHJFHJHFJHFJHFJFHJFHJHFJFHJFHJFHJFHJFHJFH")
             return _this.ethereumClient.send(address, _this.sweepAddress, balance)
                 .then(function (transaction) { return _this.manager.saveTransaction(transaction); });
         });

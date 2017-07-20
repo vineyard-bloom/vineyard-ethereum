@@ -39,7 +39,7 @@ export class GethLab implements EthLab {
     .then(() => this.start())
   }
 
-  send(address: string, amount: number) {
+  send(address: string, amount: string) {
     return new Promise<void>((resolve, reject) => {
       this.client.getClient().send('', address, amount)
         .then(result => console.log(result))

@@ -17,7 +17,7 @@ var PretendEthLab = (function () {
         // .then(() => this.deleteWallet())
         // .then(() => this.start())
     };
-    PretendEthLab.prototype.send = function (amount) {
+    PretendEthLab.prototype.send = function (address, amount) {
         return this.client.send('', '', amount);
     };
     PretendEthLab.prototype.getSweepAddress = function () {

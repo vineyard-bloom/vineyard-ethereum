@@ -56,6 +56,12 @@ var MockEthereumClient = (function () {
     MockEthereumClient.prototype.listAllTransactions = function () {
         throw new Error("Not yet implemented.");
     };
+    MockEthereumClient.prototype.toWei = function (amount) {
+        return new bignumber_js_1.default(amount).times(Math.pow(10, 18)).toString();
+    };
+    MockEthereumClient.prototype.fromWei = function (amount) {
+        return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
+    };
     MockEthereumClient.prototype.importAddress = function (address) {
         this.addresses[address] = 0;
         return Promise.resolve();
@@ -80,7 +86,7 @@ var Web3EthereumClient = (function () {
         return web3.toWei(amount);
     };
     Web3EthereumClient.prototype.fromWei = function (amount) {
-        return amount * 1000000000000000000;
+        return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
     };
     Web3EthereumClient.prototype.createAddress = function () {
         return Promise.resolve(web3.personal.newAccount());

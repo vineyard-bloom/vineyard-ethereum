@@ -71,13 +71,15 @@ var MockEthereumClient = (function () {
         var transaction = {
             from: fromAddress,
             to: toAddress,
-            wei: value,
-            gas: gas
+            value: value,
+            gas: gas,
+            blockNumber: this.blocks.length - 1
         };
         this.getActiveBlock().transactions.push(transaction);
         return Promise.resolve(transaction);
     };
     MockEthereumClient.prototype.listAllTransactions = function (address, lastblock) {
+        lastblock = lastblock || 0;
         var result = [];
         for (var i = lastblock; i < this.blocks.length - 1; ++i) {
             var block = this.blocks[i];

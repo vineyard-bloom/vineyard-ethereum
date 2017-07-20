@@ -1,9 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function fromWei(amount) {
-    return amount * 1000000000000000000;
+var bignumber_js_1 = require("bignumber.js");
+function ethToWei(amount) {
+    return amount.times(new bignumber_js_1.default("1000000000000000000"));
 }
-exports.fromWei = fromWei;
+exports.ethToWei = ethToWei;
+function weiToEth(amount) {
+    return amount.dividedBy(new bignumber_js_1.default("1000000000000000000"));
+}
+exports.weiToEth = weiToEth;
 function checkAllBalances(eth, web3) {
     var totalBal = 0;
     for (var acctNum in eth.accounts) {

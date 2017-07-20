@@ -6,7 +6,7 @@ export interface GenericEthereumManager<EthereumTransaction> {
   getAddresses(): Promise<string[]>
   saveTransaction(transaction: EthereumTransaction)
   getLastBlock(): Promise<string>
-  setLastBlock(lastblock:string): Promise<void>
+  setLastBlock(lastblock: string): Promise<void>
 }
 
 export class EthereumTransactionMonitor<EthereumTransaction> {
@@ -23,10 +23,10 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
 
   private saveNewTransaction(address): Promise<void> {
     return this.ethereumClient.getBalance(address)
-      .then((balance) => {
-        if(balance === undefined) {
-          console.error('No account found with address: ', address)
-        } else {
+      .then(balance => {
+          if (balance === undefined)
+            throw new Error('No account found with address: ' + address)
+
           if (balance.equals(0))
             return Promise.resolve()
 
@@ -34,8 +34,10 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
             .then(sweepTransaction => {
               return this.manager.getLastBlock()
                 .then(lastblock => {
+                  if (typeof lastblock !== 'string' && typeof lastblock !== 'number')
+                    lastblock = '0'
 
-                  return this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
+                  this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
                     .then(transactions => {
                       if (transactions.length == 0)
                         throw new Error("Could not find transactions for sweep.")
@@ -50,7 +52,7 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
                 })
             })
         }
-      })
+      )
   }
 
   sweep(): Promise<void> {
@@ -60,19 +62,19 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   }
 }
 
-export class EthereumBalanceMonitor<EthereumTransaction>  {
+export class EthereumBalanceMonitor<EthereumTransaction> {
   private ethereumClient;
   private minimumConfirmations: number = 2;
   private sweepAddress: string
-  private manager: GenericEthereumManager<EthereumTransaction> 
+  private manager: GenericEthereumManager<EthereumTransaction>
 
-  constructor(model: GenericEthereumManager<EthereumTransaction> , ethereumClient: EthereumClient, sweepAddress: string) {
+  constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string) {
     this.manager = model
     this.ethereumClient = ethereumClient
     this.sweepAddress = sweepAddress
   }
 
- private saveNewTransaction(address): Promise<void> {
+  private saveNewTransaction(address): Promise<void> {
     return this.ethereumClient.getBalance(address)
       .then((balance) => {
         return this.ethereumClient.send(address, this.sweepAddress, balance)

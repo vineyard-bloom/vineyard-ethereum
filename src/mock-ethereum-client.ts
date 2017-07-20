@@ -84,8 +84,9 @@ export class MockEthereumClient implements EthereumClient {
     const transaction = {
       from: fromAddress,
       to: toAddress,
-      wei: value,
-      gas: gas
+      value: value,
+      gas: gas,
+      blockNumber: this.blocks.length - 1
     }
 
     this.getActiveBlock().transactions.push(transaction)
@@ -93,7 +94,8 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(transaction)
   }
 
-  listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]> {
+  listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
+    lastblock = lastblock || 0
     let result = []
     for (let i = lastblock; i < this.blocks.length - 1; ++i) {
       const block = this.blocks [i]

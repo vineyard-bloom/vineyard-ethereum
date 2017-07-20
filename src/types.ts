@@ -3,8 +3,9 @@ import BigNumber from 'bignumber.js'
 export interface EthereumTransaction {
   to: string
   from: string
-  wei: string
-  gas: string
+  value: any
+  gas: number
+  blockNumber:number
 }
 
 export interface EthereumClient {
@@ -12,7 +13,7 @@ export interface EthereumClient {
   getBalance(address: string): Promise<number>
   send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>
   importAddress(address: string): Promise<void>
-  listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]>
+  listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]>
   getAccounts(): Promise<string>
   generate(blockCount: number): Promise<void>
 }

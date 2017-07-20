@@ -14,29 +14,28 @@ var EthereumTransactionMonitor = (function () {
         var _this = this;
         return this.ethereumClient.getBalance(address)
             .then(function (balance) {
-            if (balance === undefined) {
-                console.error('No account found with address: ', address);
-            }
-            else {
-                if (balance.equals(0))
-                    return Promise.resolve();
-                return _this.ethereumClient.send(address, _this.sweepAddress, new bignumber_js_1.default(balance) - types_1.gasWei)
-                    .then(function (sweepTransaction) {
-                    return _this.manager.getLastBlock()
-                        .then(function (lastblock) {
-                        return _this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
-                            .then(function (transactions) {
-                            if (transactions.length == 0)
-                                throw new Error("Could not find transactions for sweep.");
-                            var newLastBlock = transactions[transactions.length - 1].blockNumber.toString();
-                            _this.manager.setLastBlock(newLastBlock);
-                            return promise_each2_1.each(transactions, function (tx) {
-                                _this.manager.saveTransaction(tx);
-                            });
+            if (balance === undefined)
+                throw new Error('No account found with address: ' + address);
+            if (balance.equals(0))
+                return Promise.resolve();
+            return _this.ethereumClient.send(address, _this.sweepAddress, new bignumber_js_1.default(balance) - types_1.gasWei)
+                .then(function (sweepTransaction) {
+                return _this.manager.getLastBlock()
+                    .then(function (lastblock) {
+                    if (typeof lastblock !== 'string' && typeof lastblock !== 'number')
+                        lastblock = '0';
+                    _this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
+                        .then(function (transactions) {
+                        if (transactions.length == 0)
+                            throw new Error("Could not find transactions for sweep.");
+                        var newLastBlock = transactions[transactions.length - 1].blockNumber.toString();
+                        _this.manager.setLastBlock(newLastBlock);
+                        return promise_each2_1.each(transactions, function (tx) {
+                            _this.manager.saveTransaction(tx);
                         });
                     });
                 });
-            }
+            });
         });
     };
     EthereumTransactionMonitor.prototype.sweep = function () {

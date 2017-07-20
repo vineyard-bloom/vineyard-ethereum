@@ -1,5 +1,11 @@
-export function fromWei(amount: number) {
-  return amount * 1000000000000000000
+import BigNumber from 'bignumber.js';
+
+export function ethToWei(amount) {
+  return amount.times(new BigNumber("1000000000000000000"))
+}
+
+export function weiToEth(amount) {
+  return amount.dividedBy(new BigNumber("1000000000000000000"))
 }
 
 export function checkAllBalances(eth, web3) {

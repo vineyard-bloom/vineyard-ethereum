@@ -43,6 +43,8 @@ export declare class MockEthereumClient implements EthereumClient {
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
     listAllTransactions(): Promise<any[]>;
+    toWei(amount: number): any;
+    fromWei(amount: number): any;
     importAddress(address: string): Promise<void>;
     getAccounts(): Promise<string>;
 }
@@ -52,7 +54,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     getClient(): this;
     getSweepAddress(): Promise<any>;
     toWei(amount: number): any;
-    fromWei(amount: number): number;
+    fromWei(amount: number): any;
     createAddress(): Promise<string>;
     getAccounts(): Promise<string>;
     getBalance(address: string): Promise<number>;

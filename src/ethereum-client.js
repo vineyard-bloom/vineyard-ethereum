@@ -42,10 +42,12 @@ var MockEthereumClient = (function () {
     };
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
         if (gas === void 0) { gas = "2100"; }
-        if (new bignumber_js_1.default(this.addresses[fromAddress]).lessThan(value))
+        var fromBalance = new bignumber_js_1.default(this.addresses[fromAddress]);
+        if (fromBalance.lessThan(value))
             throw new Error('not enough funds');
-        this.addresses[fromAddress] = new bignumber_js_1.default(this.addresses[fromAddress]).minus(new bignumber_js_1.default(value));
-        this.addresses[toAddress] = new bignumber_js_1.default(this.addresses[toAddress]).plus(new bignumber_js_1.default(value));
+        var toBalance = new bignumber_js_1.default(this.addresses[toAddress]);
+        this.addresses[fromAddress] = fromBalance.minus(new bignumber_js_1.default(value));
+        this.addresses[toAddress] = toBalance.plus(new bignumber_js_1.default(value));
         return Promise.resolve({
             from: '',
             to: fromAddress,
@@ -55,6 +57,12 @@ var MockEthereumClient = (function () {
     };
     MockEthereumClient.prototype.listAllTransactions = function () {
         throw new Error("Not yet implemented.");
+    };
+    MockEthereumClient.prototype.toWei = function (amount) {
+        return new bignumber_js_1.default(amount).times(Math.pow(10, 18)).toString();
+    };
+    MockEthereumClient.prototype.fromWei = function (amount) {
+        return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
     };
     MockEthereumClient.prototype.importAddress = function (address) {
         this.addresses[address] = 0;
@@ -80,7 +88,7 @@ var Web3EthereumClient = (function () {
         return web3.toWei(amount);
     };
     Web3EthereumClient.prototype.fromWei = function (amount) {
-        return amount * 1000000000000000000;
+        return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
     };
     Web3EthereumClient.prototype.createAddress = function () {
         return Promise.resolve(web3.personal.newAccount());

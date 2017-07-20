@@ -6,10 +6,10 @@ const web3 = new Web3()
 
 
 export interface EthereumTransaction {
-  to:string
-  from:string
-  wei:string
-  gas:string
+  to: string
+  from: string
+  wei: string
+  gas: string
 }
 
 export interface Web3EthereumClientConfig {
@@ -79,11 +79,13 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, value: string, gas: string = "2100"): Promise<EthereumTransaction> {
-    if (new BigNumber(this.addresses[fromAddress]).lessThan(value))
+    const fromBalance = new BigNumber(this.addresses[fromAddress])
+    if (fromBalance.lessThan(value))
       throw new Error('not enough funds')
 
-    this.addresses[fromAddress] = new BigNumber(this.addresses[fromAddress]).minus(new BigNumber(value))
-    this.addresses[toAddress] = new BigNumber(this.addresses[toAddress]).plus(new BigNumber(value))
+    const toBalance = new BigNumber(this.addresses[toAddress])
+    this.addresses[fromAddress] = fromBalance.minus(new BigNumber(value))
+    this.addresses[toAddress] = toBalance.plus(new BigNumber(value))
 
     return Promise.resolve({
       from: '',
@@ -99,7 +101,7 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   toWei(amount: number) {
-    return new BigNumber(amount).times(Math.pow(10,18)).toString();
+    return new BigNumber(amount).times(Math.pow(10, 18)).toString();
   }
 
   fromWei(amount: number) {
@@ -158,7 +160,9 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, amount: string, gas: string = "21000"): Promise<EthereumTransaction> {
-    if(fromAddress === '') {fromAddress = web3.eth.coinbase}
+    if (fromAddress === '') {
+      fromAddress = web3.eth.coinbase
+    }
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
     const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}

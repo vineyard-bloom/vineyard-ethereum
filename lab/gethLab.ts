@@ -20,7 +20,6 @@ export class GethLab implements EthLab {
     this.server = server
   }
 
-
   getSweepAddress(): string {
     return this.config.ethereum.sweepAddress
   }

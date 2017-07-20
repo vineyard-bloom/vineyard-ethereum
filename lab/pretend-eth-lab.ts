@@ -11,11 +11,11 @@ export class PretendEthLab implements EthLab {
   }
 
  start(): Promise<void> {
-    return null
+    return Promise.resolve()
   }
 
   stop(): Promise<any> {
-    return null
+    return Promise.resolve()
   }
 
   reset(): Promise<any> {

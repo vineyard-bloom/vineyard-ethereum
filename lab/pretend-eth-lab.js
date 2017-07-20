@@ -6,10 +6,10 @@ var PretendEthLab = (function () {
         client.importAddress('');
     }
     PretendEthLab.prototype.start = function () {
-        return null;
+        return Promise.resolve();
     };
     PretendEthLab.prototype.stop = function () {
-        return null;
+        return Promise.resolve();
     };
     PretendEthLab.prototype.reset = function () {
         // return this.deleteWallet()

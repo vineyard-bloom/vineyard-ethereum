@@ -8,22 +8,22 @@ export declare class PredefinedAddressSource implements AddressSource {
 export declare class RandomAddressSource implements AddressSource {
     generateAddress(): Promise<string>;
 }
-export interface PretendTransaction {
-    wei: number;
-}
 export interface PretendBlock {
     id: string;
-    transactions: PretendTransaction[];
+    transactions: EthereumTransaction[];
 }
 export declare class MockEthereumClient implements EthereumClient {
     private addressSource;
     private addresses;
-    private blockchain;
+    private blocks;
     constructor(addressSource: AddressSource);
     createAddress(): Promise<string>;
+    getActiveBlock(): PretendBlock;
+    private minePreviousBlock(block);
+    generate(blockCount: number): Promise<void>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
-    listAllTransactions(): Promise<any[]>;
+    listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]>;
     toWei(amount: number): any;
     fromWei(amount: number): any;
     importAddress(address: string): Promise<void>;

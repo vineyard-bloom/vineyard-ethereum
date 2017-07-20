@@ -20,30 +20,52 @@ export class RandomAddressSource implements AddressSource {
   }
 }
 
-export interface PretendTransaction {
-  wei: number
-}
-
 export interface PretendBlock {
   id: string
-  transactions: PretendTransaction[]
+  transactions: EthereumTransaction[]
 }
 
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
-  private blockchain: PretendBlock[]
+  private blocks: PretendBlock[] = []
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource
+    this.blocks.push({
+      id: '0',
+      transactions: []
+    })
   }
 
   createAddress(): Promise<string> {
     return this.addressSource.generateAddress()
       .then(address => {
-        this.addresses[address] = 0
+        this.addresses[address] = new BigNumber(0)
         return Promise.resolve(address);
       })
+  }
+
+  getActiveBlock(): PretendBlock {
+    return this.blocks[this.blocks.length - 1]
+  }
+
+  private minePreviousBlock(block: PretendBlock) {
+    const reward = block.transactions.reduce((a, b) => a + b.gas, new BigNumber(0))
+      + this.toWei(5)
+    this.addresses[''] += reward
+  }
+
+  generate(blockCount: number): Promise<void> {
+    for (let i = 0; i < blockCount; ++i) {
+      this.minePreviousBlock(this.getActiveBlock())
+      this.blocks.push({
+        id: this.blocks.length.toString(),
+        transactions: []
+      })
+    }
+
+    return Promise.resolve()
   }
 
   getBalance(address: string): Promise<number> {
@@ -52,23 +74,33 @@ export class MockEthereumClient implements EthereumClient {
 
   send(fromAddress: string, toAddress: string, value: string, gas: string = "2100"): Promise<EthereumTransaction> {
     const fromBalance = new BigNumber(this.addresses[fromAddress])
-    if (fromBalance.lessThan(value))
+    if (fromBalance.lessThan(new BigNumber(value) + new BigNumber(gas)))
       throw new Error('not enough funds')
 
     const toBalance = new BigNumber(this.addresses[toAddress])
     this.addresses[fromAddress] = fromBalance.minus(new BigNumber(value))
     this.addresses[toAddress] = toBalance.plus(new BigNumber(value))
 
-    return Promise.resolve({
+    const transaction = {
       from: fromAddress,
       to: toAddress,
       wei: value,
       gas: gas
-    })
+    }
+
+    this.getActiveBlock().transactions.push(transaction)
+
+    return Promise.resolve(transaction)
   }
 
-  listAllTransactions(): Promise<any[]> {
-    throw new Error("Not yet implemented.")
+  listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]> {
+    let result = []
+    for (let i = lastblock; i < this.blocks.length - 1; ++i) {
+      const block = this.blocks [i]
+      result = result.concat(block.transactions.filter(t => t.to == address))
+    }
+
+    return Promise.resolve(result)
   }
 
   toWei(amount: number) {
@@ -80,7 +112,7 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   importAddress(address: string): Promise<void> {
-    this.addresses[address] = 0
+    this.addresses[address] = new BigNumber(0)
     return Promise.resolve()
   }
 

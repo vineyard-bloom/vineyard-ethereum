@@ -34,6 +34,9 @@ var GethLab = (function () {
                 .catch(function (error) { return console.log(error); });
         });
     };
+    GethLab.prototype.generate = function (blockCount) {
+        return Promise.resolve();
+    };
     return GethLab;
 }());
 exports.GethLab = GethLab;

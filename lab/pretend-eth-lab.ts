@@ -25,11 +25,14 @@ export class PretendEthLab implements EthLab {
   }
 
   send(address: string, amount: string): Promise<EthereumTransaction> {
-    return this.client.send('', '', amount)
+    return this.client.send('', address, amount)
   }
 
   getSweepAddress(): string {
     return ""
   }
 
+  generate(blockCount: number): Promise<any> {
+    return this.client.generate(blockCount)
+  }
 }

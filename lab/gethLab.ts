@@ -46,4 +46,8 @@ export class GethLab implements EthLab {
         .catch(error => console.log(error))
     })
   }
+
+  generate(blockCount:number): Promise<any> {
+    return Promise.resolve()
+  }
 }

@@ -59,6 +59,9 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.importAddress = function (address) {
         throw new Error("Not implemented");
     };
+    Web3EthereumClient.prototype.generate = function (blockCount) {
+        throw new Error("Not implemented.");
+    };
     return Web3EthereumClient;
 }());
 exports.Web3EthereumClient = Web3EthereumClient;

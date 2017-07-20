@@ -18,10 +18,13 @@ var PretendEthLab = (function () {
         // .then(() => this.start())
     };
     PretendEthLab.prototype.send = function (address, amount) {
-        return this.client.send('', '', amount);
+        return this.client.send('', address, amount);
     };
     PretendEthLab.prototype.getSweepAddress = function () {
         return "";
+    };
+    PretendEthLab.prototype.generate = function (blockCount) {
+        return this.client.generate(blockCount);
     };
     return PretendEthLab;
 }());

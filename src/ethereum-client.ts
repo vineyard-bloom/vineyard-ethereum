@@ -10,7 +10,7 @@ export interface Web3EthereumClientConfig {
 export class Web3EthereumClient implements EthereumClient {
   private client
   private web3
-  
+
   constructor(ethereumConfig: Web3EthereumClientConfig) {
     this.web3 = new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
@@ -65,12 +65,16 @@ export class Web3EthereumClient implements EthereumClient {
       })
     })
   }
-  
-  listAllTransactions(address: string, lastblock: number): Promise<any[]> {
+
+  listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]> {
     return getTransactionsByAccount(this.web3.eth, address, lastblock)
   }
 
   importAddress(address: string): Promise<void> {
     throw new Error("Not implemented")
+  }
+
+  generate(blockCount: number): Promise<void> {
+    throw new Error("Not implemented.")
   }
 }

@@ -8,4 +8,5 @@ export declare class PretendEthLab implements EthLab {
     reset(): Promise<any>;
     send(address: string, amount: string): Promise<EthereumTransaction>;
     getSweepAddress(): string;
+    generate(blockCount: number): Promise<any>;
 }

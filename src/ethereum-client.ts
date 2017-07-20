@@ -98,6 +98,14 @@ export class MockEthereumClient implements EthereumClient {
     throw new Error("Not yet implemented.")
   }
 
+  toWei(amount: number) {
+    return new BigNumber(amount).times(Math.pow(10,18)).toString();
+  }
+
+  fromWei(amount: number) {
+    return new BigNumber(amount).dividedBy(1000000000000000000).toString();
+  }
+
   importAddress(address: string): Promise<void> {
     this.addresses[address] = 0
     return Promise.resolve()
@@ -128,7 +136,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   fromWei(amount: number) {
-    return amount * 1000000000000000000
+    return new BigNumber(amount).dividedBy(1000000000000000000).toString();
   }
 
   createAddress(): Promise<string> {

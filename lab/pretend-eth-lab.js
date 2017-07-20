@@ -8,6 +8,15 @@ var PretendEthLab = (function () {
     PretendEthLab.prototype.start = function () {
         return null;
     };
+    PretendEthLab.prototype.stop = function () {
+        return null;
+    };
+    PretendEthLab.prototype.reset = function () {
+        // return this.deleteWallet()
+        return this.start();
+        // .then(() => this.deleteWallet())
+        // .then(() => this.start())
+    };
     PretendEthLab.prototype.send = function (amount) {
         return this.client.send('', '', amount);
     };

@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
-var web3 = new Web3();
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+var web3 = new Web3();
 var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
         this.index = 0;
@@ -105,7 +104,7 @@ var Web3EthereumClient = (function () {
         }
         web3.personal.unlockAccount(fromAddress);
         amount = web3.toHex(amount);
-        var transaction = { from: fromAddress, to: toAddress, value: web3.toWei(amount), gas: gas };
+        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
         return new Promise(function (resolve, reject) {
             web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)

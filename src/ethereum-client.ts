@@ -1,9 +1,9 @@
 import * as Web3 from 'web3'
 import {getTransactions} from "../../../src/external-services/mambu/index";
-const web3 = new Web3()
 import {getTransactionsByAccount, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
+const web3 = new Web3()
+
 
 export interface EthereumTransaction {
   to:string
@@ -153,7 +153,7 @@ export class Web3EthereumClient implements EthereumClient {
     if(fromAddress === '') {fromAddress = web3.eth.coinbase}
     web3.personal.unlockAccount(fromAddress)
     amount = web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, value: web3.toWei(amount), gas: gas}
+    const transaction = {from: fromAddress, to: toAddress, value: amount, gas: gas}
     return new Promise<any>((resolve, reject) => {
       web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)

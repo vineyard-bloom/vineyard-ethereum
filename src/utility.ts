@@ -31,7 +31,7 @@ function createTransaction(e, block) {
     from: e.from,
     to: e.to,
     value: e.value,
-    time: block.timestamp + " " + new Date(block.timestamp * 1000).toISOString(),
+    time: new Date(block.timestamp * 1000),
     gasPrice: e.gasPrice,
     gas: e.gas,
     input: e.input
@@ -46,9 +46,11 @@ function getTransactions(eth, account, i): Promise<any[]> {
 
       if (!block || !block.transactions)
         return resolve([])
+      if (block.transactions.length > 0)
+        console.log("transactions", block.transactions.length)
 
       const result = block.transactions
-        .filter(e => account == e.from || account == e.to)
+        .filter(e => account == e.to)
         .map(e => createTransaction(e, block))
 
       resolve(result)
@@ -56,7 +58,7 @@ function getTransactions(eth, account, i): Promise<any[]> {
   })
 }
 
-function getTransactionsByAccount(eth, account, i, endBlockNumber): Promise<any[]> {
+export function getTransactionsByAccount(eth, account, i = 0, endBlockNumber = eth.blockNumber): Promise<any[]> {
   if (i > endBlockNumber)
     return Promise.resolve([])
 

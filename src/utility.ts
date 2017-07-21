@@ -36,7 +36,7 @@ export function getTransactionsByAccount(eth, account, startBlockNumber = 0, end
           transactions = transactions.concat(block.transactions.map(function (e) {
             if (account == "*" || account == e.from || account == e.to) {
               return {
-                txHash: e.hash,
+                hash: e.hash,
                 nonce: e.nonce,
                 blockHash: e.blockHash,
                 blockNumber: e.blockNumber,

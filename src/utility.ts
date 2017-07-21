@@ -42,17 +42,15 @@ function getTransactions(eth, account, i): Promise<any[]> {
   return new Promise((resolve, reject) => {
     eth.getBlock(i, true, (err, block) => {
       if (err) {
-        console.error('Error processing ethereum block', i, ' with message ', err.message)
+        console.error('Error processing ethereum block', i, 'with message', err.message)
         return reject(new Error(err));
       }
 
       if (!block || !block.transactions)
         return resolve([])
-      if (block.transactions.length > 0)
-        console.log("transactions", block.transactions.length)
 
       const result = block.transactions
-        .filter(e => account == e.to)
+        .filter(e => e.to && account == e.to)
         .map(e => createTransaction(e, block))
 
       resolve(result)

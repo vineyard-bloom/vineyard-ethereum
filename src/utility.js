@@ -41,15 +41,13 @@ function getTransactions(eth, account, i) {
     return new Promise(function (resolve, reject) {
         eth.getBlock(i, true, function (err, block) {
             if (err) {
-                console.error('Error processing ethereum block', i, ' with message ', err.message);
+                console.error('Error processing ethereum block', i, 'with message', err.message);
                 return reject(new Error(err));
             }
             if (!block || !block.transactions)
                 return resolve([]);
-            if (block.transactions.length > 0)
-                console.log("transactions", block.transactions.length);
             var result = block.transactions
-                .filter(function (e) { return account == e.to; })
+                .filter(function (e) { return e.to && account == e.to; })
                 .map(function (e) { return createTransaction(e, block); });
             resolve(result);
         });

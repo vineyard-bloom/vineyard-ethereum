@@ -48,8 +48,9 @@ var Web3EthereumClient = (function () {
         return new Promise(function (resolve, reject) {
             _this.web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)
-                    reject('Error sending to: ' + address);
-                resolve(transaction);
+                    reject('Error sending to: ' + address + "this is the error" + err);
+                else
+                    resolve(transaction);
             });
         });
     };

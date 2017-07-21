@@ -9,13 +9,14 @@ export declare class RandomAddressSource implements AddressSource {
     generateAddress(): Promise<string>;
 }
 export interface PretendBlock {
-    id: string;
+    id: number;
     transactions: EthereumTransaction[];
 }
 export declare class MockEthereumClient implements EthereumClient {
     private addressSource;
     private addresses;
     private blocks;
+    private txindex;
     constructor(addressSource: AddressSource);
     createAddress(): Promise<string>;
     getActiveBlock(): PretendBlock;

@@ -5,8 +5,8 @@ import {gasWei, EthereumClient} from "./types";
 export interface GenericEthereumManager<EthereumTransaction> {
   getAddresses(): Promise<string[]>
   saveTransaction(transaction: EthereumTransaction)
-  getLastBlock(): Promise<string>
-  setLastBlock(lastblock: string): Promise<void>
+  getLastBlock(): Promise<number>
+  setLastBlock(lastblock: number): Promise<void>
 }
 
 export class EthereumTransactionMonitor<EthereumTransaction> {
@@ -21,44 +21,30 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
     this.sweepAddress = sweepAddress
   }
 
-  private saveNewTransaction(address): Promise<void> {
-    return this.ethereumClient.getBalance(address)
-      .then(balance => {
-          if (balance === undefined)
-            throw new Error('No account found with address: ' + address)
+  scanAddress(address: string, lastBlock: number) {
+    return this.ethereumClient.listAllTransactions(address, lastBlock)
+      .then(transactions => {
+        if (transactions.length == 0)
+         return Promise.resolve()
 
-          if (balance.equals(0))
-            return Promise.resolve()
-
-          return this.ethereumClient.send(address, this.sweepAddress, new BigNumber(balance) - gasWei)
-            .then(sweepTransaction => {
-              return this.manager.getLastBlock()
-                .then(lastblock => {
-                  if (typeof lastblock !== 'string' && typeof lastblock !== 'number')
-                    lastblock = '0'
-
-                  this.ethereumClient.listAllTransactions(address, parseInt(lastblock))
-                    .then(transactions => {
-                      if (transactions.length == 0)
-                        throw new Error("Could not find transactions for sweep.")
-
-                      const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
-                      this.manager.setLastBlock(newLastBlock)
-
-                      return promiseEach(transactions, tx => {
-                        this.manager.saveTransaction(tx)
-                      })
-                    })
-                })
-            })
-        }
-      )
+        const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
+        this.manager.setLastBlock(newLastBlock)
+        return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+      })
   }
 
-  sweep(): Promise<void> {
-    return this.manager.getAddresses()
-      .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
-      )
+  // sweep(): Promise<void> {
+  //   return this.manager.getAddresses()
+  //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
+  //     )
+  // }
+
+  updateTransactions() {
+    return this.manager.getLastBlock()
+      .then(lastBlock => {
+        return this.manager.getAddresses()
+          .then(addresses => promiseEach(addresses, address => this.scanAddress(address, lastBlock)))
+      })
   }
 }
 

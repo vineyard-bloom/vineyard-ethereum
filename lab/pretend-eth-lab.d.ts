@@ -6,7 +6,7 @@ export declare class PretendEthLab implements EthLab {
     start(): Promise<void>;
     stop(): Promise<any>;
     reset(): Promise<any>;
-    send(address: string, amount: string): Promise<EthereumTransaction>;
+    send(address: string, amount: any): Promise<EthereumTransaction>;
     getSweepAddress(): string;
     generate(blockCount: number): Promise<any>;
 }

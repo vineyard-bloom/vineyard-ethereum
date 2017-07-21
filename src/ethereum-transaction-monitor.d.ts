@@ -2,8 +2,8 @@ import { EthereumClient } from "./types";
 export interface GenericEthereumManager<EthereumTransaction> {
     getAddresses(): Promise<string[]>;
     saveTransaction(transaction: EthereumTransaction): any;
-    getLastBlock(): Promise<string>;
-    setLastBlock(lastblock: string): Promise<void>;
+    getLastBlock(): Promise<number>;
+    setLastBlock(lastblock: number): Promise<void>;
 }
 export declare class EthereumTransactionMonitor<EthereumTransaction> {
     private ethereumClient;
@@ -11,8 +11,8 @@ export declare class EthereumTransactionMonitor<EthereumTransaction> {
     private sweepAddress;
     private manager;
     constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string);
-    private saveNewTransaction(address);
-    sweep(): Promise<void>;
+    scanAddress(address: string, lastBlock: number): any;
+    updateTransactions(): Promise<any>;
 }
 export declare class EthereumBalanceMonitor<EthereumTransaction> {
     private ethereumClient;

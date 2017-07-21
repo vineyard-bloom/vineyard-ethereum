@@ -21,7 +21,7 @@ export class RandomAddressSource implements AddressSource {
 }
 
 export interface PretendBlock {
-  id: string
+  id: number
   transactions: EthereumTransaction[]
 }
 
@@ -29,11 +29,12 @@ export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
   private blocks: PretendBlock[] = []
+  private txindex = 0
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource
     this.blocks.push({
-      id: '0',
+      id: 0,
       transactions: []
     })
   }
@@ -53,14 +54,14 @@ export class MockEthereumClient implements EthereumClient {
   private minePreviousBlock(block: PretendBlock) {
     const reward = block.transactions.reduce((a, b) => a + b.gas, new BigNumber(0))
       + this.toWei(5)
-    this.addresses[''] += reward
+    this.addresses[''] = this.addresses[''].plus(reward)
   }
 
   generate(blockCount: number): Promise<void> {
     for (let i = 0; i < blockCount; ++i) {
       this.minePreviousBlock(this.getActiveBlock())
       this.blocks.push({
-        id: this.blocks.length.toString(),
+        id: this.blocks.length,
         transactions: []
       })
     }
@@ -74,8 +75,8 @@ export class MockEthereumClient implements EthereumClient {
 
   send(fromAddress: string, toAddress: string, value: string, gas: string = "2100"): Promise<EthereumTransaction> {
     const fromBalance = new BigNumber(this.addresses[fromAddress])
-    if (fromBalance.lessThan(new BigNumber(value) + new BigNumber(gas)))
-      throw new Error('not enough funds')
+    if (fromBalance.lessThan(new BigNumber(value).plus(gas)))
+      throw new Error('Not enough funds')
 
     const toBalance = new BigNumber(this.addresses[toAddress])
     this.addresses[fromAddress] = fromBalance.minus(new BigNumber(value))
@@ -86,7 +87,9 @@ export class MockEthereumClient implements EthereumClient {
       to: toAddress,
       value: value,
       gas: gas,
-      blockNumber: this.blocks.length - 1
+      blockNumber: this.blocks.length - 1,
+      time: new Date(),
+      hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
     }
 
     this.getActiveBlock().transactions.push(transaction)
@@ -95,9 +98,9 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
-    lastblock = lastblock || 0
+    // lastblock = lastblock ? lastblock : 0
     let result = []
-    for (let i = lastblock; i < this.blocks.length - 1; ++i) {
+    for (let i = lastblock + 1; i < this.blocks.length - 1; ++i) {
       const block = this.blocks [i]
       result = result.concat(block.transactions.filter(t => t.to == address))
     }

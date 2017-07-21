@@ -5,7 +5,7 @@ export interface EthereumTransaction {
   from: string
   value: any
   gas: number
-  blockNumber:number
+  hash:number
 }
 
 export interface EthereumClient {

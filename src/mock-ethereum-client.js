@@ -25,9 +25,10 @@ var MockEthereumClient = (function () {
     function MockEthereumClient(addressSource) {
         this.addresses = {};
         this.blocks = [];
+        this.txindex = 0;
         this.addressSource = addressSource;
         this.blocks.push({
-            id: '0',
+            id: 0,
             transactions: []
         });
     }
@@ -45,13 +46,13 @@ var MockEthereumClient = (function () {
     MockEthereumClient.prototype.minePreviousBlock = function (block) {
         var reward = block.transactions.reduce(function (a, b) { return a + b.gas; }, new bignumber_js_1.default(0))
             + this.toWei(5);
-        this.addresses[''] += reward;
+        this.addresses[''] = this.addresses[''].plus(reward);
     };
     MockEthereumClient.prototype.generate = function (blockCount) {
         for (var i = 0; i < blockCount; ++i) {
             this.minePreviousBlock(this.getActiveBlock());
             this.blocks.push({
-                id: this.blocks.length.toString(),
+                id: this.blocks.length,
                 transactions: []
             });
         }
@@ -63,8 +64,8 @@ var MockEthereumClient = (function () {
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
         if (gas === void 0) { gas = "2100"; }
         var fromBalance = new bignumber_js_1.default(this.addresses[fromAddress]);
-        if (fromBalance.lessThan(new bignumber_js_1.default(value) + new bignumber_js_1.default(gas)))
-            throw new Error('not enough funds');
+        if (fromBalance.lessThan(new bignumber_js_1.default(value).plus(gas)))
+            throw new Error('Not enough funds');
         var toBalance = new bignumber_js_1.default(this.addresses[toAddress]);
         this.addresses[fromAddress] = fromBalance.minus(new bignumber_js_1.default(value));
         this.addresses[toAddress] = toBalance.plus(new bignumber_js_1.default(value));
@@ -73,15 +74,17 @@ var MockEthereumClient = (function () {
             to: toAddress,
             value: value,
             gas: gas,
-            blockNumber: this.blocks.length - 1
+            blockNumber: this.blocks.length - 1,
+            time: new Date(),
+            hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
         };
         this.getActiveBlock().transactions.push(transaction);
         return Promise.resolve(transaction);
     };
     MockEthereumClient.prototype.listAllTransactions = function (address, lastblock) {
-        lastblock = lastblock || 0;
+        // lastblock = lastblock ? lastblock : 0
         var result = [];
-        for (var i = lastblock; i < this.blocks.length - 1; ++i) {
+        for (var i = lastblock + 1; i < this.blocks.length - 1; ++i) {
             var block = this.blocks[i];
             result = result.concat(block.transactions.filter(function (t) { return t.to == address; }));
         }

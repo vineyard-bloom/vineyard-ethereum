@@ -24,7 +24,7 @@ export class PretendEthLab implements EthLab {
     // .then(() => this.start())
   }
 
-  send(address: string, amount: string): Promise<EthereumTransaction> {
+  send(address: string, amount): Promise<EthereumTransaction> {
     return this.client.send('', address, amount)
   }
 

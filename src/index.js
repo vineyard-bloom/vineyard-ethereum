@@ -6,5 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ethereum-client"));
 __export(require("./ethereum-transaction-monitor"));
 __export(require("./utility"));
+__export(require("./types"));
 __export(require("./mock-ethereum-client"));
 //# sourceMappingURL=index.js.map

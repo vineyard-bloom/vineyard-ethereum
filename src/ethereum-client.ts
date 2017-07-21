@@ -61,7 +61,7 @@ export class Web3EthereumClient implements EthereumClient {
     return new Promise<any>((resolve, reject) => {
       this.web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
-          reject('Error sending to: ' + address)
+          reject('Error sending to: ' + address + "this is the error" + err)
         resolve(transaction)
       })
     })

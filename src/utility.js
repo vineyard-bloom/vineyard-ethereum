@@ -30,7 +30,7 @@ function createTransaction(e, block) {
         transactionIndex: e.transactionIndex,
         from: e.from,
         to: e.to,
-        value: e.value,
+        value: ethToWei(e.value),
         time: new Date(block.timestamp * 1000),
         gasPrice: e.gasPrice,
         gas: e.gas,

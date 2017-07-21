@@ -40,8 +40,10 @@ function createTransaction(e, block) {
 function getTransactions(eth, account, i) {
     return new Promise(function (resolve, reject) {
         eth.getBlock(i, true, function (err, block) {
-            if (err)
+            if (err) {
+                console.error('Error processing ethereum block', i, ' with message ', err.message);
                 return reject(new Error(err));
+            }
             if (!block || !block.transactions)
                 return resolve([]);
             if (block.transactions.length > 0)

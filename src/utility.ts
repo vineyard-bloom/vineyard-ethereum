@@ -52,6 +52,9 @@ export function getTransactionsByAccount(eth, account, startBlockNumber = 0, end
             }
           }))
         }
+        else {
+          return Promise.resolve()
+        }
       })
     )
   }

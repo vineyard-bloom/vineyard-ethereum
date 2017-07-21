@@ -53,6 +53,9 @@ function getTransactionsByAccount(eth, account, startBlockNumber, endBlockNumber
                     }
                 }));
             }
+            else {
+                return Promise.resolve();
+            }
         }); });
     };
     for (var i = startBlockNumber; i <= endBlockNumber; i++) {

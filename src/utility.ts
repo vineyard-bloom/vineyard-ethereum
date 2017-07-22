@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {each as promiseEach} from 'promise-each2'
+import {AddressManager, EthereumClient} from "./types";
 
 export function ethToWei(amount) {
   return amount.times(new BigNumber("1000000000000000000"))
@@ -38,74 +39,40 @@ function createTransaction(e, block) {
   }
 }
 
-function getTransactions(eth, account, i): Promise<any[]> {
-  return new Promise((resolve, reject) => {
-    eth.getBlock(i, true, (err, block) => {
-      if (err) {
-        console.error('Error processing ethereum block', i, 'with message', err.message)
-        return reject(new Error(err));
-      }
-
-      if (!block || !block.transactions)
-        return resolve([])
-
-      const result = block.transactions
-        .filter(e => e.to && account == e.to)
-        .map(e => createTransaction(e, block))
-
-      resolve(result)
-    })
-  })
+function gatherTransactions(block, addressManager: AddressManager): Promise<any[]> {
+  let result = []
+  return promiseEach(block.transactions
+    .filter(e => e.to)
+    .map(e => () => addressManager.hasAddress(e.to)
+      .then(success => {
+        if (success) {
+          result.push(createTransaction(e, block))
+        }
+      })
+    )
+  )
+    .then(() => result)
 }
 
-export function getTransactionsByAccount(eth, account, i = 0, endBlockNumber = eth.blockNumber): Promise<any[]> {
+function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
+  return client.getBlock(i)
+    .then(block => {
+      if (!block || !block.transactions)
+        return Promise.resolve([])
+
+      return gatherTransactions(block, addressManager)
+    })
+}
+
+function getTransactionsRecursive(client: EthereumClient, addressManager: AddressManager, i, endBlockNumber): Promise<any[]> {
   if (i > endBlockNumber)
     return Promise.resolve([])
 
-  return getTransactions(eth, account, i)
-    .then(first => getTransactionsByAccount(eth, account, i + 1, endBlockNumber)
+  return getTransactions(client, addressManager, i)
+    .then(first => getTransactionsRecursive(client, addressManager, i + 1, endBlockNumber)
       .then(second => first.concat(second)))
 }
 
-// export function getTransactionsByAccount(eth, account, startBlockNumber = 0, endBlockNumber = eth.blockNumber) {
-//   console.log("Searching for transactions to/from account \"" + account + "\" within blocks " + startBlockNumber + " and " + endBlockNumber);
-//
-//   const promises = []
-//   let transactions = []
-//
-//   for (let i = startBlockNumber; i <= endBlockNumber; i++) {
-//     // if (i % 1000 == 0) {
-//     //   console.log("Searching block " + i);
-//     // }
-//
-//     promises.push(() => eth.getBlock(i, true, (err, block) => {
-//         if (block != null && block.transactions != null) {
-//           transactions = transactions.concat(block.transactions.map(function (e) {
-//             if (account == "*" || account == e.from || account == e.to) {
-//               return {
-//                 hash: e.hash,
-//                 nonce: e.nonce,
-//                 blockHash: e.blockHash,
-//                 blockNumber: e.blockNumber,
-//                 transactionIndex: e.transactionIndex,
-//                 from: e.from,
-//                 to: e.to,
-//                 value: e.value,
-//                 time: block.timestamp + " " + new Date(block.timestamp * 1000).toISOString(),
-//                 gasPrice: e.gasPrice,
-//                 gas: e.gas,
-//                 input: e.input
-//               }
-//             }
-//           }))
-//         }
-//         else {
-//           return Promise.resolve()
-//         }
-//       })
-//     )
-//   }
-//
-//   return promiseEach(promises)
-//     .then(() => transactions)
-// }
+export function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock) {
+  return getTransactionsRecursive(client, addressManager, lastBlock, client.getBlockNumber())
+}

@@ -29,7 +29,8 @@ var MockEthereumClient = (function () {
         this.addressSource = addressSource;
         this.blocks.push({
             id: 0,
-            transactions: []
+            transactions: [],
+            timestamp: Math.floor(Date.now() / 1000),
         });
     }
     MockEthereumClient.prototype.createAddress = function () {
@@ -53,7 +54,8 @@ var MockEthereumClient = (function () {
             this.minePreviousBlock(this.getActiveBlock());
             this.blocks.push({
                 id: this.blocks.length,
-                transactions: []
+                transactions: [],
+                timestamp: Math.floor(Date.now() / 1000),
             });
         }
         return Promise.resolve();
@@ -75,21 +77,22 @@ var MockEthereumClient = (function () {
             value: value,
             gas: gas,
             blockNumber: this.blocks.length - 1,
-            time: new Date(),
+            // time: Math.floor(Date.now() / 1000),
             hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
         };
         this.getActiveBlock().transactions.push(transaction);
         return Promise.resolve(transaction);
     };
-    MockEthereumClient.prototype.listAllTransactions = function (address, lastblock) {
-        // lastblock = lastblock ? lastblock : 0
-        var result = [];
-        for (var i = lastblock + 1; i < this.blocks.length - 1; ++i) {
-            var block = this.blocks[i];
-            result = result.concat(block.transactions.filter(function (t) { return t.to == address; }));
-        }
-        return Promise.resolve(result);
-    };
+    // listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
+    //   // lastblock = lastblock ? lastblock : 0
+    //   let result = []
+    //   for (let i = lastblock + 1; i < this.blocks.length - 1; ++i) {
+    //     const block = this.blocks [i]
+    //     result = result.concat(block.transactions.filter(t => t.to == address))
+    //   }
+    //
+    //   return Promise.resolve(result)
+    // }
     MockEthereumClient.prototype.toWei = function (amount) {
         return new bignumber_js_1.default(amount).times(Math.pow(10, 18)).toString();
     };
@@ -102,6 +105,12 @@ var MockEthereumClient = (function () {
     };
     MockEthereumClient.prototype.getAccounts = function () {
         throw new Error("Not implemented.");
+    };
+    MockEthereumClient.prototype.getBlock = function (blockIndex) {
+        return Promise.resolve(this.blocks[blockIndex]);
+    };
+    MockEthereumClient.prototype.getBlockNumber = function () {
+        return this.blocks.length - 1;
     };
     return MockEthereumClient;
 }());

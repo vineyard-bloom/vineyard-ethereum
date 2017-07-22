@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {AddressSource, EthereumClient, EthereumTransaction} from "./types";
+import {AddressSource, Block, EthereumClient, EthereumTransaction} from "./types";
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
@@ -20,22 +20,18 @@ export class RandomAddressSource implements AddressSource {
   }
 }
 
-export interface PretendBlock {
-  id: number
-  transactions: EthereumTransaction[]
-}
-
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
-  private blocks: PretendBlock[] = []
+  private blocks: Block[] = []
   private txindex = 0
 
   constructor(addressSource: AddressSource) {
     this.addressSource = addressSource
     this.blocks.push({
       id: 0,
-      transactions: []
+      transactions: [],
+      timestamp: Math.floor(Date.now() / 1000),
     })
   }
 
@@ -47,11 +43,11 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
-  getActiveBlock(): PretendBlock {
+  getActiveBlock(): Block {
     return this.blocks[this.blocks.length - 1]
   }
 
-  private minePreviousBlock(block: PretendBlock) {
+  private minePreviousBlock(block: Block) {
     const reward = block.transactions.reduce((a, b) => a + b.gas, new BigNumber(0))
       + this.toWei(5)
     this.addresses[''] = this.addresses[''].plus(reward)
@@ -62,7 +58,8 @@ export class MockEthereumClient implements EthereumClient {
       this.minePreviousBlock(this.getActiveBlock())
       this.blocks.push({
         id: this.blocks.length,
-        transactions: []
+        transactions: [],
+        timestamp: Math.floor(Date.now() / 1000),
       })
     }
 
@@ -88,7 +85,7 @@ export class MockEthereumClient implements EthereumClient {
       value: value,
       gas: gas,
       blockNumber: this.blocks.length - 1,
-      time: new Date(),
+      // time: Math.floor(Date.now() / 1000),
       hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
     }
 
@@ -97,16 +94,16 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(transaction)
   }
 
-  listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
-    // lastblock = lastblock ? lastblock : 0
-    let result = []
-    for (let i = lastblock + 1; i < this.blocks.length - 1; ++i) {
-      const block = this.blocks [i]
-      result = result.concat(block.transactions.filter(t => t.to == address))
-    }
-
-    return Promise.resolve(result)
-  }
+  // listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
+  //   // lastblock = lastblock ? lastblock : 0
+  //   let result = []
+  //   for (let i = lastblock + 1; i < this.blocks.length - 1; ++i) {
+  //     const block = this.blocks [i]
+  //     result = result.concat(block.transactions.filter(t => t.to == address))
+  //   }
+  //
+  //   return Promise.resolve(result)
+  // }
 
   toWei(amount: number) {
     return new BigNumber(amount).times(Math.pow(10, 18)).toString();
@@ -123,5 +120,13 @@ export class MockEthereumClient implements EthereumClient {
 
   getAccounts(): Promise<string> {
     throw new Error("Not implemented.")
+  }
+
+  getBlock(blockIndex: number): Promise<Block> {
+    return Promise.resolve(this.blocks [blockIndex])
+  }
+
+  getBlockNumber(): number {
+    return this.blocks.length - 1
   }
 }

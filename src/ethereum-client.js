@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
-var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
 var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
@@ -54,14 +53,31 @@ var Web3EthereumClient = (function () {
             });
         });
     };
-    Web3EthereumClient.prototype.listAllTransactions = function (address, lastblock) {
-        return utility_1.getTransactionsByAccount(this.web3.eth, address, lastblock);
-    };
+    // listAllTransactions(addressManager: AddressManager, lastBlock: number): Promise<EthereumTransaction[]> {
+    //   return getTransactionsFromRange(this.web3.eth, lastBlock, addressManager)
+    // }
     Web3EthereumClient.prototype.importAddress = function (address) {
         throw new Error("Not implemented");
     };
     Web3EthereumClient.prototype.generate = function (blockCount) {
         throw new Error("Not implemented.");
+    };
+    Web3EthereumClient.prototype.getBlock = function (blockIndex) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getBlock(blockIndex, true, function (err, block) {
+                if (err) {
+                    console.error('Error processing ethereum block', blockIndex, 'with message', err.message);
+                    reject(new Error(err));
+                }
+                else {
+                    resolve(block);
+                }
+            });
+        });
+    };
+    Web3EthereumClient.prototype.getBlockNumber = function () {
+        return this.web3.eth.blockNumber;
     };
     return Web3EthereumClient;
 }());

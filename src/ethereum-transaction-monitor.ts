@@ -1,16 +1,10 @@
 import {each as promiseEach} from 'promise-each2'
 import BigNumber from 'bignumber.js'
-import {gasWei, EthereumClient} from "./types";
-
-export interface GenericEthereumManager<EthereumTransaction> {
-  getAddresses(): Promise<string[]>
-  saveTransaction(transaction: EthereumTransaction)
-  getLastBlock(): Promise<number>
-  setLastBlock(lastblock: number): Promise<void>
-}
+import {gasWei, EthereumClient, GenericEthereumManager} from "./types";
+import {getTransactionsFromRange} from "./utility";
 
 export class EthereumTransactionMonitor<EthereumTransaction> {
-  private ethereumClient;
+  private ethereumClient: EthereumClient
   private minimumConfirmations: number = 2;
   private sweepAddress: string
   private manager: GenericEthereumManager<EthereumTransaction>
@@ -21,18 +15,6 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
     this.sweepAddress = sweepAddress
   }
 
-  scanAddress(address: string, lastBlock: number) {
-    return this.ethereumClient.listAllTransactions(address, lastBlock)
-      .then(transactions => {
-        if (transactions.length == 0)
-         return Promise.resolve()
-
-        const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
-        this.manager.setLastBlock(newLastBlock)
-        return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
-      })
-  }
-
   // sweep(): Promise<void> {
   //   return this.manager.getAddresses()
   //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
@@ -41,10 +23,15 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
 
   updateTransactions() {
     return this.manager.getLastBlock()
-      .then(lastBlock => {
-        return this.manager.getAddresses()
-          .then(addresses => promiseEach(addresses, address => this.scanAddress(address, lastBlock)))
-      })
+      .then(lastBlock => getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock)
+        .then(transactions => {
+          if (transactions.length == 0)
+            return Promise.resolve()
+
+          this.manager.setLastBlock(lastBlock)
+          return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+        })
+      )
   }
 }
 

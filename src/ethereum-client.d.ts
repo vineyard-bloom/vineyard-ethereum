@@ -1,4 +1,4 @@
-import { EthereumClient, EthereumTransaction } from "./types";
+import { Block, EthereumClient, EthereumTransaction } from "./types";
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress: string;
@@ -15,7 +15,8 @@ export declare class Web3EthereumClient implements EthereumClient {
     getAccounts(): Promise<string>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, amount: string, gas?: string): Promise<EthereumTransaction>;
-    listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]>;
     importAddress(address: string): Promise<void>;
     generate(blockCount: number): Promise<void>;
+    getBlock(blockIndex: number): Promise<Block>;
+    getBlockNumber(): number;
 }

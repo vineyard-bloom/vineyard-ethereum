@@ -1,7 +1,7 @@
 import * as Web3 from 'web3'
-import {getTransactionsByAccount, checkAllBalances} from './utility'
+import {getTransactionsFromRange} from './utility'
 import BigNumber from 'bignumber.js';
-import {EthereumClient, EthereumTransaction} from "./types";
+import {AddressManager, Block, EthereumClient, EthereumTransaction} from "./types";
 
 export interface Web3EthereumClientConfig {
   http: string
@@ -62,15 +62,15 @@ export class Web3EthereumClient implements EthereumClient {
       this.web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
           reject('Error sending to ' + address + ": " + err)
-        else   
+        else
           resolve(transaction)
       })
     })
   }
 
-  listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]> {
-    return getTransactionsByAccount(this.web3.eth, address, lastblock)
-  }
+  // listAllTransactions(addressManager: AddressManager, lastBlock: number): Promise<EthereumTransaction[]> {
+  //   return getTransactionsFromRange(this.web3.eth, lastBlock, addressManager)
+  // }
 
   importAddress(address: string): Promise<void> {
     throw new Error("Not implemented")
@@ -78,5 +78,23 @@ export class Web3EthereumClient implements EthereumClient {
 
   generate(blockCount: number): Promise<void> {
     throw new Error("Not implemented.")
+  }
+
+  getBlock(blockIndex: number): Promise<Block> {
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getBlock(blockIndex, true, (err, block) => {
+        if (err) {
+          console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
+          reject(new Error(err));
+        }
+        else {
+          resolve(block)
+        }
+      })
+    })
+  }
+
+  getBlockNumber(): number {
+    return this.web3.eth.blockNumber
   }
 }

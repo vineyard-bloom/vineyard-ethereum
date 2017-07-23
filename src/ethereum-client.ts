@@ -95,6 +95,6 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getBlockNumber(): number {
-    return this.web3.eth.blockNumber
+    return this.web3.eth.blockNumber + 4
   }
 }

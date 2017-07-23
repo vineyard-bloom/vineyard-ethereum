@@ -38,9 +38,9 @@ function createTransaction(e, block) {
         input: e.input
     };
 }
-function gatherTransactions(block, addressManager) {
+function gatherTransactions(block, transactions, addressManager) {
     var result = [];
-    return promise_each2_1.each(block.transactions
+    return promise_each2_1.each(transactions
         .filter(function (e) { return e.to; })
         .map(function (e) { return function () { return addressManager.hasAddress(e.to)
         .then(function (success) {
@@ -50,23 +50,30 @@ function gatherTransactions(block, addressManager) {
     }); }; }))
         .then(function () { return result; });
 }
+// const bundleSize = 20
+// function getTransactionsFromBlock(block, addressManager: AddressManager): Promise<any[]> {
+//   const divisions = block.transactions.length / bundleSize
+//   for (let i = 0; i < divisions; ++i) {
+//
+//   }
+// }
 function getTransactions(client, addressManager, i) {
     return client.getBlock(i)
         .then(function (block) {
         if (!block || !block.transactions)
             return Promise.resolve([]);
-        return gatherTransactions(block, addressManager);
+        return gatherTransactions(block, block.transactions, addressManager);
     });
 }
-function getTransactionsRecursive(client, addressManager, i, endBlockNumber) {
+function scanBlocks(client, addressManager, i, endBlockNumber) {
     if (i > endBlockNumber)
         return Promise.resolve([]);
     return getTransactions(client, addressManager, i)
-        .then(function (first) { return getTransactionsRecursive(client, addressManager, i + 1, endBlockNumber)
+        .then(function (first) { return scanBlocks(client, addressManager, i + 1, endBlockNumber)
         .then(function (second) { return first.concat(second); }); });
 }
-function getTransactionsFromRange(client, addressManager, lastBlock) {
-    return getTransactionsRecursive(client, addressManager, lastBlock, client.getBlockNumber());
+function getTransactionsFromRange(client, addressManager, lastBlock, newLastBlock) {
+    return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);
 }
 exports.getTransactionsFromRange = getTransactionsFromRange;
 //# sourceMappingURL=utility.js.map

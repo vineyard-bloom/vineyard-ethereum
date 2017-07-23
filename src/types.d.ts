@@ -19,7 +19,7 @@ export interface EthereumClient {
     getAccounts(): Promise<string>;
     generate(blockCount: number): Promise<void>;
     getBlock(blockIndex: number): Promise<Block>;
-    getBlockNumber(): number;
+    getBlockNumber(): Promise<number>;
 }
 export interface AddressSource {
     generateAddress(): Promise<string>;
@@ -29,4 +29,5 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
     saveTransaction(transaction: EthereumTransaction): any;
     getLastBlock(): Promise<number>;
     setLastBlock(lastblock: number): Promise<void>;
+    resolveTransactions(confirmedBlockNumber: number): Promise<void>;
 }

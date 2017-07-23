@@ -94,17 +94,6 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(transaction)
   }
 
-  // listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]> {
-  //   // lastblock = lastblock ? lastblock : 0
-  //   let result = []
-  //   for (let i = lastblock + 1; i < this.blocks.length - 1; ++i) {
-  //     const block = this.blocks [i]
-  //     result = result.concat(block.transactions.filter(t => t.to == address))
-  //   }
-  //
-  //   return Promise.resolve(result)
-  // }
-
   toWei(amount: number) {
     return new BigNumber(amount).times(Math.pow(10, 18)).toString();
   }

@@ -77,7 +77,7 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.getBlockNumber = function () {
-        return this.web3.eth.blockNumber;
+        return this.web3.eth.blockNumber + 4;
     };
     return Web3EthereumClient;
 }());

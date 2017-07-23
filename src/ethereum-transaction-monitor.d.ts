@@ -5,7 +5,8 @@ export declare class EthereumTransactionMonitor<EthereumTransaction> {
     private sweepAddress;
     private manager;
     constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string);
-    updateTransactions(): Promise<any>;
+    private updatePending(newLastBlock);
+    updateTransactions(): Promise<void>;
 }
 export declare class EthereumBalanceMonitor<EthereumTransaction> {
     private ethereumClient;

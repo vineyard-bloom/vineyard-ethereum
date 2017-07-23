@@ -14,15 +14,22 @@ var EthereumTransactionMonitor = (function () {
     //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
     //     )
     // }
+    EthereumTransactionMonitor.prototype.updatePending = function (newLastBlock) {
+        return this.manager.resolveTransactions(newLastBlock);
+    };
     EthereumTransactionMonitor.prototype.updateTransactions = function () {
         var _this = this;
         return this.manager.getLastBlock()
-            .then(function (lastBlock) { return utility_1.getTransactionsFromRange(_this.ethereumClient, _this.manager, lastBlock)
-            .then(function (transactions) {
-            if (transactions.length == 0)
+            .then(function (lastBlock) { return _this.ethereumClient.getBlockNumber()
+            .then(function (newLastBlock) {
+            if (newLastBlock == lastBlock)
                 return Promise.resolve();
-            _this.manager.setLastBlock(lastBlock);
-            return promise_each2_1.each(transactions, function (tx) { return _this.manager.saveTransaction(tx); });
+            return utility_1.getTransactionsFromRange(_this.ethereumClient, _this.manager, lastBlock, newLastBlock)
+                .then(function (transactions) { return transactions.length == 0
+                ? Promise.resolve()
+                : promise_each2_1.each(transactions, function (tx) { return _this.manager.saveTransaction(tx); }); })
+                .then(function () { return _this.manager.setLastBlock(newLastBlock); })
+                .then(function () { return _this.updatePending(newLastBlock - 5); });
         }); });
     };
     return EthereumTransactionMonitor;

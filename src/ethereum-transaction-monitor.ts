@@ -21,18 +21,28 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   //     )
   // }
 
+  private updatePending(newLastBlock: number):Promise<void> {
+    return this.manager.resolveTransactions(newLastBlock)
+  }
+
   updateTransactions() {
     return this.manager.getLastBlock()
-      .then(lastBlock => getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock)
-        .then(transactions => {
-          if (transactions.length == 0)
-            return Promise.resolve()
+      .then(lastBlock => this.ethereumClient.getBlockNumber()
+        .then(newLastBlock => {
+          if (newLastBlock == lastBlock)
+            return Promise.resolve<void>()
 
-          this.manager.setLastBlock(lastBlock)
-          return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+          return getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock, newLastBlock)
+            .then(transactions => transactions.length == 0
+              ? Promise.resolve()
+              : promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+            )
+            .then(() => this.manager.setLastBlock(newLastBlock))
+            .then(() => this.updatePending(newLastBlock - 5))
         })
       )
   }
+
 }
 
 export class EthereumBalanceMonitor<EthereumTransaction> {

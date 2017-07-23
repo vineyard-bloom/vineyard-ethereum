@@ -39,9 +39,9 @@ function createTransaction(e, block) {
   }
 }
 
-function gatherTransactions(block, addressManager: AddressManager): Promise<any[]> {
+function gatherTransactions(block, transactions, addressManager: AddressManager): Promise<any[]> {
   let result = []
-  return promiseEach(block.transactions
+  return promiseEach(transactions
     .filter(e => e.to)
     .map(e => () => addressManager.hasAddress(e.to)
       .then(success => {
@@ -54,25 +54,33 @@ function gatherTransactions(block, addressManager: AddressManager): Promise<any[
     .then(() => result)
 }
 
+// const bundleSize = 20
+// function getTransactionsFromBlock(block, addressManager: AddressManager): Promise<any[]> {
+//   const divisions = block.transactions.length / bundleSize
+//   for (let i = 0; i < divisions; ++i) {
+//
+//   }
+// }
+
 function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
   return client.getBlock(i)
     .then(block => {
       if (!block || !block.transactions)
         return Promise.resolve([])
 
-      return gatherTransactions(block, addressManager)
+      return gatherTransactions(block, block.transactions, addressManager)
     })
 }
 
-function getTransactionsRecursive(client: EthereumClient, addressManager: AddressManager, i, endBlockNumber): Promise<any[]> {
+function scanBlocks(client: EthereumClient, addressManager: AddressManager, i, endBlockNumber): Promise<any[]> {
   if (i > endBlockNumber)
     return Promise.resolve([])
 
   return getTransactions(client, addressManager, i)
-    .then(first => getTransactionsRecursive(client, addressManager, i + 1, endBlockNumber)
+    .then(first => scanBlocks(client, addressManager, i + 1, endBlockNumber)
       .then(second => first.concat(second)))
 }
 
-export function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock) {
-  return getTransactionsRecursive(client, addressManager, lastBlock, client.getBlockNumber())
+export function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock, newLastBlock) {
+  return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock)
 }

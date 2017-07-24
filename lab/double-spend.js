@@ -32,7 +32,7 @@ var GethNode = (function () {
         console.log('Starting Geth');
         // const childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
         var childProcess1 = this.childProcess1 = child_process.exec('geth --datadir=~/myBlockchain/node2 --port "30303" --networkid 100 --verbosity 4 --identity node2 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console');
-        var childProcess2 = this.childProcess2 = child_process.exec('geth --datadir=~/myBlockchain/node3 --port "30302" --networkid 100 --verbosity 4 --identity node3 --rpc --rpcport 8546 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console');
+        var childProcess2 = this.childProcess2 = child_process.exec("geth --datadir=~/myBlockchain/node3 --port \"30302\" --networkid 100 --verbosity 4 --identity node3 --rpc --rpcport 8546 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores --mine --minerthreads=1 --etherbase=\"0x39c4cabdd7b3e92fe7e0171562b34b9f28d2164d\" console");
         childProcess1.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });

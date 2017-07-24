@@ -10,6 +10,11 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.getClient = function () {
         return this;
     };
+    Web3EthereumClient.prototype.getTransaction = function (txid) {
+        return this.web3.eth.getTransaction(txid, function (error, result) {
+            return result;
+        });
+    };
     Web3EthereumClient.prototype.getSweepAddress = function () {
         return Promise.resolve(this.web3.eth.coinbase);
     };
@@ -77,7 +82,18 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.getBlockNumber = function () {
-        return this.web3.eth.blockNumber;
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getBlockNumber(function (err, blockNumber) {
+                if (err) {
+                    console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
+                    reject(new Error(err));
+                }
+                else {
+                    resolve(blockNumber);
+                }
+            });
+        });
     };
     return Web3EthereumClient;
 }());

@@ -21,6 +21,12 @@ export class Web3EthereumClient implements EthereumClient {
     return this
   }
 
+  getTransaction(txid: number) {
+    return this.web3.eth.getTransaction(txid, function(error, result) {
+      return result
+    })
+  }
+
   getSweepAddress() {
     return Promise.resolve(this.web3.eth.coinbase)
   }
@@ -94,7 +100,17 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getBlockNumber(): number {
-    return this.web3.eth.blockNumber
+  getBlockNumber(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getBlockNumber((err, blockNumber) => {
+        if (err) {
+          console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
+          reject(new Error(err));
+        }
+        else {
+          resolve(blockNumber)
+        }
+      })
+    })
   }
 }

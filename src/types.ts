@@ -25,6 +25,7 @@ export interface EthereumClient {
   generate(blockCount: number): Promise<void>
   getBlock(blockIndex: number): Promise<Block>
   getBlockNumber(): Promise<number>
+  getTransaction(txid: number): Promise<any>
 }
 
 export interface AddressSource {
@@ -37,5 +38,6 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
   saveTransaction(transaction: EthereumTransaction)
   getLastBlock(): Promise<number>
   setLastBlock(lastblock: number): Promise<void>
-  resolveTransactions(confirmedBlockNumber: number): Promise<void>
+  getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>
+  onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
 }

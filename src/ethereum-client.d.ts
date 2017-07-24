@@ -8,6 +8,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     private web3;
     constructor(ethereumConfig: Web3EthereumClientConfig);
     getClient(): this;
+    getTransaction(txid: number): any;
     getSweepAddress(): Promise<any>;
     toWei(amount: number): any;
     fromWei(amount: number): any;
@@ -18,5 +19,5 @@ export declare class Web3EthereumClient implements EthereumClient {
     importAddress(address: string): Promise<void>;
     generate(blockCount: number): Promise<void>;
     getBlock(blockIndex: number): Promise<Block>;
-    getBlockNumber(): number;
+    getBlockNumber(): Promise<number>;
 }

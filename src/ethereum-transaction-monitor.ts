@@ -21,8 +21,17 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   //     )
   // }
 
+  private resolveTransaction(transaction: EthereumTransaction): Promise<void> {
+      return this.ethereumClient.getTransaction(transaction.hash)
+        .then(result => {
+          if(!result || !result.blockNumber) {this.manager.onDenial(result)}
+          else {this.manager.onConfirm(result)}
+        })
+  }
+
   private updatePending(newLastBlock: number): Promise<void> {
-    return this.manager.resolveTransactions(newLastBlock)
+    return this.manager.getResolvedTransactions(newLastBlock)
+     .then(transactions=> promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
   }
 
   updateTransactions() {

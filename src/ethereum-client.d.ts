@@ -18,4 +18,5 @@ export declare class Web3EthereumClient implements EthereumClient {
     listAllTransactions(address: string, lastblock: number): Promise<EthereumTransaction[]>;
     importAddress(address: string): Promise<void>;
     generate(blockCount: number): Promise<void>;
+    getGas(): Promise<number>;
 }

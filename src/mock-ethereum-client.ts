@@ -124,4 +124,8 @@ export class MockEthereumClient implements EthereumClient {
   getAccounts(): Promise<string> {
     throw new Error("Not implemented.")
   }
+
+  getGas(): Promise<number> {
+    return Promise.resolve(21000)
+  }
 }

@@ -16,6 +16,7 @@ export interface EthereumClient {
   listAllTransactions(address: string, lastblock): Promise<EthereumTransaction[]>
   getAccounts(): Promise<string>
   generate(blockCount: number): Promise<void>
+  getGas(): Promise<number>
 }
 
 export interface AddressSource {

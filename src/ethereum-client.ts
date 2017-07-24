@@ -62,7 +62,7 @@ export class Web3EthereumClient implements EthereumClient {
       this.web3.eth.sendTransaction(transaction, (err, address) => {
         if (err)
           reject('Error sending to ' + address + ": " + err)
-        else   
+        else
           resolve(transaction)
       })
     })
@@ -78,5 +78,13 @@ export class Web3EthereumClient implements EthereumClient {
 
   generate(blockCount: number): Promise<void> {
     throw new Error("Not implemented.")
+  }
+
+  getGas(): Promise<number> {
+    return this.web3.eth.getGasPrice((err, result) {
+      if(err)
+        return Promise.reject(err)
+      return Promise.resolve(result)
+    })
   }
 }

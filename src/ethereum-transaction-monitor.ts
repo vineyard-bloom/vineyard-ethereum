@@ -7,6 +7,7 @@ export interface GenericEthereumManager<EthereumTransaction> {
   saveTransaction(transaction: EthereumTransaction)
   getLastBlock(): Promise<number>
   setLastBlock(lastblock: number): Promise<void>
+  saveSweepRecord(transaction): Promise<any>
 }
 
 export class EthereumTransactionMonitor<EthereumTransaction> {

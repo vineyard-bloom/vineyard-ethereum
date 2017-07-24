@@ -15,6 +15,18 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
     this.sweepAddress = sweepAddress
   }
 
+  // scanAddress(address: string, lastBlock: number) {
+  //   return this.ethereumClient.listAllTransactions(address, lastBlock)
+  //     .then(transactions => {
+  //       if (transactions.length == 0)
+  //        return Promise.resolve()
+  //
+  //       const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
+  //       this.manager.setLastBlock(newLastBlock)
+  //       return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+  //     })
+  // }
+
   // sweep(): Promise<void> {
   //   return this.manager.getAddresses()
   //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
@@ -59,7 +71,6 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
         })
       )
   }
-
 }
 
 export class EthereumBalanceMonitor<EthereumTransaction> {

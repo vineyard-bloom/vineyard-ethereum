@@ -26,4 +26,5 @@ export declare class MockEthereumClient implements EthereumClient {
     getAccounts(): Promise<string>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): number;
+    getGas(): Promise<number>;
 }

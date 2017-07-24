@@ -118,4 +118,8 @@ export class MockEthereumClient implements EthereumClient {
   getBlockNumber(): number {
     return this.blocks.length - 1
   }
+
+  getGas(): Promise<number> {
+    return Promise.resolve(21000)
+  }
 }

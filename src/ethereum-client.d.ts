@@ -20,4 +20,5 @@ export declare class Web3EthereumClient implements EthereumClient {
     generate(blockCount: number): Promise<void>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
+    getGas(): Promise<number>;
 }

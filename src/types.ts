@@ -26,6 +26,7 @@ export interface EthereumClient {
   getBlock(blockIndex: number): Promise<Block>
   getBlockNumber(): Promise<number>
   getTransaction(txid: number): Promise<any>
+  getGas(): Promise<number>
 }
 
 export interface AddressSource {

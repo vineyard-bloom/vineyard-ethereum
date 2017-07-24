@@ -10,10 +10,8 @@ export interface EthereumSweepConfig {
 export interface Bristle {
   from: string
   to: string
-  account: string
   status: number
   txid: string
-  blockIndex: number
   amount: number
 }
 
@@ -31,7 +29,7 @@ export class Broom {
     this.client = ethereumClient
   }
 
-  private getSweepGas() {
+  private getSweepGas():Promise<void> {
     return this.client.getGas()
       .then(gasPrice => this.sweepGas = gasPrice)
       .catch(err => err)
@@ -41,8 +39,15 @@ export class Broom {
       return this.client.getBalance(address)
         .then(balance => {
           if(balance > this.minSweepAmount) {
-            return this.client.send(address, this.sweepAddress, this.calculateSendAmount)
-            .then(txHash => this.saveSweepRecord(txHash))
+            const sendAmount = this.calculateSendAmount()
+            return this.client.send(address, this.sweepAddress, sendAmount)
+              .then(txHash => this.saveSweepRecord({
+                from: address,
+                to: this.sweepAddress,
+                status: 0,
+                txid: txHash,
+                amount: sendAmount
+            })
           }
       })
       .catch(err => err)
@@ -52,12 +57,9 @@ export class Broom {
     return amount - (this.sweepGas * 21000)
   }
 
-  saveSweepRecord(txHash) {
-    return this.client.getClient().getTransaction(txHash)
-      .then(transaction => {
-        return this.manager.saveSweepRecord(transaction:Bristle)
-          .then(() => this.manager.saveTransaction(transaction))
-      })
+  saveSweepRecord(bristle: Bristle) {
+    return this.manager.saveSweepRecord(bristle)
+      .then(() => this.manager.saveTransaction(bristle))
       .catch(err => err)
   }
 

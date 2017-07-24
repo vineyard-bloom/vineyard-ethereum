@@ -21,7 +21,7 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   //     )
   // }
 
-  private updatePending(newLastBlock: number):Promise<void> {
+  private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.resolveTransactions(newLastBlock)
   }
 
@@ -32,12 +32,20 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
           if (newLastBlock == lastBlock)
             return Promise.resolve<void>()
 
+          console.log('Scanning block', newLastBlock)
+
           return getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock, newLastBlock)
             .then(transactions => transactions.length == 0
               ? Promise.resolve()
-              : promiseEach(transactions, tx => this.manager.saveTransaction(tx))
+              : promiseEach(transactions, tx => {
+                console.log('Saving transaction', tx.hash)
+                return this.manager.saveTransaction(tx)
+              })
             )
-            .then(() => this.manager.setLastBlock(newLastBlock))
+            .then(() => {
+              console.log('Finished block', newLastBlock)
+              return this.manager.setLastBlock(newLastBlock)
+            })
             .then(() => this.updatePending(newLastBlock - 5))
         })
       )

@@ -123,7 +123,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getGas(): Promise<number> {
-    return this.web3.eth.getGasPrice((err, result) {
+    return this.web3.eth.getGasPrice((err, result) => {
       if(err)
         return Promise.reject(err)
       return Promise.resolve(result)

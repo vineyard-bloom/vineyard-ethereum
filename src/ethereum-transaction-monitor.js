@@ -47,16 +47,19 @@ var EthereumTransactionMonitor = (function () {
         return this.manager.getLastBlock()
             .then(function (lastBlock) { return _this.ethereumClient.getBlockNumber()
             .then(function (newLastBlock) {
+            console.log('Updating blocks (last - current)', lastBlock, newLastBlock);
             if (newLastBlock == lastBlock)
                 return Promise.resolve();
-            console.log('Scanning block', newLastBlock);
             return utility_1.getTransactionsFromRange(_this.ethereumClient, _this.manager, lastBlock, newLastBlock)
-                .then(function (transactions) { return transactions.length == 0
-                ? Promise.resolve()
-                : promise_each2_1.each(transactions, function (tx) {
-                    console.log('Saving transaction', tx.hash);
-                    return _this.manager.saveTransaction(tx);
-                }); })
+                .then(function (transactions) {
+                console.log('Scanning block', newLastBlock, 'tx-count:', transactions.length);
+                return transactions.length == 0
+                    ? Promise.resolve()
+                    : promise_each2_1.each(transactions, function (tx) {
+                        console.log('Saving transaction', tx.hash);
+                        return _this.manager.saveTransaction(tx);
+                    });
+            })
                 .then(function () {
                 console.log('Finished block', newLastBlock);
                 return _this.manager.setLastBlock(newLastBlock);

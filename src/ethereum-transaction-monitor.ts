@@ -34,35 +34,40 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   // }
 
   private resolveTransaction(transaction: EthereumTransaction): Promise<void> {
-      return this.ethereumClient.getTransaction(transaction.hash)
-        .then(result => {
-          if(!result || !result.blockNumber) {this.manager.onDenial(result)}
-          else {this.manager.onConfirm(result)}
-        })
+    return this.ethereumClient.getTransaction(transaction.hash)
+      .then(result => {
+        if (!result || !result.blockNumber) {
+          this.manager.onDenial(result)
+        }
+        else {
+          this.manager.onConfirm(result)
+        }
+      })
   }
 
   private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.getResolvedTransactions(newLastBlock)
-     .then(transactions=> promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
+      .then(transactions => promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
   }
 
   updateTransactions() {
     return this.manager.getLastBlock()
       .then(lastBlock => this.ethereumClient.getBlockNumber()
         .then(newLastBlock => {
+          console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
           if (newLastBlock == lastBlock)
             return Promise.resolve<void>()
 
-          console.log('Scanning block', newLastBlock)
-
           return getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock, newLastBlock)
-            .then(transactions => transactions.length == 0
-              ? Promise.resolve()
-              : promiseEach(transactions, tx => {
-                console.log('Saving transaction', tx.hash)
-                return this.manager.saveTransaction(tx)
-              })
-            )
+            .then(transactions => {
+              console.log('Scanning block', newLastBlock, 'tx-count:', transactions.length)
+              return transactions.length == 0
+                ? Promise.resolve()
+                : promiseEach(transactions, tx => {
+                  console.log('Saving transaction', tx.hash)
+                  return this.manager.saveTransaction(tx)
+                })
+            })
             .then(() => {
               console.log('Finished block', newLastBlock)
               return this.manager.setLastBlock(newLastBlock)

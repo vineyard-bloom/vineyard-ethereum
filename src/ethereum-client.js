@@ -11,8 +11,17 @@ var Web3EthereumClient = (function () {
         return this;
     };
     Web3EthereumClient.prototype.getTransaction = function (txid) {
-        return this.web3.eth.getTransaction(txid, function (error, result) {
-            return result;
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getTransaction(txid, function (err, block) {
+                if (err) {
+                    console.error('Error querying transaction', txid, 'with message', err.message);
+                    reject(new Error(err));
+                }
+                else {
+                    resolve(block);
+                }
+            });
         });
     };
     Web3EthereumClient.prototype.getSweepAddress = function () {

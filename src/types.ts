@@ -25,7 +25,7 @@ export interface EthereumClient {
   generate(blockCount: number): Promise<void>
   getBlock(blockIndex: number): Promise<Block>
   getBlockNumber(): Promise<number>
-  getTransaction(txid: number): Promise<any>
+  getTransaction(txid): Promise<any>
   getGas(): Promise<number>
 }
 
@@ -36,9 +36,11 @@ export interface AddressSource {
 export const gasWei = new BigNumber('21000000000000')
 
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-  saveTransaction(transaction: EthereumTransaction)
+  saveTransaction(transaction: EthereumTransaction, blockIndex:number)
   getLastBlock(): Promise<number>
   setLastBlock(lastblock: number): Promise<void>
   getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>
   onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
+  onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>
+  setStatus(transaction: EthereumTransaction, value): Promise<EthereumTransaction>
 }

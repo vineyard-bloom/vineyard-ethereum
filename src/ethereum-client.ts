@@ -21,9 +21,17 @@ export class Web3EthereumClient implements EthereumClient {
     return this
   }
 
-  getTransaction(txid: number) {
-    return this.web3.eth.getTransaction(txid, function(error, result) {
-      return result
+  getTransaction(txid) {
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getTransaction(txid, (err, block) => {
+        if (err) {
+          console.error('Error querying transaction', txid, 'with message', err.message)
+          reject(new Error(err));
+        }
+        else {
+          resolve(block)
+        }
+      })
     })
   }
 

@@ -1,15 +1,15 @@
 import {each as promiseEach} from 'promise-each2'
 import BigNumber from 'bignumber.js'
-import {gasWei, EthereumClient, GenericEthereumManager} from "./types";
-import {getTransactionsFromRange} from "./utility";
+import {gasWei, EthereumClient, GenericEthereumManager, EthereumTransaction} from "./types";
+import {getTransactions, getTransactionsFromRange} from "./utility";
 
-export class EthereumTransactionMonitor<EthereumTransaction> {
+export class EthereumTransactionMonitor<Transaction extends EthereumTransaction> {
   private ethereumClient: EthereumClient
-  private minimumConfirmations: number = 2;
+  private minimumConfirmations: number = 5
   private sweepAddress: string
-  private manager: GenericEthereumManager<EthereumTransaction>
+  private manager: GenericEthereumManager<Transaction>
 
-  constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string) {
+  constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string) {
     this.manager = model
     this.ethereumClient = ethereumClient
     this.sweepAddress = sweepAddress
@@ -33,14 +33,18 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   //     )
   // }
 
-  private resolveTransaction(transaction: EthereumTransaction): Promise<void> {
-    return this.ethereumClient.getTransaction(transaction.hash)
+  private resolveTransaction(transaction: Transaction): Promise<any> {
+    return this.ethereumClient.getTransaction(transaction.txid)
       .then(result => {
         if (!result || !result.blockNumber) {
-          this.manager.onDenial(result)
+          console.log('Denying transaction', result.txid)
+          return this.manager.setStatus(transaction, 2)
+            .then(() => this.manager.onDenial(transaction))
         }
         else {
-          this.manager.onConfirm(result)
+          console.log('Confirming transaction', result.txid)
+          return this.manager.setStatus(transaction, 1)
+            .then(() => this.manager.onConfirm(transaction))
         }
       })
   }
@@ -48,6 +52,28 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
   private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.getResolvedTransactions(newLastBlock)
       .then(transactions => promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
+  }
+
+  processBlocks(blockIndex, endBlockNumber): Promise<void> {
+    if (blockIndex > endBlockNumber)
+      return Promise.resolve<void>()
+
+    return getTransactions(this.ethereumClient, this.manager, blockIndex)
+      .then(transactions => {
+        console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
+        return transactions.length == 0
+          ? Promise.resolve()
+          : promiseEach(transactions, tx => {
+            console.log('Saving transaction', tx.hash)
+            return this.manager.saveTransaction(tx, blockIndex)
+          })
+      })
+      .then(() => {
+        console.log('Finished block', blockIndex)
+        return this.manager.setLastBlock(blockIndex)
+      })
+      .then(first => this.processBlocks(blockIndex + 1, endBlockNumber)
+      )
   }
 
   updateTransactions() {
@@ -58,21 +84,8 @@ export class EthereumTransactionMonitor<EthereumTransaction> {
           if (newLastBlock == lastBlock)
             return Promise.resolve<void>()
 
-          return getTransactionsFromRange(this.ethereumClient, this.manager, lastBlock, newLastBlock)
-            .then(transactions => {
-              console.log('Scanning block', newLastBlock, 'tx-count:', transactions.length)
-              return transactions.length == 0
-                ? Promise.resolve()
-                : promiseEach(transactions, tx => {
-                  console.log('Saving transaction', tx.hash)
-                  return this.manager.saveTransaction(tx)
-                })
-            })
-            .then(() => {
-              console.log('Finished block', newLastBlock)
-              return this.manager.setLastBlock(newLastBlock)
-            })
-            .then(() => this.updatePending(newLastBlock - 5))
+          return this.processBlocks(lastBlock + 1, newLastBlock)
+            .then(() => this.updatePending(newLastBlock - this.minimumConfirmations))
         })
       )
   }
@@ -99,6 +112,7 @@ export class EthereumBalanceMonitor<EthereumTransaction> {
   }
 
   sweep(): Promise<void> {
+    throw new Error("getAddresses will need paging.")
     return this.manager.getAddresses()
       .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address)))
   }

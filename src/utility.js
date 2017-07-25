@@ -65,6 +65,7 @@ function getTransactions(client, addressManager, i) {
         return gatherTransactions(block, block.transactions, addressManager);
     });
 }
+exports.getTransactions = getTransactions;
 function scanBlocks(client, addressManager, i, endBlockNumber) {
     if (i > endBlockNumber)
         return Promise.resolve([]);

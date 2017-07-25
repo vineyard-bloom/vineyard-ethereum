@@ -20,7 +20,7 @@ export interface EthereumClient {
     generate(blockCount: number): Promise<void>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
-    getTransaction(txid: number): Promise<any>;
+    getTransaction(txid: any): Promise<any>;
     getGas(): Promise<number>;
 }
 export interface AddressSource {
@@ -28,9 +28,11 @@ export interface AddressSource {
 }
 export declare const gasWei: any;
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-    saveTransaction(transaction: EthereumTransaction): any;
+    saveTransaction(transaction: EthereumTransaction, blockIndex: number): any;
     getLastBlock(): Promise<number>;
     setLastBlock(lastblock: number): Promise<void>;
     getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>;
     onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>;
+    onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>;
+    setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>;
 }

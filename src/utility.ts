@@ -62,7 +62,7 @@ function gatherTransactions(block, transactions, addressManager: AddressManager)
 //   }
 // }
 
-function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
+export function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
   return client.getBlock(i)
     .then(block => {
       if (!block || !block.transactions)

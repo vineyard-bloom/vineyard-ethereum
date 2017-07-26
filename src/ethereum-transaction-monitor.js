@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
 var EthereumTransactionMonitor = (function () {
-    function EthereumTransactionMonitor(model, ethereumClient, sweepAddress) {
-        this.minimumConfirmations = 5;
+    function EthereumTransactionMonitor(model, ethereumClient, sweepAddress, minimumConfirmations) {
+        if (minimumConfirmations === void 0) { minimumConfirmations = 12; }
+        this.minimumConfirmations = 12;
         this.manager = model;
         this.ethereumClient = ethereumClient;
         this.sweepAddress = sweepAddress;
+        this.minimumConfirmations = minimumConfirmations;
     }
     // scanAddress(address: string, lastBlock: number) {
     //   return this.ethereumClient.listAllTransactions(address, lastBlock)

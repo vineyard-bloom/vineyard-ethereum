@@ -5,14 +5,16 @@ import {getTransactions, getTransactionsFromRange} from "./utility";
 
 export class EthereumTransactionMonitor<Transaction extends EthereumTransaction> {
   private ethereumClient: EthereumClient
-  private minimumConfirmations: number = 5
+  private minimumConfirmations: number = 12
   private sweepAddress: string
   private manager: GenericEthereumManager<Transaction>
 
-  constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string) {
+  constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string,
+              minimumConfirmations: number = 12) {
     this.manager = model
     this.ethereumClient = ethereumClient
     this.sweepAddress = sweepAddress
+    this.minimumConfirmations = minimumConfirmations
   }
 
   // scanAddress(address: string, lastBlock: number) {

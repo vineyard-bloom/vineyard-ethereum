@@ -27,9 +27,9 @@ function spend(node: GethNode) {
 }
 
 export function doubleSpend() {
-  const node1 = new GethNode(8546)
-  const node2 = new GethNode(8547)
+  const node1 = new GethNode()
+  const node2 = new GethNode()
 
-  return node1.start().then(() => spend(node1))
-    .then(() => node2.start().then(() => spend(node2)))
+  return node1.start(8546).then(() => spend(node1))
+    .then(() => node2.start(8547).then(() => spend(node2)))
 }

@@ -6,19 +6,20 @@ enum Status {
   active
 }
 
+export interface GethNodeConfig {
+  executablePath?: string
+}
+
 export class GethNode {
   private status: Status = Status.inactive
   private stdout
   private stderr
   private childProcess
-  private port
   private client: Web3EthereumClient
+  private config: GethNodeConfig
 
-  constructor(port = 8545) {
-    this.port = port
-    this.client = new Web3EthereumClient({
-      http: "http://localhost:" + port
-    })
+  constructor(config?: GethNodeConfig) {
+    this.config = config || {}
   }
 
   getWeb3() {
@@ -29,10 +30,11 @@ export class GethNode {
     return this.client
   }
 
-  start(): Promise<void> {
+  start(port): Promise<void> {
     console.log('Starting Geth')
+    const executablePath = this.config.executablePath || 'geth'
     const childProcess = this.childProcess = child_process.exec(
-      'geth --dev  --verbosity 4 --rpc --rpcport ' + this.port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console'
+      executablePath + ' --dev  --verbosity 4 --rpc --rpcport ' + port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console'
     )
 
     childProcess.stdout.on('data', (data) => {
@@ -47,8 +49,12 @@ export class GethNode {
       console.log(`child process exited with code ${code}`);
     })
 
+    this.client = new Web3EthereumClient({
+      http: "http://localhost:" + port
+    })
+
     return new Promise<void>((resolve, reject) => {
-      setTimeout(1000, resolve)
+      setTimeout(resolve, 1000)
     })
   }
 

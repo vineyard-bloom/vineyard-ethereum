@@ -1,8 +1,6 @@
 import {each as promiseEach} from 'promise-each2'
 import { GenericEthereumManager, EthereumTransaction } from './types'
 
-
-
 export interface Bristle {
   from: string
   to: string

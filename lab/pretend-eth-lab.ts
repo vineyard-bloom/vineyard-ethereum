@@ -8,8 +8,8 @@ export class PretendEthLab implements EthLab {
     this.client = client
     client.importAddress('')
   }
-
-  start(): Promise<void> {
+  start(): Promise<void
+> {
     return Promise.resolve()
   }
 

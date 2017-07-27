@@ -24,20 +24,6 @@ export class GethNode {
     return this.node 
   }
 
-  doubleSpend() {
-    return new Promise<void>((resolve, reject) => {
-      const send = () => {
-            console.log(this.node.eth.getBalance(this.node.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE")
-            this.node.personal.unlockAccount(this.node.eth.coinbase)
-            this.node.eth.sendTransaction({from: this.node.eth.coinbase, to: this.node.eth.accounts[1], value: this.node.toWei(35)}, function(err, tx) {
-              if(err) {console.log(err)}
-              else {console.log(tx)}
-            })
-            resolve()
-          }
-      setTimeout(send, 10000)
-    })
-  }
 
   start() {
     console.log('Starting Geth')

@@ -8,7 +8,6 @@ export declare class GethNode {
     client: EthereumClient;
     constructor();
     getClient(): any;
-    doubleSpend(): Promise<void>;
     start(): void;
     stop(): Promise<{}>;
 }

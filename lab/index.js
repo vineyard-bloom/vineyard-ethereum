@@ -6,5 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./gethLab"));
 __export(require("./gethServer"));
 __export(require("./pretend-eth-lab"));
-__export(require("./double-spend"));
+__export(require("./geth-node"));
 //# sourceMappingURL=index.js.map

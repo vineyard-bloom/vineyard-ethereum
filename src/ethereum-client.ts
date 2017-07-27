@@ -1,5 +1,5 @@
 import * as Web3 from 'web3'
-import {getTransactionsFromRange} from './utility'
+import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 import {AddressManager, Block, EthereumClient, EthereumTransaction} from "./types";
 
@@ -92,6 +92,12 @@ export class Web3EthereumClient implements EthereumClient {
 
   generate(blockCount: number): Promise<void> {
     throw new Error("Not implemented.")
+  }
+
+  checkAllBalances(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      resolve(checkAllBalances(this.web3))
+    })
   }
 
   getBlock(blockIndex: number): Promise<Block> {

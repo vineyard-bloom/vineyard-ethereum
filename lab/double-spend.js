@@ -2,14 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var _1 = require("./");
 function spend(node) {
+    var web3 = node.getWeb3();
     return new Promise(function (resolve, reject) {
         var send = function () {
-            console.log(node.eth.getBalance(node.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE");
-            node.personal.unlockAccount(node.eth.coinbase);
-            node.eth.sendTransaction({
-                from: node.eth.coinbase,
-                to: node.eth.accounts[1],
-                value: node.toWei(35)
+            console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE");
+            web3.personal.unlockAccount(web3.eth.coinbase);
+            web3.eth.sendTransaction({
+                from: web3.eth.coinbase,
+                to: web3.eth.accounts[1],
+                value: web3.toWei(35)
             }, function (err, tx) {
                 if (err) {
                     console.log(err);
@@ -26,10 +27,10 @@ function spend(node) {
         .then(function (result) { return console.log(result); });
 }
 function doubleSpend() {
-    var node1 = new _1.GethNode();
-    var node2 = new _1.GethNode();
-    return spend(node1)
-        .then(function () { return spend(node2); });
+    var node1 = new _1.GethNode(8546);
+    var node2 = new _1.GethNode(8547);
+    return node1.start().then(function () { return spend(node1); })
+        .then(function () { return node2.start().then(function () { return spend(node2); }); });
 }
 exports.doubleSpend = doubleSpend;
 //# sourceMappingURL=double-spend.js.map

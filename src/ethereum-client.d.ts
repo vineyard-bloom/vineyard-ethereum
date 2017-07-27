@@ -1,13 +1,12 @@
 import { Block, EthereumClient, EthereumTransaction } from "./types";
 export interface Web3EthereumClientConfig {
     http: string;
-    sweepAddress: string;
+    sweepAddress?: string;
 }
 export declare class Web3EthereumClient implements EthereumClient {
-    private client;
     private web3;
     constructor(ethereumConfig: Web3EthereumClientConfig);
-    getClient(): this;
+    getWeb3(): any;
     getTransaction(txid: any): Promise<{}>;
     getSweepAddress(): Promise<any>;
     toWei(amount: number): any;

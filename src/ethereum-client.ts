@@ -5,11 +5,10 @@ import {AddressManager, Block, EthereumClient, EthereumTransaction} from "./type
 
 export interface Web3EthereumClientConfig {
   http: string
-  sweepAddress: string
+  sweepAddress?: string
 }
 
 export class Web3EthereumClient implements EthereumClient {
-  private client
   private web3
 
   constructor(ethereumConfig: Web3EthereumClientConfig) {
@@ -17,8 +16,8 @@ export class Web3EthereumClient implements EthereumClient {
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
   }
 
-  getClient() {
-    return this
+  getWeb3() {
+    return this.web3
   }
 
   getTransaction(txid) {

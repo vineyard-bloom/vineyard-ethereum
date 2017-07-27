@@ -8,8 +8,8 @@ var Web3EthereumClient = (function () {
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
     }
-    Web3EthereumClient.prototype.getClient = function () {
-        return this;
+    Web3EthereumClient.prototype.getWeb3 = function () {
+        return this.web3;
     };
     Web3EthereumClient.prototype.getTransaction = function (txid) {
         var _this = this;

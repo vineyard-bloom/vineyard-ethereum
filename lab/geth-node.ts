@@ -1,5 +1,4 @@
-import {EthereumClient, Web3EthereumClient} from "../src"
-import * as Web3 from 'web3'
+import {Web3EthereumClient} from "../src"
 const child_process = require('child_process')
 
 enum Status {
@@ -12,22 +11,29 @@ export class GethNode {
   private stdout
   private stderr
   private childProcess
-  public node
-  client: EthereumClient
+  private port
+  private client: Web3EthereumClient
 
-  constructor() {
-      this.node = new Web3()
-      this.node.setProvider(new this.node.providers.HttpProvider("http://localhost:8545/"))
+  constructor(port = 8545) {
+    this.port = port
+    this.client = new Web3EthereumClient({
+      http: "http://localhost:" + port
+    })
+  }
+
+  getWeb3() {
+    return this.client.getWeb3()
   }
 
   getClient() {
-    return this.node 
+    return this.client
   }
 
-
-  start() {
+  start(): Promise<void> {
     console.log('Starting Geth')
-      const childProcess = this.childProcess= child_process.exec('geth --dev  --verbosity 4  --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
+    const childProcess = this.childProcess = child_process.exec(
+      'geth --dev  --verbosity 4 --rpc --rpcport ' + this.port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console'
+    )
 
     childProcess.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
@@ -41,6 +47,9 @@ export class GethNode {
       console.log(`child process exited with code ${code}`);
     })
 
+    return new Promise<void>((resolve, reject) => {
+      setTimeout(1000, resolve)
+    })
   }
 
   stop() {

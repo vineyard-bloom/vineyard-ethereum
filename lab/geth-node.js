@@ -20,8 +20,8 @@ var GethNode = (function () {
     };
     GethNode.prototype.start = function (port) {
         console.log('Starting Geth');
-        var executablePath = this.config.executablePath || 'geth';
-        var childProcess = this.childProcess = child_process.exec(executablePath + ' --dev  --verbosity 4 --rpc --rpcport ' + port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console');
+        var gethPath = this.config.gethPath || 'geth';
+        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev  --verbosity 4 --rpc --rpcport ' + port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });

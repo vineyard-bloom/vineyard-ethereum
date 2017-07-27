@@ -43,7 +43,7 @@ export class PretendEthereumManager {
   }
 
   getAddresses() {
-
+    return Promise.resolve(['0x2c0cc734dffd2f024bc1b1b3f11ba3e5edaa1241', '0xa99608cf77751fee2a9771ba3fbd27f43066be09', '0x0f676b1e3943ac5eefe42de49b57dda7892a0084'])
   }
 
 }

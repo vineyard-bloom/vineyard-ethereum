@@ -23,7 +23,7 @@ function spend(node: GethNode) {
     }
     setTimeout(send, 10000)
   })
-    .then(result => console.log(result))
+    .then(result => console.log(web3.eth.getTransaction(result)))
 }
 
 export function doubleSpend() {

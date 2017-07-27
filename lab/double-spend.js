@@ -24,7 +24,7 @@ function spend(node) {
         };
         setTimeout(send, 10000);
     })
-        .then(function (result) { return console.log(result); });
+        .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }
 function doubleSpend() {
     var node1 = new _1.GethNode();

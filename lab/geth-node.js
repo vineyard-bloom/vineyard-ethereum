@@ -7,10 +7,24 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
+// export class Miner {
+//   private minerProcess
+//   constructor() {
+//   }
+//   start(): Promise<void> {
+//     return new Promise<void>((resolve, reject) => {
+//      const minerProcess = this.minerProcess = child_process.exec(
+//       gethPath + ' --dev --verbosity 4 --keystore ./temp/keystore'
+//       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
+//     ) 
+//     })
+//   }
+// }
 var GethNode = (function () {
     function GethNode(config) {
         this.status = Status.inactive;
         this.config = config || {};
+        // this.miner = new Miner()
     }
     GethNode.prototype.getWeb3 = function () {
         return this.client.getWeb3();
@@ -19,12 +33,12 @@ var GethNode = (function () {
         return this.client;
     };
     GethNode.prototype.start = function (port) {
-        console.log('Starting Geth');
         var gethPath = this.config.gethPath || 'geth';
         var datadir = './temp/geth' + GethNode.instanceIndex;
-        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --verbosity 4 --rpc --rpcport ' + port
-            + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
-            + ' --datadir ' + datadir + ' --networkid 101 console');
+        console.log('Starting Geth');
+        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
+            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+            + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });

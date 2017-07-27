@@ -10,17 +10,35 @@ export interface GethNodeConfig {
   gethPath?: string
 }
 
+// export class Miner {
+//   private minerProcess
+//   constructor() {
+    
+//   }
+
+//   start(): Promise<void> {
+//     return new Promise<void>((resolve, reject) => {
+//      const minerProcess = this.minerProcess = child_process.exec(
+//       gethPath + ' --dev --verbosity 4 --keystore ./temp/keystore'
+//       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
+//     ) 
+//     })
+//   }
+// }
+
 export class GethNode {
   private status: Status = Status.inactive
   private stdout
   private stderr
   private childProcess
+  // private miner: Miner
   private client: Web3EthereumClient
   private config: GethNodeConfig
   private static instanceIndex: number = 0
 
   constructor(config?: GethNodeConfig) {
     this.config = config || {}
+    // this.miner = new Miner()
   }
 
   getWeb3() {
@@ -32,13 +50,13 @@ export class GethNode {
   }
 
   start(port): Promise<void> {
-    console.log('Starting Geth')
     const gethPath = this.config.gethPath || 'geth'
     const datadir = './temp/geth' + GethNode.instanceIndex
+    console.log('Starting Geth')
     const childProcess = this.childProcess = child_process.exec(
-      gethPath + ' --dev --verbosity 4 --rpc --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
-      + ' --datadir ' + datadir + ' --networkid 101 console'
+      gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+      + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
     )
 
     childProcess.stdout.on('data', (data) => {

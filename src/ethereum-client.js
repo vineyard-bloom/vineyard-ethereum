@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
+var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
 var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
@@ -75,6 +76,12 @@ var Web3EthereumClient = (function () {
     };
     Web3EthereumClient.prototype.generate = function (blockCount) {
         throw new Error("Not implemented.");
+    };
+    Web3EthereumClient.prototype.checkAllBalances = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            resolve(utility_1.checkAllBalances(_this.web3));
+        });
     };
     Web3EthereumClient.prototype.getBlock = function (blockIndex) {
         var _this = this;

@@ -9,6 +9,7 @@ export declare class GethNode {
     private childProcess;
     private client;
     private config;
+    private static instanceIndex;
     constructor(config?: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;

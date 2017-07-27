@@ -30,6 +30,6 @@ export function doubleSpend() {
   const node1 = new GethNode()
   const node2 = new GethNode()
 
-  return node1.start(8546).then(() => spend(node1))
+  return node1.start(8546).then(() => spend(node1)).then(() => node1.stop())
     .then(() => node2.start(8547).then(() => spend(node2)))
 }

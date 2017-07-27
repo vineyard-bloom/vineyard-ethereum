@@ -36,9 +36,9 @@ export class GethNode {
     const gethPath = this.config.gethPath || 'geth'
     const datadir = './temp/geth' + GethNode.instanceIndex
     const childProcess = this.childProcess = child_process.exec(
-      gethPath + ' --dev  --verbosity 4 --rpc --rpcport ' + port
+      gethPath + ' --dev --verbosity 4 --rpc --rpcport ' + port
       + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
-      + ' --datadir ' + datadir + ' console'
+      + ' --datadir ' + datadir + ' --networkid 101 console'
     )
 
     childProcess.stdout.on('data', (data) => {

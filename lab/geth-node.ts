@@ -7,7 +7,7 @@ enum Status {
 }
 
 export interface GethNodeConfig {
-  executablePath?: string
+  gethPath?: string
 }
 
 export class GethNode {
@@ -17,6 +17,7 @@ export class GethNode {
   private childProcess
   private client: Web3EthereumClient
   private config: GethNodeConfig
+  private static instanceIndex: number = 0
 
   constructor(config?: GethNodeConfig) {
     this.config = config || {}
@@ -32,9 +33,12 @@ export class GethNode {
 
   start(port): Promise<void> {
     console.log('Starting Geth')
-    const executablePath = this.config.executablePath || 'geth'
+    const gethPath = this.config.gethPath || 'geth'
+    const datadir = './temp/geth' + GethNode.instanceIndex
     const childProcess = this.childProcess = child_process.exec(
-      executablePath + ' --dev  --verbosity 4 --rpc --rpcport ' + port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console'
+      gethPath + ' --dev  --verbosity 4 --rpc --rpcport ' + port
+      + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
+      + ' --datadir ' + datadir + ' console'
     )
 
     childProcess.stdout.on('data', (data) => {

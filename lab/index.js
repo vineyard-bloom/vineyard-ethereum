@@ -7,4 +7,5 @@ __export(require("./gethLab"));
 __export(require("./gethServer"));
 __export(require("./pretend-eth-lab"));
 __export(require("./geth-node"));
+__export(require("./double-spend"));
 //# sourceMappingURL=index.js.map

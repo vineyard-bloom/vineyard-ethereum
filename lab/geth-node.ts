@@ -48,7 +48,7 @@ export class GethNode {
     })
 
     return new Promise<void>((resolve, reject) => {
-      setTimeout(1000, resolve)
+      setTimeout(resolve, 1000)
     })
   }
 

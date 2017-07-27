@@ -35,7 +35,7 @@ var GethNode = (function () {
             console.log("child process exited with code " + code);
         });
         return new Promise(function (resolve, reject) {
-            setTimeout(1000, resolve);
+            setTimeout(resolve, 1000);
         });
     };
     GethNode.prototype.stop = function () {

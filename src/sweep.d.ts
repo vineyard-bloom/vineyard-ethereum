@@ -1,9 +1,4 @@
-import { GenericEthereumManager } from './ethereum-transaction-monitor';
-import { EthereumTransaction } from './types';
-export interface EthereumSweepConfig {
-    minSweepAmount: number;
-    sweepAddress: string;
-}
+import { GenericEthereumManager, EthereumTransaction } from './types';
 export interface Bristle {
     from: string;
     to: string;
@@ -17,10 +12,10 @@ export declare class Broom {
     private sweepAddress;
     private manager;
     private client;
-    constructor(ethereumConfig: EthereumSweepConfig, ethereumManager: GenericEthereumManager<EthereumTransaction>, ethereumClient: any);
+    constructor(minSweepAmount: any, ethereumManager: GenericEthereumManager<EthereumTransaction>, ethereumClient: any);
     private getSweepGas();
     private singleSweep(address);
-    calculateSendAmount(amount: any): number;
-    saveSweepRecord(bristle: Bristle): any;
+    calculateSendAmount(amount: number): Promise<number>;
+    saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<any>;
 }

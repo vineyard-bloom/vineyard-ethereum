@@ -105,10 +105,14 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.getGas = function () {
-        return this.web3.eth.getGasPrice(function (err, result) {
-            if (err)
-                return Promise.reject(err);
-            return Promise.resolve(result);
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getGasPrice(function (err, result) {
+                if (err) {
+                    reject(err);
+                }
+                resolve(result);
+            });
         });
     };
     return Web3EthereumClient;

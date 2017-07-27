@@ -8,4 +8,5 @@ __export(require("./ethereum-transaction-monitor"));
 __export(require("./utility"));
 __export(require("./types"));
 __export(require("./mock-ethereum-client"));
+__export(require("./sweep"));
 //# sourceMappingURL=index.js.map

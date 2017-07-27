@@ -38,12 +38,16 @@ export interface AddressSource {
 export const gasWei = new BigNumber('21000000000000')
 
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-  saveTransaction(transaction: EthereumTransaction, blockIndex:number)
+  saveTransaction(transaction: EthereumTransaction, blockIndex: number)
   getLastBlock(): Promise<number>
   setLastBlock(lastblock: number): Promise<void>
   getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>
   onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
   onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>
   setStatus(transaction: EthereumTransaction, value): Promise<EthereumTransaction>
-  saveSweepRecord(bristle: Bristle):Promise<any>
+}
+
+export interface SweepManager {
+  saveSweepRecord(bristle: Bristle): Promise<any>
+  getDustyAddresses(): Promise<string[]>
 }

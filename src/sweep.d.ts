@@ -1,4 +1,4 @@
-import { GenericEthereumManager, EthereumTransaction } from './types';
+import { SweepManager } from './types';
 export interface Bristle {
     from: string;
     to: string;
@@ -6,13 +6,16 @@ export interface Bristle {
     txid: string;
     amount: number;
 }
+export interface SweepConfig {
+    sweepAddress: string;
+    minSweepAmount: number;
+    gas: any;
+}
 export declare class Broom {
-    private minSweepAmount;
-    private sweepGas;
-    private sweepAddress;
     private manager;
     private client;
-    constructor(minSweepAmount: any, ethereumManager: GenericEthereumManager<EthereumTransaction>, ethereumClient: any);
+    private config;
+    constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
     private getSweepGas();
     private singleSweep(address);
     calculateSendAmount(amount: number): Promise<number>;

@@ -8,13 +8,9 @@ var Status;
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
 var GethNode = (function () {
-    function GethNode(port) {
-        if (port === void 0) { port = 8545; }
+    function GethNode(config) {
         this.status = Status.inactive;
-        this.port = port;
-        this.client = new src_1.Web3EthereumClient({
-            http: "http://localhost:" + port
-        });
+        this.config = config || {};
     }
     GethNode.prototype.getWeb3 = function () {
         return this.client.getWeb3();
@@ -22,9 +18,10 @@ var GethNode = (function () {
     GethNode.prototype.getClient = function () {
         return this.client;
     };
-    GethNode.prototype.start = function () {
+    GethNode.prototype.start = function (port) {
         console.log('Starting Geth');
-        var childProcess = this.childProcess = child_process.exec('geth --dev  --verbosity 4 --rpc --rpcport ' + this.port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console');
+        var executablePath = this.config.executablePath || 'geth';
+        var childProcess = this.childProcess = child_process.exec(executablePath + ' --dev  --verbosity 4 --rpc --rpcport ' + port + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystores console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });
@@ -33,6 +30,9 @@ var GethNode = (function () {
         });
         childProcess.on('close', function (code) {
             console.log("child process exited with code " + code);
+        });
+        this.client = new src_1.Web3EthereumClient({
+            http: "http://localhost:" + port
         });
         return new Promise(function (resolve, reject) {
             setTimeout(resolve, 1000);

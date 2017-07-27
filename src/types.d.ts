@@ -37,5 +37,8 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
     onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>;
     onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>;
     setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>;
+}
+export interface SweepManager {
     saveSweepRecord(bristle: Bristle): Promise<any>;
+    getDustyAddresses(): Promise<string[]>;
 }

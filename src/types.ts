@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import Bristle from './sweep.js'
 
 export interface EthereumTransaction {
   to: string
@@ -43,4 +44,5 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
   onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
   onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>
   setStatus(transaction: EthereumTransaction, value): Promise<EthereumTransaction>
+  saveSweepRecord(bristle: Bristle):Promise<any>
 }

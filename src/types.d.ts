@@ -1,3 +1,4 @@
+import Bristle from './sweep.js';
 export interface EthereumTransaction {
     to: string;
     from: string;
@@ -35,4 +36,5 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
     onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>;
     onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>;
     setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>;
+    saveSweepRecord(bristle: Bristle): Promise<any>;
 }

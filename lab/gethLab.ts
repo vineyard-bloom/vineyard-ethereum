@@ -1,5 +1,5 @@
 import {GethServer} from "./gethServer"
-import {EthereumClient} from "vineyard-ethereum"
+import {EthereumClient} from "../src/"
 import {EthLab} from "./eth-lab";
 const child_process = require('child_process')
 const fs = require('fs')

@@ -1,5 +1,5 @@
 import {each as promiseEach} from 'promise-each2'
-import { GenericEthereumManager, EthereumTransaction } from './types'
+import {EthereumTransaction, SweepManager} from './types'
 
 export interface Bristle {
   from: string
@@ -9,58 +9,65 @@ export interface Bristle {
   amount: number
 }
 
-export class Broom {
-  private minSweepAmount: number
-  private sweepGas: number
-  private sweepAddress: string
-  private manager: GenericEthereumManager<EthereumTransaction>
-  private client
+export interface SweepConfig {
+  sweepAddress: string,
+  minSweepAmount: number
+  gas
+}
 
-  constructor(minSweepAmount, ethereumManager: GenericEthereumManager<EthereumTransaction>, ethereumClient) {
-    this.minSweepAmount = minSweepAmount
-    this.sweepAddress = ethereumClient.sweepAddress
+export class Broom {
+  private manager: SweepManager
+  private client
+  private config: SweepConfig
+
+  constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient) {
+    this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
   }
 
-  private getSweepGas():Promise<number> {
+  private getSweepGas(): Promise<number> {
     return this.client.getGas()
-      .then(gasPrice => this.sweepGas = parseFloat(gasPrice))
+      .then(gasPrice => this.config.gas = parseFloat(gasPrice))
       .catch(err => err)
   }
 
-  private singleSweep(address):Promise<Bristle> {
+  private singleSweep(address): Promise<Bristle> {
     return this.client.getBalance(address)
       .then(balance => {
-        if(balance > this.minSweepAmount) {
+        if (balance > this.config.minSweepAmount) {
           return this.calculateSendAmount(balance)
             .then(sendAmount => {
-              return this.client.send(address, this.sweepAddress, sendAmount)
-                .then(txHash => this.saveSweepRecord({ from: address, to: this.sweepAddress, status: 0, txid: txHash, amount: sendAmount }))
+              return this.client.send(address, this.config.sweepAddress, sendAmount)
+                .then(txHash => this.saveSweepRecord({
+                  from: address,
+                  to: this.config.sweepAddress,
+                  status: 0,
+                  txid: txHash,
+                  amount: sendAmount
+                }))
             })
         }
       })
       .catch(err => err)
   }
 
-  calculateSendAmount(amount:number):Promise<number> {
-    if(this.sweepGas === undefined) {
+  calculateSendAmount(amount: number): Promise<number> {
+    if (this.config.gas === undefined) {
       return this.getSweepGas().then(gasPrice => amount - (gasPrice * 21000))
     }
-    return Promise.resolve(amount - (this.sweepGas * 21000))
+    return Promise.resolve(amount - (this.config.gas * 21000))
   }
 
   saveSweepRecord(bristle: Bristle) {
     return this.manager.saveSweepRecord(bristle)
-      .then(() => this.manager.saveTransaction(bristle))
-      .catch(err => err)
   }
 
   sweep() {
     return this.getSweepGas()
       .then(() => {
-        return this.manager.getAddresses()
-          .then(addresses => promiseEach(addresses, address => this.singleSweep(address) ))
+        return this.manager.getDustyAddresses()
+          .then(addresses => promiseEach(addresses, address => this.singleSweep(address)))
       })
   }
 

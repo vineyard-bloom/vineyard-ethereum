@@ -14,8 +14,9 @@ export interface SweepConfig {
 export declare class Broom {
     private manager;
     private client;
-    private config;
-    constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
+    private minSweepAmount;
+    private gas;
+    constructor(minSweepAmount: any, ethereumManager: SweepManager, ethereumClient: any);
     private getSweepGas();
     private singleSweep(address);
     calculateSendAmount(amount: number): Promise<number>;

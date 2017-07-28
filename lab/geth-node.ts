@@ -13,7 +13,7 @@ export interface GethNodeConfig {
 // export class Miner {
 //   private minerProcess
 //   constructor() {
-    
+
 //   }
 
 //   start(): Promise<void> {
@@ -21,7 +21,7 @@ export interface GethNodeConfig {
 //      const minerProcess = this.minerProcess = child_process.exec(
 //       gethPath + ' --dev --verbosity 4 --keystore ./temp/keystore'
 //       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
-//     ) 
+//     )
 //     })
 //   }
 // }
@@ -30,7 +30,8 @@ export class GethNode {
   private status: Status = Status.inactive
   private stdout
   private stderr
-  private childProcess
+  startChildProcess
+  attachChildProcess
   // private miner: Miner
   private client: Web3EthereumClient
   private config: GethNodeConfig
@@ -49,13 +50,13 @@ export class GethNode {
     return this.client
   }
 
-  start(port): Promise<void> {
+  createBlockchain(port, mining=false): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     const datadir = './temp/geth' + GethNode.instanceIndex++
     console.log('Starting Geth')
-    const childProcess = this.childProcess = child_process.exec(
+    const childProcess = this.startChildProcess = child_process.exec(
       gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+      + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
     )
 
@@ -80,13 +81,26 @@ export class GethNode {
     })
   }
 
-  stop() {
-    if (!this.childProcess)
+  start() {
+  }
+
+  attachMiner(port) {
+    const gethPath = this.config.gethPath || 'geth'
+    const datadir = './temp/geth' + GethNode.instanceIndex++
+    const childProcess = this.startChildProcess = child_process.exec(
+      gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+      + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
+    )
+  }
+
+  stopBlockchain() {
+    if (!this.startChildProcess)
       return Promise.resolve()
 
     return new Promise((resolve, reject) => {
-      this.childProcess.kill()
-      this.childProcess.on('close', (code) => {
+      this.startChildProcess.kill()
+      this.startChildProcess.on('close', (code) => {
         resolve()
       })
     })

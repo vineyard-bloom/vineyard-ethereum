@@ -6,13 +6,16 @@ export declare class GethNode {
     private status;
     private stdout;
     private stderr;
-    private childProcess;
+    startChildProcess: any;
+    attachChildProcess: any;
     private client;
     private config;
     private static instanceIndex;
     constructor(config?: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
-    start(port: any): Promise<void>;
-    stop(): Promise<{}>;
+    createBlockchain(port: any, mining?: boolean): Promise<void>;
+    start(): void;
+    attachMiner(port: any): void;
+    stopBlockchain(): Promise<{}>;
 }

@@ -1,1 +1,1 @@
-export declare function doubleSpend(): any;
+export declare function doubleSpend(): Promise<void>;

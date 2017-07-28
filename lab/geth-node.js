@@ -32,14 +32,18 @@ var GethNode = (function () {
     GethNode.prototype.getClient = function () {
         return this.client;
     };
-    GethNode.prototype.createBlockchain = function (port, mining) {
-        if (mining === void 0) { mining = false; }
+    GethNode.prototype.startMiner = function (port) {
+        this.start(port, '--mine --minerthreads 5');
+        this.attachMiner(port);
+    };
+    GethNode.prototype.start = function (port, flags) {
+        if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
         var datadir = './temp/geth' + GethNode.instanceIndex++;
         console.log('Starting Geth');
         var childProcess = this.startChildProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-            + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
-            + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console');
+            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+            + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });
@@ -56,14 +60,10 @@ var GethNode = (function () {
             setTimeout(resolve, 1000);
         });
     };
-    GethNode.prototype.start = function () {
-    };
     GethNode.prototype.attachMiner = function (port) {
         var gethPath = this.config.gethPath || 'geth';
         var datadir = './temp/geth' + GethNode.instanceIndex++;
-        var childProcess = this.startChildProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
-            + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console');
+        var childProcess = this.attachChildProcess = child_process.exec(gethPath + 'attach http://localhost:' + port);
     };
     GethNode.prototype.stopBlockchain = function () {
         var _this = this;
@@ -76,8 +76,8 @@ var GethNode = (function () {
             });
         });
     };
-    GethNode.instanceIndex = 0;
     return GethNode;
 }());
+GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 //# sourceMappingURL=geth-node.js.map

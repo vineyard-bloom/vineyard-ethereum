@@ -29,6 +29,7 @@ function spend(node) {
 function doubleSpend() {
     var node1 = new _1.GethNode();
     var node2 = new _1.GethNode();
+    node1.startMiner(8456);
     return node1.start(8546).then(function () { return spend(node1); })
         .then(function () { return node2.start(8547).then(function () { return spend(node2); }); });
 }

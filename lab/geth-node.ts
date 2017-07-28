@@ -50,14 +50,19 @@ export class GethNode {
     return this.client
   }
 
-  createBlockchain(port, mining=false): Promise<void> {
+  startMiner(port) {
+    this.start(port, '--mine --minerthreads 5')
+    this.attachMiner(port)
+  }
+
+  start(port, flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     const datadir = './temp/geth' + GethNode.instanceIndex++
     console.log('Starting Geth')
     const childProcess = this.startChildProcess = child_process.exec(
       gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./temp/keystore'
-      + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+      + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console'
     )
 
     childProcess.stdout.on('data', (data) => {
@@ -81,16 +86,11 @@ export class GethNode {
     })
   }
 
-  start() {
-  }
-
   attachMiner(port) {
     const gethPath = this.config.gethPath || 'geth'
     const datadir = './temp/geth' + GethNode.instanceIndex++
-    const childProcess = this.startChildProcess = child_process.exec(
-      gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
-      + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
+    const childProcess = this.attachChildProcess = child_process.exec(
+      gethPath + 'attach http://localhost:' + port
     )
   }
 

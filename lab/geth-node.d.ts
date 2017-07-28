@@ -14,8 +14,8 @@ export declare class GethNode {
     constructor(config?: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
-    createBlockchain(port: any, mining?: boolean): Promise<void>;
-    start(): void;
+    startMiner(port: any): void;
+    start(port: any, flags?: string): Promise<void>;
     attachMiner(port: any): void;
     stopBlockchain(): Promise<{}>;
 }

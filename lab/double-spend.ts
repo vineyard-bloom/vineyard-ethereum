@@ -29,7 +29,7 @@ function spend(node: GethNode) {
 export function doubleSpend() {
   const node1 = new GethNode()
   const node2 = new GethNode()
-
+  node1.startMiner(8456)
   return node1.start(8546).then(() => spend(node1))
     .then(() => node2.start(8547).then(() => spend(node2)))
 }

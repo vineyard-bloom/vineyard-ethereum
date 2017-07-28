@@ -51,7 +51,7 @@ export class GethNode {
 
   start(port): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
-    const datadir = './temp/geth' + GethNode.instanceIndex
+    const datadir = './temp/geth' + GethNode.instanceIndex++
     console.log('Starting Geth')
     const childProcess = this.childProcess = child_process.exec(
       gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port

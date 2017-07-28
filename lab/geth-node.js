@@ -34,7 +34,7 @@ var GethNode = (function () {
     };
     GethNode.prototype.start = function (port) {
         var gethPath = this.config.gethPath || 'geth';
-        var datadir = './temp/geth' + GethNode.instanceIndex;
+        var datadir = './temp/geth' + GethNode.instanceIndex++;
         console.log('Starting Geth');
         var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'

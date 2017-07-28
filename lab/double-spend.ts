@@ -1,4 +1,5 @@
 import {GethNode} from "./"
+import {GethNodeConfig} from "./geth-node";
 
 function spend(node: GethNode) {
   const web3 = node.getWeb3()
@@ -26,10 +27,10 @@ function spend(node: GethNode) {
     .then(result => console.log(web3.eth.getTransaction(result)))
 }
 
-export function doubleSpend() {
-  const node1 = new GethNode()
-  const node2 = new GethNode()
+export function doubleSpend(config?: GethNodeConfig) {
+  const node1 = new GethNode(config)
+  const node2 = new GethNode(config)
 
-  return node1.start(8546).then(() => spend(node1)).then(() => node1.stop())
+  return node1.start(8546).then(() => spend(node1))
     .then(() => node2.start(8547).then(() => spend(node2)))
 }

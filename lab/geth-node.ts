@@ -1,5 +1,6 @@
 import {Web3EthereumClient} from "../src"
 const child_process = require('child_process')
+const rimraf = require('rimraf')
 
 enum Status {
   inactive,
@@ -55,11 +56,11 @@ export class GethNode {
 
   start(port, flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
-    const datadir = './temp/geth' + GethNode.instanceIndex++
+    const datadir = './temp/eth/geth' + GethNode.instanceIndex++
     console.log('Starting Geth')
     const childProcess = this.childProcess = child_process.exec(
       gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
       + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console'
     )
 
@@ -95,5 +96,17 @@ export class GethNode {
       })
     })
 
+  }
+
+  static initialize() {
+    return new Promise((resolve, reject) => {
+      rimraf('./temp/eth', function (error, stdout, stderr) {
+        if (error)
+          reject(error)
+
+        else
+          resolve(stdout)
+      })
+    })
   }
 }

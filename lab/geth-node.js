@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var src_1 = require("../src");
 var child_process = require('child_process');
+var rimraf = require('rimraf');
 var Status;
 (function (Status) {
     Status[Status["inactive"] = 0] = "inactive";
@@ -32,13 +33,17 @@ var GethNode = (function () {
     GethNode.prototype.getClient = function () {
         return this.client;
     };
-    GethNode.prototype.start = function (port) {
+    GethNode.prototype.startMiner = function (port) {
+        return this.start(port, '--mine --minerthreads 5');
+    };
+    GethNode.prototype.start = function (port, flags) {
+        if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
-        var datadir = './temp/geth' + GethNode.instanceIndex++;
+        var datadir = './temp/eth/geth' + GethNode.instanceIndex++;
         console.log('Starting Geth');
         var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
-            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/keystore'
-            + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console');
+            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
+            + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });
@@ -63,6 +68,16 @@ var GethNode = (function () {
             _this.childProcess.kill();
             _this.childProcess.on('close', function (code) {
                 resolve();
+            });
+        });
+    };
+    GethNode.initialize = function () {
+        return new Promise(function (resolve, reject) {
+            rimraf('./temp/eth', function (error, stdout, stderr) {
+                if (error)
+                    reject(error);
+                else
+                    resolve(stdout);
             });
         });
     };

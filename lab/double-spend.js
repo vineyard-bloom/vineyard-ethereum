@@ -26,10 +26,10 @@ function spend(node) {
     })
         .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }
-function doubleSpend() {
-    var node1 = new _1.GethNode();
-    var node2 = new _1.GethNode();
-    return node1.start(8546).then(function () { return spend(node1); }).then(function () { return node1.stop(); })
+function doubleSpend(config) {
+    var node1 = new _1.GethNode(config);
+    var node2 = new _1.GethNode(config);
+    return node1.start(8546).then(function () { return spend(node1); })
         .then(function () { return node2.start(8547).then(function () { return spend(node2); }); });
 }
 exports.doubleSpend = doubleSpend;

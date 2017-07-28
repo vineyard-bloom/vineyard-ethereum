@@ -47,19 +47,34 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   createAddress(): Promise<string> {
-    return Promise.resolve(this.web3.personal.newAccount())
+    return new Promise((resolve, reject) => {
+      this.web3.personal.newAccount((err, result) => {
+        if (err)
+          reject(err)
+        else
+          resolve(result)
+      })
+    })
   }
 
   getAccounts(): Promise<string> {
-    return Promise.resolve(this.web3.eth.accounts)
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getAccounts((err, result) => {
+        if (err)
+          reject(err)
+        else
+          resolve(result)
+      })
+    })
   }
 
   getBalance(address: string): Promise<number> {
     return new Promise((resolve, reject) => {
       this.web3.eth.getBalance(address, (err, result) => {
         if (err)
-          resolve(err)
-        resolve(result)
+          reject(err)
+        else
+          resolve(result)
       })
     })
   }
@@ -130,10 +145,10 @@ export class Web3EthereumClient implements EthereumClient {
   getGas(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.web3.eth.getGasPrice((err, result) => {
-      if(err) {
-        reject(err)
-      }
-        resolve(result)
+        if (err)
+          reject(err)
+        else
+          resolve(result)
       })
     })
   }

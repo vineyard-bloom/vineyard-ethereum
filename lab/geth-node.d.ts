@@ -13,6 +13,8 @@ export declare class GethNode {
     constructor(config?: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
-    start(port: any): Promise<void>;
+    startMiner(port: any): Promise<void>;
+    start(port: any, flags?: string): Promise<void>;
     stop(): Promise<{}>;
+    static initialize(): Promise<{}>;
 }

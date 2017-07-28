@@ -35,18 +35,35 @@ var Web3EthereumClient = (function () {
         return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
     };
     Web3EthereumClient.prototype.createAddress = function () {
-        return Promise.resolve(this.web3.personal.newAccount());
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.personal.newAccount(function (err, result) {
+                if (err)
+                    reject(err);
+                else
+                    resolve(result);
+            });
+        });
     };
     Web3EthereumClient.prototype.getAccounts = function () {
-        return Promise.resolve(this.web3.eth.accounts);
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getAccounts(function (err, result) {
+                if (err)
+                    reject(err);
+                else
+                    resolve(result);
+            });
+        });
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getBalance(address, function (err, result) {
                 if (err)
-                    resolve(err);
-                resolve(result);
+                    reject(err);
+                else
+                    resolve(result);
             });
         });
     };
@@ -115,10 +132,10 @@ var Web3EthereumClient = (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getGasPrice(function (err, result) {
-                if (err) {
+                if (err)
                     reject(err);
-                }
-                resolve(result);
+                else
+                    resolve(result);
             });
         });
     };

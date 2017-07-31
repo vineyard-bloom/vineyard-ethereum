@@ -57,7 +57,6 @@ var Web3EthereumClient = (function () {
         });
     };
     Web3EthereumClient.prototype.getBalance = function (address) {
-        console.log("getting balance")
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getBalance(address, function (err, result) {

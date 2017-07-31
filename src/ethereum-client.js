@@ -67,21 +67,36 @@ var Web3EthereumClient = (function () {
             });
         });
     };
+    Web3EthereumClient.prototype.unlockAccount = function (address) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.personal.unlockAccount(address, function (err, result) {
+                if (err)
+                    reject(err);
+                else
+                    resolve(result);
+            });
+        });
+    };
     Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gasPrice) {
         var _this = this;
         if (gasPrice === void 0) { gasPrice = "21000"; }
         if (fromAddress === '') {
             fromAddress = this.web3.eth.coinbase;
         }
-        this.web3.personal.unlockAccount(fromAddress);
-        amount = this.web3.toHex(amount);
-        var transaction = { from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice };
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.sendTransaction(transaction, function (err, address) {
-                if (err)
-                    reject('Error sending to ' + toAddress + ": " + err);
-                else
-                    resolve(transaction);
+        return this.unlockAccount(fromAddress)
+            .then(function () {
+            amount = _this.web3.toHex(amount);
+            var transaction = { from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice };
+            return new Promise(function (resolve, reject) {
+                _this.web3.eth.sendTransaction(transaction, function (err, txid) {
+                    if (err)
+                        reject('Error sending to ' + toAddress + ": " + err);
+                    else {
+                        console.log('Sent Ethereum transaction', txid);
+                        resolve(transaction);
+                    }
+                });
             });
         });
     };

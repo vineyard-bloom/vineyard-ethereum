@@ -16,6 +16,7 @@ export declare class GethNode {
     getClient(): Web3EthereumClient;
     startMiner(port: any): Promise<void>;
     start(port: any, flags?: string): Promise<void>;
+    isRunning(): boolean;
     stop(): Promise<{}>;
     static initialize(): Promise<{}>;
 }

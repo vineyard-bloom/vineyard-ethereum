@@ -68,9 +68,20 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getBalance(address: string): Promise<number> {
+  getBalance(address: string): Promise<any> {
     return new Promise((resolve, reject) => {
       this.web3.eth.getBalance(address, (err, result) => {
+        if (err)
+          reject(err)
+        else
+          resolve(result)
+      })
+    })
+  }
+
+  unlockAccount(address: string) {
+    return new Promise((resolve, reject) => {
+      this.web3.personal.unlockAccount(address, (err, result) => {
         if (err)
           reject(err)
         else
@@ -83,17 +94,21 @@ export class Web3EthereumClient implements EthereumClient {
     if (fromAddress === '') {
       fromAddress = this.web3.eth.coinbase
     }
-    this.web3.personal.unlockAccount(fromAddress)
-    amount = this.web3.toHex(amount)
-    const transaction = {from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice}
-    return new Promise<any>((resolve, reject) => {
-      this.web3.eth.sendTransaction(transaction, (err, address) => {
-        if (err)
-          reject('Error sending to ' + toAddress + ": " + err)
-        else
-          resolve(transaction)
+    return this.unlockAccount(fromAddress)
+      .then(() => {
+        amount = this.web3.toHex(amount)
+        const transaction = {from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice}
+        return new Promise<any>((resolve, reject) => {
+          this.web3.eth.sendTransaction(transaction, (err, txid) => {
+            if (err)
+              reject('Error sending to ' + toAddress + ": " + err)
+            else {
+              console.log('Sent Ethereum transaction', txid)
+              resolve(transaction)
+            }
+          })
+        })
       })
-    })
   }
 
   // listAllTransactions(addressManager: AddressManager, lastBlock: number): Promise<EthereumTransaction[]> {

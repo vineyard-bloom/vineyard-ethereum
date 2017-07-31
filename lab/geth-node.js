@@ -24,6 +24,7 @@ var Status;
 var GethNode = (function () {
     function GethNode(config) {
         this.status = Status.inactive;
+        this.childProcess = null;
         this.config = config || {};
         // this.miner = new Miner()
         this.datadir = './temp/eth/geth' + GethNode.instanceIndex++;
@@ -41,9 +42,11 @@ var GethNode = (function () {
         if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
         console.log('Starting Geth');
-        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --rpc --verbosity 2 --rpcport ' + port
+        var command = gethPath + ' --dev --rpc --verbosity 0 --rpcport ' + port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
-            + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console');
+            + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console';
+        console.log(command);
+        var childProcess = this.childProcess = child_process.exec(command);
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });
@@ -58,6 +61,9 @@ var GethNode = (function () {
         });
         return new Promise(function (resolve) { return setTimeout(resolve, 1000); });
     };
+    GethNode.prototype.isRunning = function () {
+        return this.childProcess != null;
+    };
     GethNode.prototype.stop = function () {
         var _this = this;
         if (!this.childProcess)
@@ -65,6 +71,7 @@ var GethNode = (function () {
         return new Promise(function (resolve, reject) {
             _this.childProcess.kill();
             _this.childProcess.on('close', function (code) {
+                _this.childProcess = null;
                 resolve();
             });
         });
@@ -85,10 +92,21 @@ GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 function mine(node, port, milliseconds) {
     console.log('Mining for ' + milliseconds + ' milliseconds.');
-    return node.startMiner(port)
+    var previousBlockNumber;
+    var wasRunning = node.isRunning();
+    return node.stop()
+        .then(function () { return node.startMiner(port); })
+        .then(function () { return node.getClient().getBlockNumber(); })
+        .then(function (blockNumber) { return previousBlockNumber = blockNumber; })
         .then(function () { return new Promise(function (resolve) { return setTimeout(resolve, milliseconds); }); })
+        .then(function () { return node.getClient().getBlockNumber(); })
+        .then(function (blockNumber) { return console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."); })
         .then(function () { return node.stop(); })
-        .then(function () { return console.log('Finished mining.'); });
+        .then(function () {
+        if (wasRunning) {
+            return node.start(port);
+        }
+    });
 }
 exports.mine = mine;
 //# sourceMappingURL=geth-node.js.map

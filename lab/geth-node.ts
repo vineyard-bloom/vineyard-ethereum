@@ -31,7 +31,7 @@ export class GethNode {
   private status: Status = Status.inactive
   private stdout
   private stderr
-  private childProcess
+  private childProcess = null
   // private miner: Miner
   private client: Web3EthereumClient
   private config: GethNodeConfig
@@ -59,11 +59,11 @@ export class GethNode {
   start(port, flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     console.log('Starting Geth')
-    const childProcess = this.childProcess = child_process.exec(
-      gethPath + ' --dev --rpc --verbosity 2 --rpcport ' + port
+    const command = gethPath + ' --dev --rpc --verbosity 0 --rpcport ' + port
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
       + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
-    )
+    console.log(command)
+    const childProcess = this.childProcess = child_process.exec(command)
 
     childProcess.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
@@ -84,6 +84,10 @@ export class GethNode {
     return new Promise<void>(resolve => setTimeout(resolve, 1000))
   }
 
+  isRunning() {
+    return this.childProcess != null
+  }
+
   stop() {
     if (!this.childProcess)
       return Promise.resolve()
@@ -91,6 +95,7 @@ export class GethNode {
     return new Promise((resolve, reject) => {
       this.childProcess.kill()
       this.childProcess.on('close', (code) => {
+        this.childProcess = null
         resolve()
       })
     })
@@ -112,8 +117,19 @@ export class GethNode {
 
 export function mine(node, port, milliseconds: number) {
   console.log('Mining for ' + milliseconds + ' milliseconds.')
-  return node.startMiner(port)
+  let previousBlockNumber
+  const wasRunning = node.isRunning()
+  return node.stop()
+    .then(() => node.startMiner(port))
+    .then(() => node.getClient().getBlockNumber())
+    .then(blockNumber => previousBlockNumber = blockNumber)
     .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
+    .then(() => node.getClient().getBlockNumber())
+    .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
     .then(() => node.stop())
-    .then(() => console.log('Finished mining.'))
+    .then(() => {
+      if (wasRunning) {
+        return node.start(port)
+      }
+    })
 }

@@ -22,6 +22,7 @@ export interface EthereumClient {
     generate(blockCount: number): Promise<void>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
+    getCoinbase(): Promise<string>;
     getTransaction(txid: any): Promise<any>;
     getGas(): Promise<number>;
 }

@@ -88,10 +88,7 @@ exports.GethNode = GethNode;
 function mine(node, port, milliseconds) {
     node.startMiner(port);
     return new Promise(function (resolve, reject) {
-        node.stop()
-            .then(function () {
-            setTimeout(resolve, 1000);
-        });
+        resolve(setTimeout(function () { return node.stop(); }, 20000));
     });
 }
 exports.mine = mine;

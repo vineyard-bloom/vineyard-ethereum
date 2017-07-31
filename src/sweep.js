@@ -1,23 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
+var bignumber_js_1 = require("bignumber.js");
 var Broom = (function () {
-    function Broom(minSweepAmount, ethereumManager, ethereumClient) {
-        this.minSweepAmount = minSweepAmount;
+    function Broom(config, ethereumManager, ethereumClient) {
+        this.config = config;
         this.manager = ethereumManager;
         this.client = ethereumClient;
     }
-    Broom.prototype.getSweepGas = function () {
-        var _this = this;
-        return this.client.getGas()
-            .then(function (gasPrice) { return _this.gas = parseFloat(gasPrice); });
-    };
     Broom.prototype.singleSweep = function (address) {
         var _this = this;
         return this.client.getBalance(address)
             .then(function (balance) {
-            if (balance > _this.minSweepAmount) {
-                return _this.calculateSendAmount(balance)
+            if (balance.greaterThan(_this.config.minSweepAmount)) {
+                var sendAmount = _this.calculateSendAmount(balance)
                     .then(function (sendAmount) {
                     return _this.client.send(address, _this.client.sweepAddress, sendAmount)
                         .then(function (txHash) {
@@ -35,10 +31,8 @@ var Broom = (function () {
         });
     };
     Broom.prototype.calculateSendAmount = function (amount) {
-        if (this.gas === undefined) {
-            return this.getSweepGas().then(function (gasPrice) { return amount - (gasPrice * 21000); });
-        }
-        return Promise.resolve(amount - (this.gas * 21000));
+        var gasTotal = new bignumber_js_1.default(this.config.gas).times(new bignumber_js_1.default(this.config.gasPrice));
+        return amount.subtract(gasTotal);
     };
     Broom.prototype.saveSweepRecord = function (bristle) {
         return this.manager.saveSweepRecord(bristle);
@@ -46,13 +40,10 @@ var Broom = (function () {
     Broom.prototype.sweep = function () {
         var _this = this;
         console.log('Starting Ethereum sweep');
-        return this.getSweepGas()
-            .then(function () {
-            return _this.manager.getDustyAddresses()
-                .then(function (addresses) {
-                console.log('Dusty addresses', addresses.length, addresses);
-                return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
-            });
+        return this.manager.getDustyAddresses()
+            .then(function (addresses) {
+            console.log('Dusty addresses', addresses.length, addresses);
+            return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
         })
             .then(function () { return console.log('Finished Ethereum sweep'); });
     };

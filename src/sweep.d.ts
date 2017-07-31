@@ -10,16 +10,15 @@ export interface SweepConfig {
     sweepAddress: string;
     minSweepAmount: number;
     gas: any;
+    gasPrice: any;
 }
 export declare class Broom {
     private manager;
     private client;
-    private minSweepAmount;
-    private gas;
-    constructor(minSweepAmount: any, ethereumManager: SweepManager, ethereumClient: any);
-    private getSweepGas();
+    private config;
+    constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
     private singleSweep(address);
-    calculateSendAmount(amount: number): Promise<number>;
+    calculateSendAmount(amount: any): any;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
 }

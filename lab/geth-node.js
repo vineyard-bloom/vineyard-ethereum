@@ -85,4 +85,14 @@ var GethNode = (function () {
 }());
 GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
+function mine(node, port, milliseconds) {
+    node.startMiner(port);
+    return new Promise(function (resolve, reject) {
+        node.stop()
+            .then(function () {
+            setTimeout(resolve, 1000);
+        });
+    });
+}
+exports.mine = mine;
 //# sourceMappingURL=geth-node.js.map

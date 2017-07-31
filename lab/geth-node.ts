@@ -110,3 +110,13 @@ export class GethNode {
     })
   }
 }
+
+export function mine(node, port, milliseconds: number) {
+    node.startMiner(port)
+    return new Promise<void>((resolve, reject) => {
+      node.stop()
+      .then(() => {
+        setTimeout(resolve, 1000)
+      })
+    })
+}

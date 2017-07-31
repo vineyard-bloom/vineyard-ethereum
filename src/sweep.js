@@ -48,7 +48,10 @@ var Broom = (function () {
         return this.getSweepGas()
             .then(function () {
             return _this.manager.getDustyAddresses()
-                .then(function (addresses) { return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); }); });
+                .then(function (addresses) {
+                console.log(addresses);
+                return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
+            });
         });
     };
     return Broom;

@@ -69,7 +69,10 @@ export class Broom {
     return this.getSweepGas()
       .then(() => {
         return this.manager.getDustyAddresses()
-          .then(addresses => promiseEach(addresses, address => this.singleSweep(address)))
+          .then(addresses => {
+            console.log(addresses)
+            return promiseEach(addresses, address => this.singleSweep(address))
+          })
       })
   }
 

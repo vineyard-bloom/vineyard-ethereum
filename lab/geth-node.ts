@@ -53,14 +53,14 @@ export class GethNode {
   }
 
   startMiner(port) {
-    return this.start(port, '--mine --minerthreads 5 --verbosity 4')
+    return this.start(port, '--mine --minerthreads 5')
   }
 
   start(port, flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     console.log('Starting Geth')
     const childProcess = this.childProcess = child_process.exec(
-      gethPath + ' --dev --rpc --rpcport ' + port
+      gethPath + ' --dev --rpc --verbosity 2 --rpcport ' + port
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
       + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
     )

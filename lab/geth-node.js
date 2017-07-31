@@ -35,13 +35,13 @@ var GethNode = (function () {
         return this.client;
     };
     GethNode.prototype.startMiner = function (port) {
-        return this.start(port, '--mine --minerthreads 5 --verbosity 4');
+        return this.start(port, '--mine --minerthreads 5');
     };
     GethNode.prototype.start = function (port, flags) {
         if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
         console.log('Starting Geth');
-        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --rpc --rpcport ' + port
+        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --rpc --verbosity 2 --rpcport ' + port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
             + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console');
         childProcess.stdout.on('data', function (data) {

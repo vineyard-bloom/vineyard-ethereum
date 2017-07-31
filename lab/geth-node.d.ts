@@ -18,3 +18,4 @@ export declare class GethNode {
     stop(): Promise<{}>;
     static initialize(): Promise<{}>;
 }
+export declare function mine(node: any, port: any, milliseconds: number): Promise<void>;

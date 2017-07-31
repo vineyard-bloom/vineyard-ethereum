@@ -67,19 +67,19 @@ var Web3EthereumClient = (function () {
             });
         });
     };
-    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gas) {
+    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gasPrice) {
         var _this = this;
-        if (gas === void 0) { gas = "21000"; }
+        if (gasPrice === void 0) { gasPrice = "21000"; }
         if (fromAddress === '') {
             fromAddress = this.web3.eth.coinbase;
         }
         this.web3.personal.unlockAccount(fromAddress);
         amount = this.web3.toHex(amount);
-        var transaction = { from: fromAddress, to: toAddress, value: amount, gas: gas };
+        var transaction = { from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice };
         return new Promise(function (resolve, reject) {
             _this.web3.eth.sendTransaction(transaction, function (err, address) {
                 if (err)
-                    reject('Error sending to ' + address + ": " + err);
+                    reject('Error sending to ' + toAddress + ": " + err);
                 else
                     resolve(transaction);
             });

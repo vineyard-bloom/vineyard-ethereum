@@ -21,17 +21,19 @@ var Broom = (function () {
                 return _this.calculateSendAmount(balance)
                     .then(function (sendAmount) {
                     return _this.client.send(address, _this.client.sweepAddress, sendAmount)
-                        .then(function (txHash) { return _this.saveSweepRecord({
-                        from: address,
-                        to: _this.client.sweepAddress,
-                        status: 0,
-                        txid: txHash,
-                        amount: sendAmount
-                    }); });
+                        .then(function (txHash) {
+                        console.log('Saving sweep: ', txHash);
+                        return _this.saveSweepRecord({
+                            from: address,
+                            to: _this.client.sweepAddress,
+                            status: 0,
+                            txid: txHash,
+                            amount: sendAmount
+                        });
+                    });
                 });
             }
-        })
-            .catch(function (err) { return err; });
+        });
     };
     Broom.prototype.calculateSendAmount = function (amount) {
         if (this.gas === undefined) {
@@ -47,7 +49,10 @@ var Broom = (function () {
         return this.getSweepGas()
             .then(function () {
             return _this.manager.getDustyAddresses()
-                .then(function (addresses) { return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); }); });
+                .then(function (addresses) {
+                console.log(addresses);
+                return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
+            });
         });
     };
     return Broom;

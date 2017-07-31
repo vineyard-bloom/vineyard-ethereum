@@ -16,7 +16,7 @@ export interface EthereumClient {
     checkAllBalances(): Promise<any>;
     createAddress(): Promise<string>;
     getBalance(address: string): Promise<number>;
-    send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
+    send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>;
     importAddress(address: string): Promise<void>;
     getAccounts(): Promise<string>;
     generate(blockCount: number): Promise<void>;

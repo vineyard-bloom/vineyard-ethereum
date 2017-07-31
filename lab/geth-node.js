@@ -81,9 +81,9 @@ var GethNode = (function () {
             });
         });
     };
-    GethNode.instanceIndex = 0;
     return GethNode;
 }());
+GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 function mine(node, port, milliseconds) {
     node.startMiner(port);

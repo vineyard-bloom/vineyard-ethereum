@@ -81,8 +81,8 @@ var GethNode = (function () {
             });
         });
     };
+    GethNode.instanceIndex = 0;
     return GethNode;
 }());
-GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 //# sourceMappingURL=geth-node.js.map

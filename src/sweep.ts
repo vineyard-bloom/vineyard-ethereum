@@ -30,7 +30,6 @@ export class Broom {
   private getSweepGas(): Promise<number> {
     return this.client.getGas()
       .then(gasPrice => this.gas = parseFloat(gasPrice))
-      .catch(err => err)
   }
 
   private singleSweep(address): Promise<Bristle> {
@@ -40,17 +39,19 @@ export class Broom {
           return this.calculateSendAmount(balance)
             .then(sendAmount => {
               return this.client.send(address, this.client.sweepAddress, sendAmount)
-                .then(txHash => this.saveSweepRecord({
-                  from: address,
-                  to: this.client.sweepAddress,
-                  status: 0,
-                  txid: txHash,
-                  amount: sendAmount
-                }))
+                .then(txHash => {
+                  console.log('Saving sweep: ', txHash)
+                  return this.saveSweepRecord({
+                    from: address,
+                    to: this.client.sweepAddress,
+                    status: 0,
+                    txid: txHash,
+                    amount: sendAmount
+                  })
+                })
             })
         }
       })
-      .catch(err => err)
   }
 
   calculateSendAmount(amount: number): Promise<number> {

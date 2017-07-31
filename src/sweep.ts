@@ -18,30 +18,31 @@ export interface SweepConfig {
 export class Broom {
   private manager: SweepManager
   private client
-  private config: SweepConfig
+  private minSweepAmount
+  private gas
 
-  constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient) {
-    this.config = config
+  constructor(minSweepAmount, ethereumManager: SweepManager, ethereumClient) {
+    this.minSweepAmount = minSweepAmount
     this.manager = ethereumManager
     this.client = ethereumClient
   }
 
   private getSweepGas(): Promise<number> {
     return this.client.getGas()
-      .then(gasPrice => this.config.gas = parseFloat(gasPrice))
+      .then(gasPrice => this.gas = parseFloat(gasPrice))
       .catch(err => err)
   }
 
   private singleSweep(address): Promise<Bristle> {
     return this.client.getBalance(address)
       .then(balance => {
-        if (balance > this.config.minSweepAmount) {
+        if (balance > this.minSweepAmount) {
           return this.calculateSendAmount(balance)
             .then(sendAmount => {
-              return this.client.send(address, this.config.sweepAddress, sendAmount)
+              return this.client.send(address, this.client.sweepAddress, sendAmount)
                 .then(txHash => this.saveSweepRecord({
                   from: address,
-                  to: this.config.sweepAddress,
+                  to: this.client.sweepAddress,
                   status: 0,
                   txid: txHash,
                   amount: sendAmount
@@ -53,10 +54,10 @@ export class Broom {
   }
 
   calculateSendAmount(amount: number): Promise<number> {
-    if (this.config.gas === undefined) {
+    if (this.gas === undefined) {
       return this.getSweepGas().then(gasPrice => amount - (gasPrice * 21000))
     }
-    return Promise.resolve(amount - (this.config.gas * 21000))
+    return Promise.resolve(amount - (this.gas * 21000))
   }
 
   saveSweepRecord(bristle: Bristle) {

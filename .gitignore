@@ -2,6 +2,7 @@
 node_modules
 npm-*
 *.js.map
+test/temp
 test/**/*.js
 test/**/*.d.ts
 config.json

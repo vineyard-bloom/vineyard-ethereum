@@ -45,14 +45,16 @@ var Broom = (function () {
     };
     Broom.prototype.sweep = function () {
         var _this = this;
+        console.log('Starting Ethereum sweep');
         return this.getSweepGas()
             .then(function () {
             return _this.manager.getDustyAddresses()
                 .then(function (addresses) {
-                console.log(addresses);
+                console.log('Dusty addresses', addresses.length, addresses);
                 return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
             });
-        });
+        })
+            .then(function () { return console.log('Finished Ethereum sweep'); });
     };
     return Broom;
 }());

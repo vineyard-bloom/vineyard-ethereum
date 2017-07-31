@@ -21,5 +21,5 @@ export declare class Broom {
     private singleSweep(address);
     calculateSendAmount(amount: number): Promise<number>;
     saveSweepRecord(bristle: Bristle): Promise<any>;
-    sweep(): Promise<any>;
+    sweep(): Promise<void>;
 }

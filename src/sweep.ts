@@ -66,14 +66,16 @@ export class Broom {
   }
 
   sweep() {
+    console.log('Starting Ethereum sweep')
     return this.getSweepGas()
       .then(() => {
         return this.manager.getDustyAddresses()
           .then(addresses => {
-            console.log(addresses)
+            console.log('Dusty addresses', addresses.length, addresses)
             return promiseEach(addresses, address => this.singleSweep(address))
           })
       })
+      .then(() => console.log('Finished Ethereum sweep'))
   }
 
 }

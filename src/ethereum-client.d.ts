@@ -12,7 +12,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     toWei(amount: number): any;
     fromWei(amount: number): any;
     createAddress(): Promise<string>;
-    getAccounts(): Promise<string>;
+    getAccounts(): Promise<string[]>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, amount: string, gasPrice?: string): Promise<EthereumTransaction>;
     importAddress(address: string): Promise<void>;

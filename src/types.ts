@@ -23,7 +23,7 @@ export interface EthereumClient {
   getBalance(address: string): Promise<number>
   send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>
   importAddress(address: string): Promise<void>
-  getAccounts(): Promise<string>
+  getAccounts(): Promise<string[]>
   generate(blockCount: number): Promise<void>
   getBlock(blockIndex: number): Promise<Block>
   getBlockNumber(): Promise<number>

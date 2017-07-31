@@ -57,7 +57,7 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getAccounts(): Promise<string> {
+  getAccounts(): Promise<string[]> {
     return new Promise((resolve, reject) => {
       this.web3.eth.getAccounts((err, result) => {
         if (err)

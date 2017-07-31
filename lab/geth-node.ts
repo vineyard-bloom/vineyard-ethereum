@@ -14,7 +14,7 @@ export interface GethNodeConfig {
 // export class Miner {
 //   private minerProcess
 //   constructor() {
-    
+
 //   }
 
 //   start(): Promise<void> {
@@ -36,10 +36,12 @@ export class GethNode {
   private client: Web3EthereumClient
   private config: GethNodeConfig
   private static instanceIndex: number = 0
+  private datadir: string
 
   constructor(config?: GethNodeConfig) {
     this.config = config || {}
     // this.miner = new Miner()
+    this.datadir = './temp/eth/geth' + GethNode.instanceIndex++
   }
 
   getWeb3() {
@@ -51,17 +53,16 @@ export class GethNode {
   }
 
   startMiner(port) {
-    return this.start(port, '--mine --minerthreads 5')
+    return this.start(port, '--mine --minerthreads 5 --verbosity 4')
   }
 
   start(port, flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
-    const datadir = './temp/eth/geth' + GethNode.instanceIndex++
     console.log('Starting Geth')
     const childProcess = this.childProcess = child_process.exec(
-      gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
+      gethPath + ' --dev --rpc --rpcport ' + port
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
-      + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console'
+      + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
     )
 
     childProcess.stdout.on('data', (data) => {
@@ -80,9 +81,7 @@ export class GethNode {
       http: "http://localhost:" + port
     })
 
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 1000)
-    })
+    return new Promise<void>(resolve => setTimeout(resolve, 1000))
   }
 
   stop() {
@@ -112,8 +111,9 @@ export class GethNode {
 }
 
 export function mine(node, port, milliseconds: number) {
-    node.startMiner(port)
-    return new Promise<void>((resolve, reject) => {
-        resolve(setTimeout(() => node.stop(), 20000))
-    })
+  console.log('Mining for ' + milliseconds + ' milliseconds.')
+  return node.startMiner(port)
+    .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
+    .then(() => node.stop())
+    .then(() => console.log('Finished mining.'))
 }

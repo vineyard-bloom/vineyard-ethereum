@@ -10,6 +10,7 @@ export declare class GethNode {
     private client;
     private config;
     private static instanceIndex;
+    private datadir;
     constructor(config?: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
@@ -18,4 +19,4 @@ export declare class GethNode {
     stop(): Promise<{}>;
     static initialize(): Promise<{}>;
 }
-export declare function mine(node: any, port: any, milliseconds: number): Promise<void>;
+export declare function mine(node: any, port: any, milliseconds: number): any;

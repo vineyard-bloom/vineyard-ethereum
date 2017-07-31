@@ -26,6 +26,7 @@ var GethNode = (function () {
         this.status = Status.inactive;
         this.config = config || {};
         // this.miner = new Miner()
+        this.datadir = './temp/eth/geth' + GethNode.instanceIndex++;
     }
     GethNode.prototype.getWeb3 = function () {
         return this.client.getWeb3();
@@ -34,16 +35,15 @@ var GethNode = (function () {
         return this.client;
     };
     GethNode.prototype.startMiner = function (port) {
-        return this.start(port, '--mine --minerthreads 5');
+        return this.start(port, '--mine --minerthreads 5 --verbosity 4');
     };
     GethNode.prototype.start = function (port, flags) {
         if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
-        var datadir = './temp/eth/geth' + GethNode.instanceIndex++;
         console.log('Starting Geth');
-        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --verbosity 0 --rpc --rpcport ' + port
+        var childProcess = this.childProcess = child_process.exec(gethPath + ' --dev --rpc --rpcport ' + port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
-            + ' --datadir ' + datadir + ' --networkid 101 ' + flags + ' console');
+            + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console');
         childProcess.stdout.on('data', function (data) {
             console.log("stdout: " + data);
         });
@@ -56,9 +56,7 @@ var GethNode = (function () {
         this.client = new src_1.Web3EthereumClient({
             http: "http://localhost:" + port
         });
-        return new Promise(function (resolve, reject) {
-            setTimeout(resolve, 1000);
-        });
+        return new Promise(function (resolve) { return setTimeout(resolve, 1000); });
     };
     GethNode.prototype.stop = function () {
         var _this = this;
@@ -86,10 +84,11 @@ var GethNode = (function () {
 GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 function mine(node, port, milliseconds) {
-    node.startMiner(port);
-    return new Promise(function (resolve, reject) {
-        resolve(setTimeout(function () { return node.stop(); }, 20000));
-    });
+    console.log('Mining for ' + milliseconds + ' milliseconds.');
+    return node.startMiner(port)
+        .then(function () { return new Promise(function (resolve) { return setTimeout(resolve, milliseconds); }); })
+        .then(function () { return node.stop(); })
+        .then(function () { return console.log('Finished mining.'); });
 }
 exports.mine = mine;
 //# sourceMappingURL=geth-node.js.map

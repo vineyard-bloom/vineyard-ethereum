@@ -10,8 +10,7 @@ var Broom = (function () {
     Broom.prototype.getSweepGas = function () {
         var _this = this;
         return this.client.getGas()
-            .then(function (gasPrice) { return _this.gas = parseFloat(gasPrice); })
-            .catch(function (err) { return err; });
+            .then(function (gasPrice) { return _this.gas = parseFloat(gasPrice); });
     };
     Broom.prototype.singleSweep = function (address) {
         var _this = this;

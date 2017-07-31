@@ -34,7 +34,7 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getSweepAddress() {
+  getCoinbase() {
     return Promise.resolve(this.web3.eth.coinbase)
   }
 

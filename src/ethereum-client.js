@@ -25,7 +25,7 @@ var Web3EthereumClient = (function () {
             });
         });
     };
-    Web3EthereumClient.prototype.getSweepAddress = function () {
+    Web3EthereumClient.prototype.getCoinbase = function () {
         return Promise.resolve(this.web3.eth.coinbase);
     };
     Web3EthereumClient.prototype.toWei = function (amount) {

@@ -2,8 +2,8 @@ import {GethNode, mine} from "./"
 import {GethNodeConfig} from "./geth-node";
 
 
-function fund(client) {
-    const web3 = client
+function fund(node: GethNode) {
+    const web3 = node.getWeb3()
     return new Promise<void>((resolve, reject) => {
      console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE")
       web3.personal.unlockAccount(web3.eth.coinbase)
@@ -17,7 +17,6 @@ function fund(client) {
 
 function spend(node: GethNode) {
   const web3 = node.getWeb3()
-  fund(web3).then(() => {
   return new Promise<void>((resolve, reject) => {
     const send = () => {
       web3.personal.unlockAccount(web3.eth.accounts[1])
@@ -39,12 +38,12 @@ function spend(node: GethNode) {
     setTimeout(send, 10000)
   })
     .then(result => console.log(web3.eth.getTransaction(result)))
-  })
 }
 
 export function doubleSpend(config?: GethNodeConfig) {
   const node1 = new GethNode(config)
   const node2 = new GethNode(config)
-    node1.start(8546).then(() => spend(node1))
-      .then(() => mine(node2, 8547, 9000).then(() => node2.start(8546)).then(() => spend(node2))) 
+    node1.start(8546).then(() => fund(node1)).then(() => spend(node1))
+      .then(() => mine(node2, 8547, 19000).then(() => fund(node2))
+      .then(() => node2.start(8546)).then(() => spend(node2))) 
 }

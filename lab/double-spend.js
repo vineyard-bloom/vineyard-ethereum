@@ -22,7 +22,7 @@ function fund(node) {
                 }
             });
         };
-        setTimeout(send, 10000);
+        setTimeout(send, 1000);
     })
         .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }
@@ -47,16 +47,16 @@ function spend(node) {
                 }
             });
         };
-        setTimeout(send, 10000);
+        setTimeout(send, 1000);
     })
         .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }
 function doubleSpend(config) {
     var node1 = new _1.GethNode(config);
     var node2 = new _1.GethNode(config);
-    node1.start(8546).then(function () { return fund(node1); }).then(function () { return spend(node1); })
-        .then(function () { return _1.mine(node2, 8547, 19000).then(function () { return fund(node2); })
-        .then(function () { return node2.start(8546); }).then(function () { return spend(node2); }); });
+    _1.mine(node1, 8546, 30000).then(function () { return node1.start(8546).then(function () { return fund(node1); }).then(function () { return spend(node1); })
+        .then(function () { return _1.mine(node2, 8547, 30000).then(function () { return node2.start(8546); })
+        .then(function () { return fund(node2); }).then(function () { return spend(node2); }); }); });
 }
 exports.doubleSpend = doubleSpend;
 //# sourceMappingURL=double-spend.js.map

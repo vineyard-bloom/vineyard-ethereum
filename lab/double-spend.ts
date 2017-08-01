@@ -23,7 +23,7 @@ function fund(node: GethNode) {
         }
       })
     }
-    setTimeout(send, 10000)
+    setTimeout(send, 1000)
   })
     .then(result => console.log(web3.eth.getTransaction(result)))
 }
@@ -49,7 +49,7 @@ function spend(node: GethNode) {
         }
       })
     }
-    setTimeout(send, 10000)
+    setTimeout(send, 1000)
   })
     .then(result => console.log(web3.eth.getTransaction(result)))
 }
@@ -57,7 +57,7 @@ function spend(node: GethNode) {
 export function doubleSpend(config?: GethNodeConfig) {
   const node1 = new GethNode(config)
   const node2 = new GethNode(config)
-    node1.start(8546).then(() => fund(node1)).then(() => spend(node1))
-      .then(() => mine(node2, 8547, 19000).then(() => fund(node2))
-      .then(() => node2.start(8546)).then(() => spend(node2))) 
+    mine(node1, 8546, 30000).then(() => node1.start(8546).then(() => fund(node1)).then(() => spend(node1))
+      .then(() => mine(node2, 8547, 30000).then(() => node2.start(8546))
+      .then(() => fund(node2)).then(() => spend(node2))) 
 }

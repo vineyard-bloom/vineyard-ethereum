@@ -45,7 +45,8 @@ var GethNode = (function () {
         if (flags === void 0) { flags = ''; }
         var gethPath = this.config.gethPath || 'geth';
         console.log('Starting Geth');
-        var command = gethPath + ' --dev --rpc --verbosity 5 --rpcport ' + this.port
+        var verbosity = this.config.verbosity || 0;
+        var command = gethPath + ' --dev --rpc --verbosity ' + verbosity + ' --rpcport ' + this.port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ' + this.keydir
             + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console';
         console.log(command);

@@ -1,6 +1,7 @@
 import { Web3EthereumClient } from "../src";
 export interface GethNodeConfig {
     gethPath?: string;
+    verbosity?: number;
 }
 export declare class GethNode {
     private stdout;

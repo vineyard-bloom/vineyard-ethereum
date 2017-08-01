@@ -9,6 +9,7 @@ enum Status {
 
 export interface GethNodeConfig {
   gethPath?: string
+  verbosity?:number // 0 - 6
 }
 
 // export class Miner {
@@ -63,7 +64,8 @@ export class GethNode {
   start(flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     console.log('Starting Geth')
-    const command = gethPath + ' --dev --rpc --verbosity 5 --rpcport ' + this.port
+    const verbosity = this.config.verbosity || 0
+    const command = gethPath + ' --dev --rpc --verbosity ' + verbosity + ' --rpcport ' + this.port
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ' + this.keydir
       + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
     console.log(command)

@@ -28,20 +28,23 @@ export interface GethNodeConfig {
 // }
 
 export class GethNode {
-  private status: Status = Status.inactive
   private stdout
   private stderr
   private childProcess = null
-  // private miner: Miner
   private client: Web3EthereumClient
   private config: GethNodeConfig
   private static instanceIndex: number = 0
   private datadir: string
+  private keydir: string
+  private port
+  private index
 
-  constructor(config?: GethNodeConfig) {
+  constructor(config?: GethNodeConfig, port?) {
     this.config = config || {}
-    // this.miner = new Miner()
-    this.datadir = './temp/eth/geth' + GethNode.instanceIndex++
+    this.index = GethNode.instanceIndex++
+    this.datadir = './temp/eth/geth' + this.index
+    this.keydir = './temp/eth/keystore' + this.index
+    this.port = port
   }
 
   getWeb3() {
@@ -52,33 +55,34 @@ export class GethNode {
     return this.client
   }
 
-  startMiner(port) {
-    return this.start(port, '--mine --minerthreads 5')
+  startMining() {
+    console.log('*** mining')
+    return this.start('--mine --minerthreads 8')
   }
 
-  start(port, flags = ''): Promise<void> {
+  start(flags = ''): Promise<void> {
     const gethPath = this.config.gethPath || 'geth'
     console.log('Starting Geth')
-    const command = gethPath + ' --dev --rpc --verbosity 0 --rpcport ' + port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ./temp/eth/keystore'
+    const command = gethPath + ' --dev --rpc --verbosity 5 --rpcport ' + this.port
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ' + this.keydir
       + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
     console.log(command)
     const childProcess = this.childProcess = child_process.exec(command)
 
     childProcess.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
+      console.log(this.index, 'stdout:', `${data}`);
     });
 
     childProcess.stderr.on('data', (data) => {
-      console.error(`stderr: ${data}`);
+      console.error(this.index, 'stderr:', `${data}`);
     });
 
     childProcess.on('close', (code) => {
-      console.log(`child process exited with code ${code}`);
+      console.log(this.index, `child process exited with code ${code}`);
     })
 
     this.client = new Web3EthereumClient({
-      http: "http://localhost:" + port
+      http: "http://localhost:" + this.port
     })
 
     return new Promise<void>(resolve => setTimeout(resolve, 1000))
@@ -89,6 +93,7 @@ export class GethNode {
   }
 
   stop() {
+    console.log(this.index, 'Stopping node.')
     if (!this.childProcess)
       return Promise.resolve()
 
@@ -113,23 +118,35 @@ export class GethNode {
       })
     })
   }
+
+  mine(milliseconds: number) {
+    console.log('Mining for ' + milliseconds + ' milliseconds.')
+    let previousBlockNumber
+    return this.startMiner()
+      .then(() => this.getClient().getBlockNumber())
+      .then(blockNumber => previousBlockNumber = blockNumber)
+      .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
+      .then(() => this.getClient().getBlockNumber())
+      .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
+      .then(() => this.stop())
+  }
 }
 
-export function mine(node, port, milliseconds: number) {
-  console.log('Mining for ' + milliseconds + ' milliseconds.')
-  let previousBlockNumber
-  const wasRunning = node.isRunning()
-  return node.stop()
-    .then(() => node.startMiner(port))
-    .then(() => node.getClient().getBlockNumber())
-    .then(blockNumber => previousBlockNumber = blockNumber)
-    .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
-    .then(() => node.getClient().getBlockNumber())
-    .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
-    .then(() => node.stop())
-    .then(() => {
-      if (wasRunning) {
-        return node.start(port)
-      }
-    })
-}
+// export function mine(node, milliseconds: number) {
+//   console.log('Mining for ' + milliseconds + ' milliseconds.')
+//   let previousBlockNumber
+//   const wasRunning = node.isRunning()
+//   return node.stop()
+//     .then(() => node.startMiner())
+//     .then(() => node.getClient().getBlockNumber())
+//     .then(blockNumber => previousBlockNumber = blockNumber)
+//     .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
+//     .then(() => node.getClient().getBlockNumber())
+//     .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
+//     .then(() => node.stop())
+//     .then(() => {
+//       if (wasRunning) {
+//         return node.start(port)
+//       }
+//     })
+// }

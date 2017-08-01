@@ -37,11 +37,14 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.createAddress = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            console.log('creating address');
             _this.web3.personal.newAccount(function (err, result) {
                 if (err)
                     reject(err);
-                else
+                else {
+                    console.log('Created new address', result);
                     resolve(result);
+                }
             });
         });
     };
@@ -78,16 +81,15 @@ var Web3EthereumClient = (function () {
             });
         });
     };
-    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount, gasPrice) {
+    Web3EthereumClient.prototype.send = function (fromAddress, toAddress, amount) {
         var _this = this;
-        if (gasPrice === void 0) { gasPrice = "21000"; }
         if (fromAddress === '') {
             fromAddress = this.web3.eth.coinbase;
         }
         return this.unlockAccount(fromAddress)
             .then(function () {
             amount = _this.web3.toHex(amount);
-            var transaction = { from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice };
+            var transaction = { from: fromAddress, to: toAddress, value: amount };
             return new Promise(function (resolve, reject) {
                 _this.web3.eth.sendTransaction(transaction, function (err, txid) {
                     if (err)
@@ -132,6 +134,7 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.getBlockNumber = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            console.log('getting block number');
             _this.web3.eth.getBlockNumber(function (err, blockNumber) {
                 if (err) {
                     console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);

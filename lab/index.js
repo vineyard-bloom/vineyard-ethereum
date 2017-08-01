@@ -8,4 +8,5 @@ __export(require("./gethServer"));
 __export(require("./pretend-eth-lab"));
 __export(require("./geth-node"));
 __export(require("./double-spend"));
+__export(require("./ethereum-network"));
 //# sourceMappingURL=index.js.map

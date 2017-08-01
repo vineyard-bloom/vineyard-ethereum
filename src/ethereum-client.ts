@@ -48,11 +48,14 @@ export class Web3EthereumClient implements EthereumClient {
 
   createAddress(): Promise<string> {
     return new Promise((resolve, reject) => {
+      console.log('creating address')
       this.web3.personal.newAccount((err, result) => {
         if (err)
           reject(err)
-        else
+        else {
+          console.log('Created new address', result)
           resolve(result)
+        }
       })
     })
   }
@@ -90,14 +93,14 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(fromAddress: string, toAddress: string, amount: string, gasPrice: string = "21000"): Promise<EthereumTransaction> {
+  send(fromAddress: string, toAddress: string, amount: string): Promise<EthereumTransaction> {
     if (fromAddress === '') {
       fromAddress = this.web3.eth.coinbase
     }
     return this.unlockAccount(fromAddress)
       .then(() => {
         amount = this.web3.toHex(amount)
-        const transaction = {from: fromAddress, to: toAddress, value: amount, gasPrice: gasPrice}
+        const transaction = {from: fromAddress, to: toAddress, value: amount}
         return new Promise<any>((resolve, reject) => {
           this.web3.eth.sendTransaction(transaction, (err, txid) => {
             if (err)
@@ -145,6 +148,7 @@ export class Web3EthereumClient implements EthereumClient {
 
   getBlockNumber(): Promise<number> {
     return new Promise((resolve, reject) => {
+      console.log('getting block number')
       this.web3.eth.getBlockNumber((err, blockNumber) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)

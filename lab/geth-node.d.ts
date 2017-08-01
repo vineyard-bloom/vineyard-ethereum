@@ -3,7 +3,6 @@ export interface GethNodeConfig {
     gethPath?: string;
 }
 export declare class GethNode {
-    private status;
     private stdout;
     private stderr;
     private childProcess;
@@ -11,13 +10,16 @@ export declare class GethNode {
     private config;
     private static instanceIndex;
     private datadir;
-    constructor(config?: GethNodeConfig);
+    private keydir;
+    private port;
+    private index;
+    constructor(config?: GethNodeConfig, port?: any);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
-    startMiner(port: any): Promise<void>;
-    start(port: any, flags?: string): Promise<void>;
+    startMining(): Promise<void>;
+    start(flags?: string): Promise<void>;
     isRunning(): boolean;
     stop(): Promise<{}>;
     static initialize(): Promise<{}>;
+    mine(milliseconds: number): any;
 }
-export declare function mine(node: any, port: any, milliseconds: number): any;

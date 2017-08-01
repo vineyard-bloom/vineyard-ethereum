@@ -3,17 +3,29 @@ import {GethNodeConfig} from "./geth-node";
 
 
 function fund(node: GethNode) {
-    const web3 = node.getWeb3()
-    return new Promise<void>((resolve, reject) => {
-     console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE")
+  const web3 = node.getWeb3()
+  return new Promise<void>((resolve, reject) => {
+    const send = () => {
       web3.personal.unlockAccount(web3.eth.coinbase)
       web3.eth.sendTransaction({
         from: web3.eth.coinbase,
         to: web3.eth.accounts[1],
         value: web3.toWei(35)
-      }, function (err, tx) {resolve (tx)})
-    })
-} 
+      }, function (err, tx) {
+        if (err) {
+          console.log(err)
+          reject(err)
+        }
+        else {
+          console.log(tx)
+          resolve(tx)
+        }
+      })
+    }
+    setTimeout(fund, 10000)
+  })
+    .then(result => console.log(web3.eth.getTransaction(result)))
+}
 
 function spend(node: GethNode) {
   const web3 = node.getWeb3()

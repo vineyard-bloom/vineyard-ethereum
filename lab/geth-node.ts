@@ -9,7 +9,11 @@ enum Status {
 
 export interface GethNodeConfig {
   gethPath?: string
-  verbosity?:number // 0 - 6
+  verbosity?: number // 0 - 6
+  tempPath?: string
+  port?: number
+  index?: number
+  bootnodes?: string
 }
 
 // export class Miner {
@@ -58,17 +62,10 @@ export class GethNode {
 
   startMining() {
     console.log('*** mining')
-    return this.start('--mine --minerthreads 8')
+    return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000')
   }
 
-  start(flags = ''): Promise<void> {
-    const gethPath = this.config.gethPath || 'geth'
-    console.log('Starting Geth')
-    const verbosity = this.config.verbosity || 0
-    const command = gethPath + ' --dev --rpc --verbosity ' + verbosity + ' --rpcport ' + this.port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ' + this.keydir
-      + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console'
-    console.log(command)
+  private launch(command) {
     const childProcess = this.childProcess = child_process.exec(command)
 
     childProcess.stdout.on('data', (data) => {
@@ -90,14 +87,67 @@ export class GethNode {
     return new Promise<void>(resolve => setTimeout(resolve, 1000))
   }
 
+  getBootNodeFlags() {
+    return this.config.bootnodes
+      ? ' --bootnodes ' + this.config.bootnodes + ' '
+      : ''
+  }
+
+  getCommonFlags() {
+    const verbosity = this.config.verbosity || 0
+
+    return ' --ipcdisable --keystore ' + this.keydir
+      + ' --datadir ' + this.datadir
+      + ' --verbosity ' + verbosity
+      + ' --networkid 101 --port=' + (30303 + this.index)
+  }
+
+  getMainCommand(): string {
+    const gethPath = this.config.gethPath || 'geth'
+    return gethPath + this.getCommonFlags()
+  }
+
+  getRPCFlags() {
+    return ' --rpc --rpcport ' + this.port
+      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" '
+  }
+
+  start(flags = ''): Promise<void> {
+    console.log('Starting Geth')
+    const command = this.getMainCommand() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
+    console.log(command)
+    return this.launch(command)
+  }
+
+  execSync(suffix: string) {
+    const command = this.getMainCommand() + ' ' + suffix
+    console.log(command)
+    const result = child_process.execSync(command)
+    return result.toString()
+  }
+
+  initialize(genesisPath: string): Promise<void> {
+    return this.execSync('init ' + genesisPath)
+  }
+
+  getNodeUrl(): string {
+    return this.execSync('--exec admin.nodeInfo.enode console')
+  }
+
   isRunning() {
     return this.childProcess != null
+  }
+
+  isConnected() {
+    return this.client.getWeb3().isConnected()
   }
 
   stop() {
     console.log(this.index, 'Stopping node.')
     if (!this.childProcess)
       return Promise.resolve()
+
+    this.client.getWeb3().reset()
 
     return new Promise((resolve, reject) => {
       this.childProcess.kill()
@@ -109,22 +159,10 @@ export class GethNode {
 
   }
 
-  static initialize() {
-    return new Promise((resolve, reject) => {
-      rimraf('./temp/eth', function (error, stdout, stderr) {
-        if (error)
-          reject(error)
-
-        else
-          resolve(stdout)
-      })
-    })
-  }
-
   mine(milliseconds: number) {
     console.log('Mining for ' + milliseconds + ' milliseconds.')
     let previousBlockNumber
-    return this.startMiner()
+    return this.startMining()
       .then(() => this.getClient().getBlockNumber())
       .then(blockNumber => previousBlockNumber = blockNumber)
       .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))

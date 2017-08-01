@@ -38,18 +38,10 @@ var GethNode = (function () {
     };
     GethNode.prototype.startMining = function () {
         console.log('*** mining');
-        return this.start('--mine --minerthreads 8');
+        return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000');
     };
-    GethNode.prototype.start = function (flags) {
+    GethNode.prototype.launch = function (command) {
         var _this = this;
-        if (flags === void 0) { flags = ''; }
-        var gethPath = this.config.gethPath || 'geth';
-        console.log('Starting Geth');
-        var verbosity = this.config.verbosity || 0;
-        var command = gethPath + ' --dev --rpc --verbosity ' + verbosity + ' --rpcport ' + this.port
-            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" --keystore ' + this.keydir
-            + ' --datadir ' + this.datadir + ' --networkid 101 ' + flags + ' console';
-        console.log(command);
         var childProcess = this.childProcess = child_process.exec(command);
         childProcess.stdout.on('data', function (data) {
             console.log(_this.index, 'stdout:', "" + data);
@@ -65,14 +57,57 @@ var GethNode = (function () {
         });
         return new Promise(function (resolve) { return setTimeout(resolve, 1000); });
     };
+    GethNode.prototype.getBootNodeFlags = function () {
+        return this.config.bootnodes
+            ? ' --bootnodes ' + this.config.bootnodes + ' '
+            : '';
+    };
+    GethNode.prototype.getCommonFlags = function () {
+        var verbosity = this.config.verbosity || 0;
+        return ' --ipcdisable --keystore ' + this.keydir
+            + ' --datadir ' + this.datadir
+            + ' --verbosity ' + verbosity
+            + ' --networkid 101 --port=' + (30303 + this.index);
+    };
+    GethNode.prototype.getMainCommand = function () {
+        var gethPath = this.config.gethPath || 'geth';
+        return gethPath + this.getCommonFlags();
+    };
+    GethNode.prototype.getRPCFlags = function () {
+        return ' --rpc --rpcport ' + this.port
+            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
+    };
+    GethNode.prototype.start = function (flags) {
+        if (flags === void 0) { flags = ''; }
+        console.log('Starting Geth');
+        var command = this.getMainCommand() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
+        console.log(command);
+        return this.launch(command);
+    };
+    GethNode.prototype.execSync = function (suffix) {
+        var command = this.getMainCommand() + ' ' + suffix;
+        console.log(command);
+        var result = child_process.execSync(command);
+        return result.toString();
+    };
+    GethNode.prototype.initialize = function (genesisPath) {
+        return this.execSync('init ' + genesisPath);
+    };
+    GethNode.prototype.getNodeUrl = function () {
+        return this.execSync('--exec admin.nodeInfo.enode console');
+    };
     GethNode.prototype.isRunning = function () {
         return this.childProcess != null;
+    };
+    GethNode.prototype.isConnected = function () {
+        return this.client.getWeb3().isConnected();
     };
     GethNode.prototype.stop = function () {
         var _this = this;
         console.log(this.index, 'Stopping node.');
         if (!this.childProcess)
             return Promise.resolve();
+        this.client.getWeb3().reset();
         return new Promise(function (resolve, reject) {
             _this.childProcess.kill();
             _this.childProcess.on('close', function (code) {
@@ -81,21 +116,11 @@ var GethNode = (function () {
             });
         });
     };
-    GethNode.initialize = function () {
-        return new Promise(function (resolve, reject) {
-            rimraf('./temp/eth', function (error, stdout, stderr) {
-                if (error)
-                    reject(error);
-                else
-                    resolve(stdout);
-            });
-        });
-    };
     GethNode.prototype.mine = function (milliseconds) {
         var _this = this;
         console.log('Mining for ' + milliseconds + ' milliseconds.');
         var previousBlockNumber;
-        return this.startMiner()
+        return this.startMining()
             .then(function () { return _this.getClient().getBlockNumber(); })
             .then(function (blockNumber) { return previousBlockNumber = blockNumber; })
             .then(function () { return new Promise(function (resolve) { return setTimeout(resolve, milliseconds); }); })

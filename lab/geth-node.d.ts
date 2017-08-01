@@ -2,6 +2,10 @@ import { Web3EthereumClient } from "../src";
 export interface GethNodeConfig {
     gethPath?: string;
     verbosity?: number;
+    tempPath?: string;
+    port?: number;
+    index?: number;
+    bootnodes?: string;
 }
 export declare class GethNode {
     private stdout;
@@ -18,9 +22,17 @@ export declare class GethNode {
     getWeb3(): any;
     getClient(): Web3EthereumClient;
     startMining(): Promise<void>;
+    private launch(command);
+    getBootNodeFlags(): string;
+    getCommonFlags(): string;
+    getMainCommand(): string;
+    getRPCFlags(): string;
     start(flags?: string): Promise<void>;
+    execSync(suffix: string): any;
+    initialize(genesisPath: string): Promise<void>;
+    getNodeUrl(): string;
     isRunning(): boolean;
+    isConnected(): any;
     stop(): Promise<{}>;
-    static initialize(): Promise<{}>;
-    mine(milliseconds: number): any;
+    mine(milliseconds: number): Promise<{}>;
 }

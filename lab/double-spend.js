@@ -4,12 +4,13 @@ var _1 = require("./");
 function fund(node) {
     var web3 = node.getWeb3();
     return new Promise(function (resolve, reject) {
+        console.log(web3.eth.getBalance(web3.eth.coinbase), "coinbase balance");
         var send = function () {
             web3.personal.unlockAccount(web3.eth.coinbase);
             web3.eth.sendTransaction({
                 from: web3.eth.coinbase,
                 to: web3.eth.accounts[1],
-                value: web3.toWei(35)
+                value: web3.toWei(8)
             }, function (err, tx) {
                 if (err) {
                     console.log(err);
@@ -21,19 +22,20 @@ function fund(node) {
                 }
             });
         };
-        setTimeout(fund, 10000);
+        setTimeout(send, 10000);
     })
         .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }
 function spend(node) {
     var web3 = node.getWeb3();
     return new Promise(function (resolve, reject) {
+        console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance");
         var send = function () {
             web3.personal.unlockAccount(web3.eth.accounts[1]);
             web3.eth.sendTransaction({
                 from: web3.eth.accounts[1],
                 to: web3.eth.accounts[2],
-                value: web3.toWei(18)
+                value: web3.toWei(5)
             }, function (err, tx) {
                 if (err) {
                     console.log(err);

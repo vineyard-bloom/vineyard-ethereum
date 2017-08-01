@@ -2,11 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var bignumber_js_1 = require("bignumber.js");
+function gweiToWei(amount) {
+    return amount.dividedBy("1000000000");
+}
+exports.gweiToWei = gweiToWei;
 var Broom = (function () {
     function Broom(config, ethereumManager, ethereumClient) {
         this.config = config;
         this.manager = ethereumManager;
         this.client = ethereumClient;
+        this.config.gasPrice = ethereumClient.getWeb3().gasPrice;
     }
     Broom.prototype.singleSweep = function (address) {
         var _this = this;
@@ -31,7 +36,8 @@ var Broom = (function () {
         });
     };
     Broom.prototype.calculateSendAmount = function (amount) {
-        var gasTotal = new bignumber_js_1.default(this.config.gas).times(new bignumber_js_1.default(this.config.gasPrice));
+        var gasPrice = gweiToWei(new bignumber_js_1.default(this.config.gasPrice));
+        var gasTotal = new bignumber_js_1.default(this.config.gas).times(gasPrice);
         return amount.subtract(gasTotal);
     };
     Broom.prototype.saveSweepRecord = function (bristle) {

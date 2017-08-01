@@ -4,15 +4,19 @@ var geth_node_1 = require("./geth-node");
 var child_process = require('child_process');
 var rimraf = require('rimraf');
 var promise_each2_1 = require("promise-each2");
+var fs = require('fs');
 var EthereumNetwork = (function () {
     function EthereumNetwork(config) {
         this.nextPort = 8546;
-        this.coinbase = "0x0000000000000000000000000000000000000001";
+        this.coinbase = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba";
         this.enode = null;
         this.nodes = [];
         this.config = config;
         this.config.tempPath = './temp/eth';
     }
+    EthereumNetwork.prototype.getCoinbase = function () {
+        return this.coinbase;
+    };
     EthereumNetwork.prototype.createNode = function () {
         var config = Object.assign({
             bootnodes: this.enode,
@@ -20,6 +24,7 @@ var EthereumNetwork = (function () {
         var node = new geth_node_1.GethNode(config, this.nextPort++);
         var GenesisPath = config.tempPath + '/genesis.json';
         node.initialize(GenesisPath);
+        fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}');
         this.nodes.push(node);
         return node;
     };
@@ -34,9 +39,9 @@ var EthereumNetwork = (function () {
                 "eip155Block": 0,
                 "eip158Block": 0
             },
-            "alloc": {
-                "0x0000000000000000000000000000000000000001": { "balance": "1111001131200" }
-            },
+            "alloc": (_a = {},
+                _a[this.coinbase] = { "balance": "1111001131200000000000" },
+                _a),
             "coinbase": this.coinbase,
             "difficulty": "0x20000",
             "extraData": "",
@@ -48,10 +53,10 @@ var EthereumNetwork = (function () {
         };
         var fs = require('fs');
         fs.writeFileSync(path, JSON.stringify(content), 'utf8');
+        var _a;
     };
     EthereumNetwork.prototype.resetTempDir = function () {
         rimraf.sync('./temp/eth'); // Right now still hard-coded because I don't trust rm -rf.
-        var fs = require('fs');
         if (!fs.existsSync(this.config.tempPath)) {
             fs.mkdirSync(this.config.tempPath);
         }

@@ -7,6 +7,7 @@ export declare class EthereumNetwork {
     private enode;
     private nodes;
     constructor(config: GethNodeConfig);
+    getCoinbase(): string;
     createNode(): GethNode;
     getMainNode(): GethNode;
     private createGenesisFile(path);

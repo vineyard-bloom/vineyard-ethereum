@@ -2,18 +2,23 @@ import {GethNode, GethNodeConfig} from "./geth-node";
 const child_process = require('child_process')
 const rimraf = require('rimraf')
 import {each as promiseEach} from 'promise-each2'
+const fs = require('fs')
 
 export class EthereumNetwork {
   private config: GethNodeConfig
   private nextPort = 8546
   private mainNode: GethNode
-  private coinbase: string = "0x0000000000000000000000000000000000000001"
+  private coinbase: string = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba"
   private enode: string = null
   private nodes: GethNode [] = []
 
   constructor(config: GethNodeConfig) {
     this.config = config
     this.config.tempPath = './temp/eth'
+  }
+
+  getCoinbase() {
+    return this.coinbase
   }
 
   createNode() {
@@ -23,6 +28,7 @@ export class EthereumNetwork {
     const node = new GethNode(config, this.nextPort++)
     const GenesisPath = config.tempPath + '/genesis.json'
     node.initialize(GenesisPath)
+    fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}')
     this.nodes.push(node)
     return node
   }
@@ -40,7 +46,7 @@ export class EthereumNetwork {
         "eip158Block": 0
       },
       "alloc": {
-        "0x0000000000000000000000000000000000000001": {"balance": "1111001131200"}
+        [this.coinbase]: {"balance": "1111001131200000000000"}
       },
       "coinbase": this.coinbase,
       "difficulty": "0x20000",
@@ -58,7 +64,6 @@ export class EthereumNetwork {
 
   resetTempDir() {
     rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.
-    const fs = require('fs')
     if (!fs.existsSync(this.config.tempPath)) {
       fs.mkdirSync(this.config.tempPath)
     }

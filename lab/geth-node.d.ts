@@ -21,6 +21,7 @@ export declare class GethNode {
     constructor(config?: GethNodeConfig, port?: any);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
+    getKeydir(): string;
     startMining(): Promise<void>;
     private launch(flags);
     getBootNodeFlags(): string;

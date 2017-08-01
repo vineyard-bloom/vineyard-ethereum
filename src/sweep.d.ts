@@ -12,6 +12,7 @@ export interface SweepConfig {
     gas: any;
     gasPrice: any;
 }
+export declare function gweiToWei(amount: any): any;
 export declare class Broom {
     private manager;
     private client;

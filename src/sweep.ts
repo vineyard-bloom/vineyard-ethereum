@@ -17,6 +17,10 @@ export interface SweepConfig {
   gasPrice
 }
 
+export function gweiToWei(amount) {
+  return amount.dividedBy("1000000000")
+}
+
 export class Broom {
   private manager: SweepManager
   private client
@@ -26,6 +30,7 @@ export class Broom {
     this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
+    this.config.gasPrice = ethereumClient.getWeb3().gasPrice
   }
 
   private singleSweep(address): Promise<Bristle> {
@@ -51,7 +56,8 @@ export class Broom {
   }
 
   calculateSendAmount(amount) {
-    const gasTotal = new BigNumber(this.config.gas).times(new BigNumber(this.config.gasPrice))
+    const gasPrice = gweiToWei(new BigNumber(this.config.gasPrice))
+    const gasTotal = new BigNumber(this.config.gas).times(gasPrice)
     return amount.subtract(gasTotal)
   }
 

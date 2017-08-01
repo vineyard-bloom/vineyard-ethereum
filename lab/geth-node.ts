@@ -45,6 +45,10 @@ export class GethNode {
     return this.client
   }
 
+  getKeydir() {
+    return this.keydir
+  }
+
   startMining() {
     console.log('*** mining')
     return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000')

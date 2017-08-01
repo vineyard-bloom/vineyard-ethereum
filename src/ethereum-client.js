@@ -88,8 +88,8 @@ var Web3EthereumClient = (function () {
         }
         return this.unlockAccount(fromAddress)
             .then(function () {
-            amount = _this.web3.toHex(amount);
-            var transaction = { from: fromAddress, to: toAddress, value: amount };
+            var hexAmount = _this.web3.toHex(amount);
+            var transaction = { from: fromAddress, to: toAddress, value: amount, gas: 21000 };
             return new Promise(function (resolve, reject) {
                 _this.web3.eth.sendTransaction(transaction, function (err, txid) {
                     if (err)

@@ -24,6 +24,9 @@ var GethNode = (function () {
     GethNode.prototype.getClient = function () {
         return this.client;
     };
+    GethNode.prototype.getKeydir = function () {
+        return this.keydir;
+    };
     GethNode.prototype.startMining = function () {
         console.log('*** mining');
         return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000');

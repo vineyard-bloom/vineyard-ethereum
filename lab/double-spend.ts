@@ -28,9 +28,10 @@ function fund(node: GethNode) {
     .then(result => console.log(web3.eth.getTransaction(result)))
 }
 
-function spend(node: GethNode) {
+function spend(node: GethNode, miner?: GethNode) {
   const web3 = node.getWeb3()
   return new Promise<void>((resolve, reject) => {
+    mine(miner, 8547, 30000)
     const send = () => {
       console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance")
       web3.personal.unlockAccount(web3.eth.accounts[1])
@@ -57,7 +58,7 @@ function spend(node: GethNode) {
 export function doubleSpend(config?: GethNodeConfig) {
   const node1 = new GethNode(config)
   const node2 = new GethNode(config)
-    mine(node1, 8546, 30000).then(() => node1.start(8546).then(() => fund(node1)).then(() => spend(node1))
-      .then(() => mine(node2, 8547, 30000).then(() => node2.start(8546))
+    mine(node1, 8546, 30000).then(() => node1.start(8546).then(() => fund(node1)).then(() => spend(node1, node2))
+      .then(() => node2.start(8546))
       .then(() => fund(node2)).then(() => spend(node2))) 
 }

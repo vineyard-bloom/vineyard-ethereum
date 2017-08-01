@@ -16,22 +16,6 @@ export interface GethNodeConfig {
   bootnodes?: string
 }
 
-// export class Miner {
-//   private minerProcess
-//   constructor() {
-
-//   }
-
-//   start(): Promise<void> {
-//     return new Promise<void>((resolve, reject) => {
-//      const minerProcess = this.minerProcess = child_process.exec(
-//       gethPath + ' --dev --verbosity 4 --keystore ./temp/keystore'
-//       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
-//     ) 
-//     })
-//   }
-// }
-
 export class GethNode {
   private stdout
   private stderr
@@ -50,6 +34,7 @@ export class GethNode {
     this.datadir = './temp/eth/geth' + this.index
     this.keydir = './temp/eth/keystore' + this.index
     this.port = port
+    this.config.gethPath = this.config.gethPath || 'geth'
   }
 
   getWeb3() {
@@ -65,9 +50,19 @@ export class GethNode {
     return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000')
   }
 
-  private launch(command) {
-    const childProcess = this.childProcess = child_process.exec(command)
-
+  private launch(flags) {
+    // const splitFlags = flags.trim().split(/\s+/)
+    // this.childProcess = child_process.execFile(this.config.gethPath, splitFlags, (error, stdout, stderr) => {
+    //   if (error)
+    //     throw error
+    //
+    //   if (stdout)
+    //     console.log(this.index, stdout)
+    //
+    //   if (stderr)
+    //     console.error(this.index, error)
+    // })
+    const childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags)
     childProcess.stdout.on('data', (data) => {
       console.log(this.index, 'stdout:', `${data}`);
     });
@@ -76,7 +71,7 @@ export class GethNode {
       console.error(this.index, 'stderr:', `${data}`);
     });
 
-    childProcess.on('close', (code) => {
+    this.childProcess.on('close', (code) => {
       console.log(this.index, `child process exited with code ${code}`);
     })
 
@@ -102,10 +97,9 @@ export class GethNode {
       + ' --networkid 101 --port=' + (30303 + this.index)
   }
 
-  getMainCommand(): string {
-    const gethPath = this.config.gethPath || 'geth'
-    return gethPath + this.getCommonFlags()
-  }
+  // getMainCommand(): string {
+  //   return this.config.gethPath + this.getCommonFlags()
+  // }
 
   getRPCFlags() {
     return ' --rpc --rpcport ' + this.port
@@ -114,13 +108,13 @@ export class GethNode {
 
   start(flags = ''): Promise<void> {
     console.log('Starting Geth')
-    const command = this.getMainCommand() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
-    console.log(command)
+    const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
+    console.log('geth ' + command)
     return this.launch(command)
   }
 
   execSync(suffix: string) {
-    const command = this.getMainCommand() + ' ' + suffix
+    const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix
     console.log(command)
     const result = child_process.execSync(command)
     return result.toString()
@@ -132,6 +126,8 @@ export class GethNode {
 
   getNodeUrl(): string {
     return this.execSync('--exec admin.nodeInfo.enode console')
+      .replace(/\r\n/g, '')
+      .replace('[::]', '127.0.0.1')
   }
 
   isRunning() {
@@ -143,20 +139,21 @@ export class GethNode {
   }
 
   stop() {
-    console.log(this.index, 'Stopping node.')
     if (!this.childProcess)
       return Promise.resolve()
 
+    console.log(this.index, 'Stopping node.')
     this.client.getWeb3().reset()
 
     return new Promise((resolve, reject) => {
+      this.childProcess.stdin.write("exit\n")
       this.childProcess.kill()
       this.childProcess.on('close', (code) => {
         this.childProcess = null
+        console.log(this.index, 'Node stopped.')
         resolve()
       })
     })
-
   }
 
   mine(milliseconds: number) {

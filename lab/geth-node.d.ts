@@ -22,10 +22,9 @@ export declare class GethNode {
     getWeb3(): any;
     getClient(): Web3EthereumClient;
     startMining(): Promise<void>;
-    private launch(command);
+    private launch(flags);
     getBootNodeFlags(): string;
     getCommonFlags(): string;
-    getMainCommand(): string;
     getRPCFlags(): string;
     start(flags?: string): Promise<void>;
     execSync(suffix: string): any;

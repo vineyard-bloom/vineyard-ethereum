@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var geth_node_1 = require("./geth-node");
 var child_process = require('child_process');
 var rimraf = require('rimraf');
+var promise_each2_1 = require("promise-each2");
 var EthereumNetwork = (function () {
     function EthereumNetwork(config) {
         this.nextPort = 8546;
         this.coinbase = "0x0000000000000000000000000000000000000001";
         this.enode = null;
+        this.nodes = [];
         this.config = config;
         this.config.tempPath = './temp/eth';
     }
@@ -18,6 +20,7 @@ var EthereumNetwork = (function () {
         var node = new geth_node_1.GethNode(config, this.nextPort++);
         var GenesisPath = config.tempPath + '/genesis.json';
         node.initialize(GenesisPath);
+        this.nodes.push(node);
         return node;
     };
     EthereumNetwork.prototype.getMainNode = function () {
@@ -62,6 +65,9 @@ var EthereumNetwork = (function () {
     };
     EthereumNetwork.prototype.start = function () {
         return this.mainNode.start();
+    };
+    EthereumNetwork.prototype.stop = function () {
+        return promise_each2_1.each(this.nodes, function (node) { return node.stop(); });
     };
     return EthereumNetwork;
 }());

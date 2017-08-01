@@ -5,6 +5,7 @@ export declare class EthereumNetwork {
     private mainNode;
     private coinbase;
     private enode;
+    private nodes;
     constructor(config: GethNodeConfig);
     createNode(): GethNode;
     getMainNode(): GethNode;
@@ -12,4 +13,5 @@ export declare class EthereumNetwork {
     resetTempDir(): void;
     initialize(): void;
     start(): Promise<void>;
+    stop(): any;
 }

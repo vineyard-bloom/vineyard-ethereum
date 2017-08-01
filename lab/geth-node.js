@@ -8,19 +8,6 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
-// export class Miner {
-//   private minerProcess
-//   constructor() {
-//   }
-//   start(): Promise<void> {
-//     return new Promise<void>((resolve, reject) => {
-//      const minerProcess = this.minerProcess = child_process.exec(
-//       gethPath + ' --dev --verbosity 4 --keystore ./temp/keystore'
-//       + ' --datadir ' + datadir + ' --networkid 101 --mine --minerthreads 5 console'
-//     ) 
-//     })
-//   }
-// }
 var GethNode = (function () {
     function GethNode(config, port) {
         this.childProcess = null;
@@ -29,6 +16,7 @@ var GethNode = (function () {
         this.datadir = './temp/eth/geth' + this.index;
         this.keydir = './temp/eth/keystore' + this.index;
         this.port = port;
+        this.config.gethPath = this.config.gethPath || 'geth';
     }
     GethNode.prototype.getWeb3 = function () {
         return this.client.getWeb3();
@@ -40,16 +28,27 @@ var GethNode = (function () {
         console.log('*** mining');
         return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000');
     };
-    GethNode.prototype.launch = function (command) {
+    GethNode.prototype.launch = function (flags) {
         var _this = this;
-        var childProcess = this.childProcess = child_process.exec(command);
+        // const splitFlags = flags.trim().split(/\s+/)
+        // this.childProcess = child_process.execFile(this.config.gethPath, splitFlags, (error, stdout, stderr) => {
+        //   if (error)
+        //     throw error
+        //
+        //   if (stdout)
+        //     console.log(this.index, stdout)
+        //
+        //   if (stderr)
+        //     console.error(this.index, error)
+        // })
+        var childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags);
         childProcess.stdout.on('data', function (data) {
             console.log(_this.index, 'stdout:', "" + data);
         });
         childProcess.stderr.on('data', function (data) {
             console.error(_this.index, 'stderr:', "" + data);
         });
-        childProcess.on('close', function (code) {
+        this.childProcess.on('close', function (code) {
             console.log(_this.index, "child process exited with code " + code);
         });
         this.client = new src_1.Web3EthereumClient({
@@ -69,10 +68,9 @@ var GethNode = (function () {
             + ' --verbosity ' + verbosity
             + ' --networkid 101 --port=' + (30303 + this.index);
     };
-    GethNode.prototype.getMainCommand = function () {
-        var gethPath = this.config.gethPath || 'geth';
-        return gethPath + this.getCommonFlags();
-    };
+    // getMainCommand(): string {
+    //   return this.config.gethPath + this.getCommonFlags()
+    // }
     GethNode.prototype.getRPCFlags = function () {
         return ' --rpc --rpcport ' + this.port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
@@ -80,12 +78,12 @@ var GethNode = (function () {
     GethNode.prototype.start = function (flags) {
         if (flags === void 0) { flags = ''; }
         console.log('Starting Geth');
-        var command = this.getMainCommand() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
-        console.log(command);
+        var command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
+        console.log('geth ' + command);
         return this.launch(command);
     };
     GethNode.prototype.execSync = function (suffix) {
-        var command = this.getMainCommand() + ' ' + suffix;
+        var command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
         console.log(command);
         var result = child_process.execSync(command);
         return result.toString();
@@ -94,7 +92,9 @@ var GethNode = (function () {
         return this.execSync('init ' + genesisPath);
     };
     GethNode.prototype.getNodeUrl = function () {
-        return this.execSync('--exec admin.nodeInfo.enode console');
+        return this.execSync('--exec admin.nodeInfo.enode console')
+            .replace(/\r\n/g, '')
+            .replace('[::]', '127.0.0.1');
     };
     GethNode.prototype.isRunning = function () {
         return this.childProcess != null;
@@ -104,14 +104,16 @@ var GethNode = (function () {
     };
     GethNode.prototype.stop = function () {
         var _this = this;
-        console.log(this.index, 'Stopping node.');
         if (!this.childProcess)
             return Promise.resolve();
+        console.log(this.index, 'Stopping node.');
         this.client.getWeb3().reset();
         return new Promise(function (resolve, reject) {
+            _this.childProcess.stdin.write("exit\n");
             _this.childProcess.kill();
             _this.childProcess.on('close', function (code) {
                 _this.childProcess = null;
+                console.log(_this.index, 'Node stopped.');
                 resolve();
             });
         });

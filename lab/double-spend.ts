@@ -31,8 +31,8 @@ function fund(node: GethNode) {
 function spend(node: GethNode) {
   const web3 = node.getWeb3()
   return new Promise<void>((resolve, reject) => {
-    console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance")
     const send = () => {
+      console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance")
       web3.personal.unlockAccount(web3.eth.accounts[1])
       web3.eth.sendTransaction({
         from: web3.eth.accounts[1],
@@ -49,7 +49,7 @@ function spend(node: GethNode) {
         }
       })
     }
-    setTimeout(send, 1000)
+    setTimeout(send, 15000)
   })
     .then(result => console.log(web3.eth.getTransaction(result)))
 }

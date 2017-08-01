@@ -29,8 +29,8 @@ function fund(node) {
 function spend(node) {
     var web3 = node.getWeb3();
     return new Promise(function (resolve, reject) {
-        console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance");
         var send = function () {
+            console.log(web3.eth.getBalance(web3.eth.accounts[1]), "account 1 balance");
             web3.personal.unlockAccount(web3.eth.accounts[1]);
             web3.eth.sendTransaction({
                 from: web3.eth.accounts[1],
@@ -47,7 +47,7 @@ function spend(node) {
                 }
             });
         };
-        setTimeout(send, 1000);
+        setTimeout(send, 15000);
     })
         .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
 }

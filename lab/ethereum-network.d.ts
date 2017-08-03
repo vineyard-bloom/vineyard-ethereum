@@ -5,6 +5,7 @@ export declare class EthereumNetwork {
     private mainNode;
     private coinbase;
     private enode;
+    private enodes;
     private nodes;
     constructor(config: GethNodeConfig);
     getCoinbase(): string;

@@ -29,21 +29,10 @@ var GethNode = (function () {
     };
     GethNode.prototype.startMining = function () {
         console.log('*** mining');
-        return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000');
+        return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase);
     };
     GethNode.prototype.launch = function (flags) {
         var _this = this;
-        // const splitFlags = flags.trim().split(/\s+/)
-        // this.childProcess = child_process.execFile(this.config.gethPath, splitFlags, (error, stdout, stderr) => {
-        //   if (error)
-        //     throw error
-        //
-        //   if (stdout)
-        //     console.log(this.index, stdout)
-        //
-        //   if (stderr)
-        //     console.error(this.index, error)
-        // })
         var childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags);
         childProcess.stdout.on('data', function (data) {
             console.log(_this.index, 'stdout:', "" + data);
@@ -57,23 +46,47 @@ var GethNode = (function () {
         this.client = new src_1.Web3EthereumClient({
             http: "http://localhost:" + this.port
         });
-        return new Promise(function (resolve) { return setTimeout(resolve, 1000); });
+        return new Promise(function (resolve) {
+            var is_finished = false;
+            var finished = function () {
+                if (!is_finished) {
+                    is_finished = true;
+                    console.log(_this.index, 'Connected to web3');
+                    resolve();
+                }
+            };
+            setTimeout(finished, 1500);
+            var next = function () {
+                return new Promise(function (resolve) { return setTimeout(resolve, 50); })
+                    .then(function () {
+                    if (is_finished)
+                        return;
+                    if (!_this.isConnected())
+                        return next();
+                    finished();
+                });
+            };
+            next();
+        })
+            .then(function () {
+            for (var i = 0; i < _this.config.enodes.length; ++i) {
+                _this.addPeer(_this.config.enodes[i]);
+            }
+        });
     };
     GethNode.prototype.getBootNodeFlags = function () {
-        return this.config.bootnodes
-            ? ' --bootnodes ' + this.config.bootnodes + ' '
-            : '';
+        return '';
+        // return this.config.bootnodes
+        //   ? ' --bootnodes ' + this.config.bootnodes + ' '
+        //   : ''
     };
     GethNode.prototype.getCommonFlags = function () {
         var verbosity = this.config.verbosity || 0;
-        return ' --ipcdisable --keystore ' + this.keydir
+        return ' --ipcdisable --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --verbosity ' + verbosity
             + ' --networkid 101 --port=' + (30303 + this.index);
     };
-    // getMainCommand(): string {
-    //   return this.config.gethPath + this.getCommonFlags()
-    // }
     GethNode.prototype.getRPCFlags = function () {
         return ' --rpc --rpcport ' + this.port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
@@ -96,7 +109,7 @@ var GethNode = (function () {
     };
     GethNode.prototype.getNodeUrl = function () {
         return this.execSync('--exec admin.nodeInfo.enode console')
-            .replace(/\r\n/g, '')
+            .replace(/\r|\n/g, '')
             .replace('[::]', '127.0.0.1');
     };
     GethNode.prototype.isRunning = function () {
@@ -104,6 +117,33 @@ var GethNode = (function () {
     };
     GethNode.prototype.isConnected = function () {
         return this.client.getWeb3().isConnected();
+    };
+    GethNode.prototype.mineBlocks = function (blockCount) {
+        var _this = this;
+        console.log('Mining', blockCount, 'blocks.');
+        var originalBlock, targetBlock;
+        var next = function () {
+            return new Promise(function (resolve) { return setTimeout(resolve, 100); })
+                .then(function () { return _this.getClient().getBlockNumber(); })
+                .then(function (blockNumber) {
+                if (blockNumber < targetBlock)
+                    return next();
+                console.log('Mined ' + (blockNumber - originalBlock) + " blocks.");
+            });
+        };
+        return this.getClient().getBlockNumber()
+            .then(function (blockNumber) {
+            originalBlock = blockNumber;
+            targetBlock = blockNumber + blockCount;
+        })
+            .then(next);
+    };
+    GethNode.prototype.addPeer = function (enode) {
+        console.log(this.index, "admin.addPeer(" + enode + ")");
+        this.childProcess.stdin.write("admin.addPeer(" + enode + ")\n");
+    };
+    GethNode.prototype.listPeers = function () {
+        this.childProcess.stdin.write("admin.peers\n");
     };
     GethNode.prototype.stop = function () {
         var _this = this;
@@ -114,11 +154,19 @@ var GethNode = (function () {
         return new Promise(function (resolve, reject) {
             _this.childProcess.stdin.write("exit\n");
             _this.childProcess.kill();
+            var onStop = function () {
+                if (_this.childProcess) {
+                    _this.childProcess = null;
+                    console.log(_this.index, 'Node stopped.');
+                    resolve();
+                }
+            };
             _this.childProcess.on('close', function (code) {
-                _this.childProcess = null;
-                console.log(_this.index, 'Node stopped.');
-                resolve();
+                onStop();
             });
+            setTimeout(function () {
+                onStop();
+            }, 500);
         });
     };
     GethNode.prototype.mine = function (milliseconds) {

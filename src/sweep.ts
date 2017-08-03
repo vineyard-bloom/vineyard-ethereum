@@ -7,18 +7,18 @@ export interface Bristle {
   to: string
   status: number
   txid: string
-  amount: number
+  amount
 }
 
 export interface SweepConfig {
   sweepAddress: string,
-  minSweepAmount: number
+  minSweepAmount
   gas
   gasPrice
 }
 
 export function gweiToWei(amount) {
-  return amount.dividedBy("1000000000")
+  return amount.times("1000000000")
 }
 
 export class Broom {
@@ -30,7 +30,6 @@ export class Broom {
     this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
-    this.config.gasPrice = ethereumClient.getWeb3().gasPrice
   }
 
   private singleSweep(address): Promise<Bristle> {
@@ -38,18 +37,24 @@ export class Broom {
       .then(balance => {
         if (balance.greaterThan(this.config.minSweepAmount)) {
           const sendAmount = this.calculateSendAmount(balance)
-            .then(sendAmount => {
-              return this.client.send(address, this.client.sweepAddress, sendAmount)
-                .then(txHash => {
-                  console.log('Saving sweep: ', txHash)
-                  return this.saveSweepRecord({
-                    from: address,
-                    to: this.client.sweepAddress,
-                    status: 0,
-                    txid: txHash,
-                    amount: sendAmount
-                  })
-                })
+          const transaction = {
+            from: address,
+            to: this.config.sweepAddress,
+            value: sendAmount,
+            gas: this.config.gas,
+            gasPrice: this.config.gasPrice,
+          }
+          console.log('Sweeping address', transaction)
+          return this.client.send(transaction)
+            .then(tx => {
+              console.log('Sweeping address succeeded', tx.hash)
+              return this.saveSweepRecord({
+                from: address,
+                to: this.config.sweepAddress,
+                status: 0,
+                txid: tx.hash,
+                amount: sendAmount
+              })
             })
         }
       })
@@ -58,7 +63,7 @@ export class Broom {
   calculateSendAmount(amount) {
     const gasPrice = gweiToWei(new BigNumber(this.config.gasPrice))
     const gasTotal = new BigNumber(this.config.gas).times(gasPrice)
-    return amount.subtract(gasTotal)
+    return amount.minus(gasTotal)
   }
 
   saveSweepRecord(bristle: Bristle) {
@@ -74,5 +79,4 @@ export class Broom {
       })
       .then(() => console.log('Finished Ethereum sweep'))
   }
-
 }

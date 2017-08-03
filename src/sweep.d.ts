@@ -4,11 +4,11 @@ export interface Bristle {
     to: string;
     status: number;
     txid: string;
-    amount: number;
+    amount: any;
 }
 export interface SweepConfig {
     sweepAddress: string;
-    minSweepAmount: number;
+    minSweepAmount: any;
     gas: any;
     gasPrice: any;
 }

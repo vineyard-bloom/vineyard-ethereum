@@ -14,6 +14,8 @@ export interface GethNodeConfig {
   port?: number
   index?: number
   bootnodes?: string
+  coinbase: string
+  enodes?: string[]
 }
 
 export class GethNode {
@@ -51,29 +53,18 @@ export class GethNode {
 
   startMining() {
     console.log('*** mining')
-    return this.start('--mine --minerthreads 8 --etherbase=0x0000000000000000000000000000000000000000')
+    return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase)
   }
 
   private launch(flags) {
-    // const splitFlags = flags.trim().split(/\s+/)
-    // this.childProcess = child_process.execFile(this.config.gethPath, splitFlags, (error, stdout, stderr) => {
-    //   if (error)
-    //     throw error
-    //
-    //   if (stdout)
-    //     console.log(this.index, stdout)
-    //
-    //   if (stderr)
-    //     console.error(this.index, error)
-    // })
     const childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags)
     childProcess.stdout.on('data', (data) => {
       console.log(this.index, 'stdout:', `${data}`);
-    });
+    })
 
     childProcess.stderr.on('data', (data) => {
       console.error(this.index, 'stderr:', `${data}`);
-    });
+    })
 
     this.childProcess.on('close', (code) => {
       console.log(this.index, `child process exited with code ${code}`);
@@ -83,27 +74,53 @@ export class GethNode {
       http: "http://localhost:" + this.port
     })
 
-    return new Promise<void>(resolve => setTimeout(resolve, 1000))
+    return new Promise<void>(resolve => {
+      let is_finished = false
+      const finished = () => {
+        if (!is_finished) {
+          is_finished = true
+          console.log(this.index, 'Connected to web3')
+          resolve()
+        }
+      }
+      setTimeout(finished, 1500)
+      const next = () => {
+        return new Promise<void>(resolve => setTimeout(resolve, 50))
+          .then(() => {
+            if (is_finished)
+              return
+
+            if (!this.isConnected())
+              return next()
+
+            finished()
+          })
+      }
+
+      next()
+    })
+      .then(() => {
+        for (let i = 0; i < this.config.enodes.length; ++i) {
+          this.addPeer(this.config.enodes[i])
+        }
+      })
   }
 
   getBootNodeFlags() {
-    return this.config.bootnodes
-      ? ' --bootnodes ' + this.config.bootnodes + ' '
-      : ''
+    return ''
+    // return this.config.bootnodes
+    //   ? ' --bootnodes ' + this.config.bootnodes + ' '
+    //   : ''
   }
 
   getCommonFlags() {
     const verbosity = this.config.verbosity || 0
 
-    return ' --ipcdisable --keystore ' + this.keydir
+    return ' --ipcdisable --nodiscover --keystore ' + this.keydir
       + ' --datadir ' + this.datadir
       + ' --verbosity ' + verbosity
       + ' --networkid 101 --port=' + (30303 + this.index)
   }
-
-  // getMainCommand(): string {
-  //   return this.config.gethPath + this.getCommonFlags()
-  // }
 
   getRPCFlags() {
     return ' --rpc --rpcport ' + this.port
@@ -130,7 +147,7 @@ export class GethNode {
 
   getNodeUrl(): string {
     return this.execSync('--exec admin.nodeInfo.enode console')
-      .replace(/\r\n/g, '')
+      .replace(/\r|\n/g, '')
       .replace('[::]', '127.0.0.1')
   }
 
@@ -140,6 +157,38 @@ export class GethNode {
 
   isConnected() {
     return this.client.getWeb3().isConnected()
+  }
+
+  mineBlocks(blockCount: number) {
+    console.log('Mining', blockCount, 'blocks.')
+    let originalBlock, targetBlock
+
+    const next = () => {
+      return new Promise<void>(resolve => setTimeout(resolve, 100))
+        .then(() => this.getClient().getBlockNumber())
+        .then(blockNumber => {
+          if (blockNumber < targetBlock)
+            return next()
+
+          console.log('Mined ' + (blockNumber - originalBlock) + " blocks.")
+        })
+    }
+
+    return this.getClient().getBlockNumber()
+      .then(blockNumber => {
+        originalBlock = blockNumber
+        targetBlock = blockNumber + blockCount
+      })
+      .then(next)
+  }
+
+  addPeer(enode: string) {
+    console.log(this.index, "admin.addPeer(" + enode + ")")
+    this.childProcess.stdin.write("admin.addPeer(" + enode + ")\n")
+  }
+
+  listPeers() {
+    this.childProcess.stdin.write("admin.peers\n")
   }
 
   stop() {
@@ -152,11 +201,21 @@ export class GethNode {
     return new Promise((resolve, reject) => {
       this.childProcess.stdin.write("exit\n")
       this.childProcess.kill()
+      const onStop = () => {
+        if (this.childProcess) {
+          this.childProcess = null
+          console.log(this.index, 'Node stopped.')
+          resolve()
+        }
+      }
+
       this.childProcess.on('close', (code) => {
-        this.childProcess = null
-        console.log(this.index, 'Node stopped.')
-        resolve()
+        onStop()
       })
+
+      setTimeout(() => {
+        onStop()
+      }, 500)
     })
   }
 

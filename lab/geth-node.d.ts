@@ -6,6 +6,8 @@ export interface GethNodeConfig {
     port?: number;
     index?: number;
     bootnodes?: string;
+    coinbase: string;
+    enodes?: string[];
 }
 export declare class GethNode {
     private stdout;
@@ -33,6 +35,9 @@ export declare class GethNode {
     getNodeUrl(): string;
     isRunning(): boolean;
     isConnected(): any;
+    mineBlocks(blockCount: number): Promise<any>;
+    addPeer(enode: string): void;
+    listPeers(): void;
     stop(): Promise<{}>;
     mine(milliseconds: number): Promise<{}>;
 }

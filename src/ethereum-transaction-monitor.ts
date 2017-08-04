@@ -56,11 +56,8 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
       .then(transactions => promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
   }
 
-  processBlocks(blockIndex, endBlockNumber): Promise<void> {
-    if (blockIndex > endBlockNumber)
-      return Promise.resolve<void>()
-
-    return getTransactions(this.ethereumClient, this.manager, blockIndex)
+  processBlock(blockIndex): Promise<void> {
+        return getTransactions(this.ethereumClient, this.manager, blockIndex)
       .then(transactions => {
         console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
         return transactions.length == 0
@@ -70,6 +67,12 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
             return this.manager.saveTransaction(tx, blockIndex)
           })
       })
+  }
+
+  processBlocks(blockIndex, endBlockNumber): Promise<void> {
+    if (blockIndex > endBlockNumber)
+      return Promise.resolve<void>()
+      .then(() => this.processBlock(blockIndex) )
       .then(() => {
         console.log('Finished block', blockIndex)
         return this.manager.setLastBlock(blockIndex)

@@ -48,10 +48,8 @@ var EthereumTransactionMonitor = (function () {
         return this.manager.getResolvedTransactions(newLastBlock)
             .then(function (transactions) { return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); }); });
     };
-    EthereumTransactionMonitor.prototype.processBlocks = function (blockIndex, endBlockNumber) {
+    EthereumTransactionMonitor.prototype.processBlock = function (blockIndex) {
         var _this = this;
-        if (blockIndex > endBlockNumber)
-            return Promise.resolve();
         return utility_1.getTransactions(this.ethereumClient, this.manager, blockIndex)
             .then(function (transactions) {
             console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
@@ -61,12 +59,18 @@ var EthereumTransactionMonitor = (function () {
                     console.log('Saving transaction', tx.hash);
                     return _this.manager.saveTransaction(tx, blockIndex);
                 });
-        })
-            .then(function () {
-            console.log('Finished block', blockIndex);
-            return _this.manager.setLastBlock(blockIndex);
-        })
-            .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
+        });
+    };
+    EthereumTransactionMonitor.prototype.processBlocks = function (blockIndex, endBlockNumber) {
+        var _this = this;
+        if (blockIndex > endBlockNumber)
+            return Promise.resolve()
+                .then(function () { return _this.processBlock(blockIndex); })
+                .then(function () {
+                console.log('Finished block', blockIndex);
+                return _this.manager.setLastBlock(blockIndex);
+            })
+                .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
     };
     EthereumTransactionMonitor.prototype.updateTransactions = function () {
         var _this = this;

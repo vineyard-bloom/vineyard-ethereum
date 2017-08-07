@@ -55,7 +55,7 @@ var GethNode = (function () {
                     resolve();
                 }
             };
-            setTimeout(finished, 1500);
+            setTimeout(finished, 5500);
             var next = function () {
                 return new Promise(function (resolve) { return setTimeout(resolve, 50); })
                     .then(function () {

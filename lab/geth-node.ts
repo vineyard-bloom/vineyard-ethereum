@@ -83,7 +83,7 @@ export class GethNode {
           resolve()
         }
       }
-      setTimeout(finished, 1500)
+      setTimeout(finished, 5500)
       const next = () => {
         return new Promise<void>(resolve => setTimeout(resolve, 50))
           .then(() => {

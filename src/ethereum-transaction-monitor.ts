@@ -72,9 +72,14 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
   processBlocks(blockIndex, endBlockNumber): Promise<void> {
     if (blockIndex > endBlockNumber)
       return Promise.resolve<void>()
-      .then(() => this.processBlock(blockIndex) )
+      .then(() => this.processBlock(blockIndex))
       .then(() => {
         console.log('Finished block', blockIndex)
+        return this.manager.setLastBlock(blockIndex)
+      })
+      .then(() => this.processBlock(blockIndex - 5))
+      .then(() => {
+        console.log('Second scan: Finished block', blockIndex - 5)
         return this.manager.setLastBlock(blockIndex)
       })
       .then(first => this.processBlocks(blockIndex + 1, endBlockNumber)

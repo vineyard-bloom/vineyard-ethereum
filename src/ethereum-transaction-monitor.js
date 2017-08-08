@@ -70,6 +70,11 @@ var EthereumTransactionMonitor = (function () {
                 console.log('Finished block', blockIndex);
                 return _this.manager.setLastBlock(blockIndex);
             })
+                .then(function () { return _this.processBlock(blockIndex - 5); })
+                .then(function () {
+                console.log('Second scan: Finished block', blockIndex - 5);
+                return _this.manager.setLastBlock(blockIndex);
+            })
                 .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
     };
     EthereumTransactionMonitor.prototype.updateTransactions = function () {

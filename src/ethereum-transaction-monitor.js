@@ -64,13 +64,13 @@ var EthereumTransactionMonitor = (function () {
     EthereumTransactionMonitor.prototype.processBlocks = function (blockIndex, endBlockNumber) {
         var _this = this;
         if (blockIndex > endBlockNumber)
-            return Promise.resolve()
-                .then(function () { return _this.processBlock(blockIndex); })
-                .then(function () {
-                console.log('Finished block', blockIndex);
-                return _this.manager.setLastBlock(blockIndex);
-            })
-                .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
+            return Promise.resolve();
+        return this.processBlock(blockIndex)
+            .then(function () {
+            console.log('Finished block', blockIndex);
+            return _this.manager.setLastBlock(blockIndex);
+        })
+            .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
     };
     EthereumTransactionMonitor.prototype.updateTransactions = function () {
         var _this = this;

@@ -48,6 +48,10 @@ export class Web3EthereumClient implements EthereumClient {
 
   createAddress(): Promise<string> {
     return new Promise((resolve, reject) => {
+      // if (!this.web3.isConnected()) {
+      //   reject(new Error("Cannot create address, not connected to client."))
+      // }
+
       this.web3.personal.newAccount((err, result) => {
         if (err)
           reject(new Error("Error creating address: " + err.message))

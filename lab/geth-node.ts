@@ -79,7 +79,7 @@ export class GethNode {
       const finished = () => {
         if (!is_finished) {
           is_finished = true
-          console.log(this.index, 'Connected to web3')
+          console.log(this.index, 'Connected to web3', ' (is connected):', this.isConnected())
           resolve()
         }
       }

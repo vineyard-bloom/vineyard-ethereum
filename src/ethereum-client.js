@@ -37,6 +37,9 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.createAddress = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            // if (!this.web3.isConnected()) {
+            //   reject(new Error("Cannot create address, not connected to client."))
+            // }
             _this.web3.personal.newAccount(function (err, result) {
                 if (err)
                     reject(new Error("Error creating address: " + err.message));

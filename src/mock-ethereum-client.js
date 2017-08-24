@@ -32,6 +32,7 @@ var MockEthereumClient = (function () {
             transactions: [],
             timestamp: Math.floor(Date.now() / 1000),
         });
+        this.addresses[''] = new bignumber_js_1.default("10000000000000000000000000000");
     }
     MockEthereumClient.prototype.createAddress = function () {
         var _this = this;

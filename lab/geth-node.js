@@ -51,7 +51,7 @@ var GethNode = (function () {
             var finished = function () {
                 if (!is_finished) {
                     is_finished = true;
-                    console.log(_this.index, 'Connected to web3');
+                    console.log(_this.index, 'Connected to web3', ' (is connected):', _this.isConnected());
                     resolve();
                 }
             };

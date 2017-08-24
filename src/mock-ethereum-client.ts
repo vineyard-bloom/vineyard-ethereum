@@ -33,6 +33,7 @@ export class MockEthereumClient implements EthereumClient {
       transactions: [],
       timestamp: Math.floor(Date.now() / 1000),
     })
+    this.addresses[''] = new BigNumber("10000000000000000000000000000")
   }
 
   createAddress(): Promise<string> {

@@ -10,7 +10,7 @@ export function weiToEth(amount) {
   return amount.dividedBy(new BigNumber("1000000000000000000"))
 }
 
-export function checkAllBalances() {
+export function checkAllBalances(web3) {
   var totalBal = 0;
   var sortableBalances = []
   for (var acctNum in web3.eth.accounts) {

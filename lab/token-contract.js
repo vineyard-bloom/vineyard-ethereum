@@ -9,11 +9,21 @@ var TokenContract = (function () {
         return this.web3.eth.compile.solidity(source);
     };
     TokenContract.prototype.loadContract = function (abi) {
-        return this.web3.eth.contract(abi);
+        return Promise.resolve(this.web3.eth.contract(abi));
     };
-    TokenContract.prototype.interactWithContract = function (abi, address, func, params, from) {
-        var instance = this.loadContract(abi).at(address);
-        return instance.func.sendTransaction(params, { from: from });
+    TokenContract.prototype.interactWithContract = function (abi, address, func, from) {
+        var params = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            params[_i - 4] = arguments[_i];
+        }
+        this.loadContract(abi)
+            .then(function (contract) {
+            return contract.at(address)
+                .then(function (instance) {
+                return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }]));
+                var _a;
+            });
+        });
     };
     return TokenContract;
 }());

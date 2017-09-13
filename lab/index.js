@@ -9,4 +9,5 @@ __export(require("./pretend-eth-lab"));
 __export(require("./geth-node"));
 __export(require("./double-spend"));
 __export(require("./ethereum-network"));
+__export(require("./token-contract"));
 //# sourceMappingURL=index.js.map

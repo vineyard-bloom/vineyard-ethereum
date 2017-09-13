@@ -19,9 +19,11 @@
     "@types/es6-promise": "0.0.32",
     "@types/mocha": "^2.2.40",
     "@types/node": "^7.0.5",
+    "ethereumjs-testrpc": "^4.1.2",
     "mocha": "^3.2.0",
     "rimraf": "^2.6.1",
     "source-map-support": "^0.4.14",
+    "truffle-contract": "^3.0.0",
     "typescript": "^2.1.6"
   }
 }

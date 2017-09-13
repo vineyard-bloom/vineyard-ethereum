@@ -1,4 +1,5 @@
 import {Web3EthereumClient} from "../src"
+import contract from 'truffle-contract'
 
 
 export class TokenContract {
@@ -15,11 +16,16 @@ export class TokenContract {
   }
 
   loadContract(abi) {
-    return this.web3.eth.contract(abi)
+    return Promise.resolve(this.web3.eth.contract(abi))
   }
 
-  interactWithContract(abi, address, func, params, from) {
-    let instance = this.loadContract(abi).at(address)
-    return instance.func.sendTransaction(params, {from: from})
+  interactWithContract(abi, address, func, from, ...params) {
+    this.loadContract(abi)
+    .then(contract => {
+      return contract.at(address)
+      .then(instance => {
+        return instance.func.sendTransaction(...params, {from: from})
+      })
+    })
   }
 }

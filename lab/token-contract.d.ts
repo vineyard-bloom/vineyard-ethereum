@@ -4,6 +4,6 @@ export declare class TokenContract {
     private web3;
     constructor(client: Web3EthereumClient);
     compileContract(source: any): any;
-    loadContract(abi: any): any;
-    interactWithContract(abi: any, address: any, func: any, params: any, from: any): any;
+    loadContract(abi: any): Promise<any>;
+    interactWithContract(abi: any, address: any, func: any, from: any, ...params: any[]): void;
 }

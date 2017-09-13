@@ -1,6 +1,6 @@
 import { TokenContract, GethNode } from '../lab'
 import { Web3EthereumClient } from '../src/ethereum-client'
-const config =  require('./config/general-secret.json')
+const config =  require('./config/general.json')
 
 const TestRPC = require("ethereumjs-testrpc");
 

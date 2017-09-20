@@ -11,22 +11,6 @@ var EthereumTransactionMonitor = (function () {
         this.sweepAddress = sweepAddress;
         this.minimumConfirmations = minimumConfirmations;
     }
-    // scanAddress(address: string, lastBlock: number) {
-    //   return this.ethereumClient.listAllTransactions(address, lastBlock)
-    //     .then(transactions => {
-    //       if (transactions.length == 0)
-    //        return Promise.resolve()
-    //
-    //       const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
-    //       this.manager.setLastBlock(newLastBlock)
-    //       return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
-    //     })
-    // }
-    // sweep(): Promise<void> {
-    //   return this.manager.getAddresses()
-    //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
-    //     )
-    // }
     EthereumTransactionMonitor.prototype.resolveTransaction = function (transaction) {
         var _this = this;
         return this.ethereumClient.getTransaction(transaction.txid)
@@ -68,6 +52,11 @@ var EthereumTransactionMonitor = (function () {
         return this.processBlock(blockIndex)
             .then(function () {
             console.log('Finished block', blockIndex);
+            return _this.manager.setLastBlock(blockIndex);
+        })
+            .then(function () { return _this.processBlock(blockIndex - 5); })
+            .then(function () {
+            console.log('Second scan: Finished block', blockIndex - 5);
             return _this.manager.setLastBlock(blockIndex);
         })
             .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });

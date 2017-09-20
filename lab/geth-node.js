@@ -181,9 +181,9 @@ var GethNode = (function () {
             .then(function (blockNumber) { return console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."); })
             .then(function () { return _this.stop(); });
     };
+    GethNode.instanceIndex = 0;
     return GethNode;
 }());
-GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 // export function mine(node, milliseconds: number) {
 //   console.log('Mining for ' + milliseconds + ' milliseconds.')

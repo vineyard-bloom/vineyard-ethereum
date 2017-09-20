@@ -1,5 +1,4 @@
 import {each as promiseEach} from 'promise-each2'
-import BigNumber from 'bignumber.js'
 import {gasWei, EthereumClient, GenericEthereumManager, EthereumTransaction} from "./types";
 import {getTransactions, getTransactionsFromRange} from "./utility";
 
@@ -16,24 +15,6 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
     this.sweepAddress = sweepAddress
     this.minimumConfirmations = minimumConfirmations
   }
-
-  // scanAddress(address: string, lastBlock: number) {
-  //   return this.ethereumClient.listAllTransactions(address, lastBlock)
-  //     .then(transactions => {
-  //       if (transactions.length == 0)
-  //        return Promise.resolve()
-  //
-  //       const newLastBlock = transactions[transactions.length - 1].blockNumber.toString()
-  //       this.manager.setLastBlock(newLastBlock)
-  //       return promiseEach(transactions, tx => this.manager.saveTransaction(tx))
-  //     })
-  // }
-
-  // sweep(): Promise<void> {
-  //   return this.manager.getAddresses()
-  //     .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address))
-  //     )
-  // }
 
   private resolveTransaction(transaction: Transaction): Promise<any> {
     return this.ethereumClient.getTransaction(transaction.txid)
@@ -72,10 +53,14 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
   processBlocks(blockIndex, endBlockNumber): Promise<void> {
     if (blockIndex > endBlockNumber)
       return Promise.resolve<void>()
-
-    return this.processBlock(blockIndex)
+      return this.processBlock(blockIndex)
       .then(() => {
         console.log('Finished block', blockIndex)
+        return this.manager.setLastBlock(blockIndex)
+      })
+      .then(() => this.processBlock(blockIndex - 5))
+      .then(() => {
+        console.log('Second scan: Finished block', blockIndex - 5)
         return this.manager.setLastBlock(blockIndex)
       })
       .then(first => this.processBlocks(blockIndex + 1, endBlockNumber)

@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
-var Web3EthereumClient = (function () {
-    function Web3EthereumClient(ethereumConfig) {
+var Web3EthereumClient = /** @class */ (function () {
+    function Web3EthereumClient(ethereumConfig, sweepConfig) {
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
+        this.sweepConfig = sweepConfig;
     }
     Web3EthereumClient.prototype.getWeb3 = function () {
         return this.web3;
@@ -28,8 +29,8 @@ var Web3EthereumClient = (function () {
     Web3EthereumClient.prototype.getCoinbase = function () {
         return Promise.resolve(this.web3.eth.coinbase);
     };
-    Web3EthereumClient.prototype.toWei = function (amount) {
-        return this.web3.toWei(amount);
+    Web3EthereumClient.prototype.toWei = function (amount, type) {
+        return this.web3.toWei(amount, type);
     };
     Web3EthereumClient.prototype.fromWei = function (amount) {
         return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
@@ -92,7 +93,7 @@ var Web3EthereumClient = (function () {
         var _this = this;
         var transaction = from && typeof from === 'object'
             ? from
-            : { from: from, to: to, value: amount, gas: 21000 };
+            : { from: from, to: to, value: amount, gasPrice: this.toWei(this.sweepConfig.gasPrice, 'gwei') };
         if (!transaction.from)
             throw Error("Ethereum transaction.from cannot be empty.");
         if (!transaction.to)

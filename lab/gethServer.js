@@ -15,7 +15,7 @@ function waitUntilRunning() {
         setTimeout(poll, 10000);
     });
 }
-var GethServer = (function () {
+var GethServer = /** @class */ (function () {
     function GethServer() {
         this.status = Status.inactive;
     }

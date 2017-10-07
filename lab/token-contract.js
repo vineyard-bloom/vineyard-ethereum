@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var TokenContract = (function () {
+var TokenContract = /** @class */ (function () {
     function TokenContract(client) {
         this.client = client;
         this.web3 = client.getWeb3();

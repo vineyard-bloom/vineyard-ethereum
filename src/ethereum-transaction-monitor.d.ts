@@ -9,7 +9,7 @@ export declare class EthereumTransactionMonitor<Transaction extends EthereumTran
     private updatePending(newLastBlock);
     processBlock(blockIndex: any): Promise<void>;
     processBlocks(blockIndex: any, endBlockNumber: any): Promise<void>;
-    updateTransactions(): Promise<void>;
+    updateTransactions(): Promise<any>;
 }
 export declare class EthereumBalanceMonitor<EthereumTransaction> {
     private ethereumClient;

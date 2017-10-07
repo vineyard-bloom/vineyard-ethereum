@@ -10,10 +10,12 @@ export interface Web3EthereumClientConfig {
 
 export class Web3EthereumClient implements EthereumClient {
   private web3
+  private sweepConfig
 
-  constructor(ethereumConfig: Web3EthereumClientConfig) {
+  constructor(ethereumConfig: Web3EthereumClientConfig, sweepConfig) {
     this.web3 = new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
+    this.sweepConfig = sweepConfig
   }
 
   getWeb3() {
@@ -38,8 +40,8 @@ export class Web3EthereumClient implements EthereumClient {
     return Promise.resolve(this.web3.eth.coinbase)
   }
 
-  toWei(amount: number) {
-    return this.web3.toWei(amount)
+  toWei(amount: number, type: string) {
+    return this.web3.toWei(amount, type)
   }
 
   fromWei(amount: number) {
@@ -104,7 +106,7 @@ export class Web3EthereumClient implements EthereumClient {
   send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction> {
     const transaction = from && typeof from === 'object'
       ? from as any
-      : {from: from, to: to, value: amount, gas: 21000}
+      : {from: from, to: to, value: amount, gasPrice: this.toWei(this.sweepConfig.gasPrice, 'gwei')}
 
     if (!transaction.from)
       throw Error("Ethereum transaction.from cannot be empty.")

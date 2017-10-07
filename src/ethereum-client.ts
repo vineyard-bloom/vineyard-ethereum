@@ -117,6 +117,7 @@ export class Web3EthereumClient implements EthereumClient {
 
     const original = Object.assign({}, transaction)
     transaction.value = transaction.value.toString()
+    transaction.gasPrice = this.web3.eth.toWei(transaction.gasPrice, 'gwei')
     return this.unlockAccount(transaction.from)
       .then(() => {
         // const hexAmount = this.web3.toHex(amount)

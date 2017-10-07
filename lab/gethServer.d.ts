@@ -3,6 +3,6 @@ export declare class GethServer {
     private stdout;
     private stderr;
     private childProcess;
-    start(): Promise<void>;
-    stop(): Promise<{}>;
+    start(): any;
+    stop(): any;
 }

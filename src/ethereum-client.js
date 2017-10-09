@@ -98,10 +98,10 @@ var Web3EthereumClient = /** @class */ (function () {
         if (!transaction.to)
             throw Error("Ethereum transaction.to cannot be empty.");
         if (transaction.from === '')
-            transaction.from = _this.web3.eth.coinbase;
+            transaction.from = this.web3.eth.coinbase;
         var original = Object.assign({}, transaction);
         transaction.value = transaction.value.toString();
-        transaction.gasPrice = _this.web3.eth.toWei(transaction.gasPrice, 'gwei');
+        transaction.gasPrice = this.web3.toWei(transaction.gasPrice, 'gwei');
         return this.unlockAccount(transaction.from)
             .then(function () {
             // const hexAmount = this.web3.toHex(amount)

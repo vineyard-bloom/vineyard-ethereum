@@ -9,4 +9,5 @@ __export(require("./utility"));
 __export(require("./types"));
 __export(require("./mock-ethereum-client"));
 __export(require("./sweep"));
+__export(require("./block-scanner"));
 //# sourceMappingURL=index.js.map

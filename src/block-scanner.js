@@ -36,13 +36,6 @@ var BlockScanner = /** @class */ (function () {
         }); }; }))
             .then(function () { return result; });
     };
-    // const bundleSize = 20
-    // getTransactionsFromBlock(block): Promise<any[]> {
-    //   const divisions = block.transactions.length / bundleSize
-    //   for (let i = 0; i < divisions; ++i) {
-    //
-    //   }
-    // }
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
         return this.client.getBlock(i)

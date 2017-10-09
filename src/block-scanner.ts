@@ -1,12 +1,10 @@
 import { each as promiseEach } from 'promise-each2'
+import { EthereumClient } from './types';
 
-//filter to see if transaction is in token contract
 export type TransactionFilter = (transaction) => Promise<boolean>
-//will map to create a new transaction from data, where data is the contract payload - get to address
 export type TransactionMap = (transaction) => any
 
 export class BlockScanner {
-  //makes interface?
   client: EthereumClient
   transactionFilter: TransactionFilter
   transactionMap: TransactionMap
@@ -49,14 +47,6 @@ export class BlockScanner {
     )
       .then(() => result)
   }
-
-  // const bundleSize = 20
-  // getTransactionsFromBlock(block): Promise<any[]> {
-  //   const divisions = block.transactions.length / bundleSize
-  //   for (let i = 0; i < divisions; ++i) {
-  //
-  //   }
-  // }
 
   getTransactions(i: number): Promise<any[]> {
     return this.client.getBlock(i)

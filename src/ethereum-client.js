@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
-var Web3EthereumClient = (function () {
+var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig) {
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
@@ -101,6 +101,7 @@ var Web3EthereumClient = (function () {
             transaction.from = this.web3.eth.coinbase;
         var original = Object.assign({}, transaction);
         transaction.value = transaction.value.toString();
+        transaction.gasPrice = this.web3.eth.toWei(transaction.gasPrice, 'gwei');
         return this.unlockAccount(transaction.from)
             .then(function () {
             // const hexAmount = this.web3.toHex(amount)

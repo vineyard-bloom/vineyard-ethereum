@@ -1,8 +1,9 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient } from './types';
+import { EthereumClient, EthereumTransaction } from './types';
 
+//more strongly typed eventually
 export type TransactionFilter = (transaction) => Promise<boolean>
-export type TransactionMap = (transaction) => any
+export type TransactionMap = (transaction) => Promise<EthereumTransaction || null>
 
 export class BlockScanner {
   client: EthereumClient
@@ -16,9 +17,11 @@ export class BlockScanner {
 }
 
   createTransaction(e, block) {
+    //TODO see if we get other values for tx obj from block
+    console.log('block in blockScanner.createTx: ', block)
     return {
-      hash: e.hash,
-      nonce: e.nonce,
+      hash: e.hash,//doesnt exist in this case
+      nonce: e.nonce,//doesnt exist
       blockHash: e.blockHash,
       blockNumber: e.blockNumber,
       transactionIndex: e.transactionIndex,
@@ -26,8 +29,8 @@ export class BlockScanner {
       to: e.to,
       value: e.value,
       time: new Date(block.timestamp * 1000),
-      gasPrice: e.gasPrice,
-      gas: e.gas,
+      gasPrice: e.gasPrice,//just gasUsed
+      gas: e.gas,//just gasUsed
       input: e.input
     }
   }
@@ -36,10 +39,11 @@ export class BlockScanner {
     let result = []
 
     return promiseEach(transactions
-      .filter(e => () => this.transactionFilter(e.to))
-      .map(e => () => this.transactionMap(e.to)
+      .filter(e => () => this.transactionFilter(e))
+      .map(e => () => this.transactionMap(e)
         .then(success => {
           if (success) {
+            console.log('tx after map and filter: ', e)
             result.push(this.createTransaction(e, block))
           }
         })

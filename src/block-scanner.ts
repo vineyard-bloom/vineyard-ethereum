@@ -8,14 +8,10 @@ export type TransactionMap = (transaction) => Promise<EthereumTransaction || nul
 export class BlockScanner<Transaction extends EthereumTransaction> {
   private client: EthereumClient
   private minimumConfirmations: number = 13
-  private manager: GenericEthereumManager<Transaction>
-  private transactionFilter: TransactionFilter
-  private transactionMap: TransactionMap
+  private manager
 
-  constructor(model: GenericEthereumManager<Transaction>, client: EthereumClient, transactionFilter: TransactionFilter, transactionMap: TransactionMap, minimumConfirmations: number = 13) {
+  constructor(model, client: EthereumClient, minimumConfirmations: number = 13) {
     this.client = client
-    this.transactionFilter = transactionFilter
-    this.transactionMap = transactionMap
     this.manager = model
     this.minimumConfirmations = minimumConfirmations
   }
@@ -64,8 +60,8 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     let result = []
 
     return promiseEach(transactions
-      .filter(e => () => this.transactionFilter(e))
-      .map(e => () => this.transactionMap(e)
+      .filter(e => () => this.manager.transactionFilter(e))
+      .map(e => () => this.manager.transactionMap(e)
         .then(success => {
           if (success) {
             console.log('tx after map and filter: ', e)

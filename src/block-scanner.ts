@@ -1,20 +1,45 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransaction } from './types';
+import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './types';
 
 //more strongly typed eventually
 export type TransactionFilter = (transaction) => Promise<boolean>
 export type TransactionMap = (transaction) => Promise<EthereumTransaction || null>
 
-export class BlockScanner {
-  client: EthereumClient
-  transactionFilter: TransactionFilter
-  transactionMap: TransactionMap
+export class BlockScanner<Transaction extends EthereumTransaction> {
+  private client: EthereumClient
+  private minimumConfirmations: number = 13
+  private manager: GenericEthereumManager<Transaction>
+  private transactionFilter: TransactionFilter
+  private transactionMap: TransactionMap
 
-  constructor(client: EthereumClient, transactionFilter: TransactionFilter, transactionMap: TransactionMap) {
-  this.client = client
-  this.transactionFilter = transactionFilter
-  this.transactionMap = transactionMap
-}
+  constructor(model: GenericEthereumManager<Transaction>, client: EthereumClient, transactionFilter: TransactionFilter, transactionMap: TransactionMap, minimumConfirmations: number = 13) {
+    this.client = client
+    this.transactionFilter = transactionFilter
+    this.transactionMap = transactionMap
+    this.manager = model
+    this.minimumConfirmations = minimumConfirmations
+  }
+
+  private resolveTransaction(transaction: Transaction): Promise<any> {
+  return this.client.getTransaction(transaction.txid)
+    .then(result => {
+      if (!result || !result.blockNumber) {
+        console.log('Denying transaction', result.txid)
+        return this.manager.setStatus(transaction, 2)
+          .then(() => this.manager.onDenial(transaction))
+      }
+      else {
+        console.log('Confirming transaction', result.txid)
+        return this.manager.setStatus(transaction, 1)
+          .then(() => this.manager.onConfirm(transaction))
+      }
+    })
+  }
+
+  private updatePending(newLastBlock: number): Promise<void> {
+    return this.manager.getResolvedTransactions(newLastBlock)
+      .then(transactions => promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
+  }
 
   createTransaction(e, block) {
     //TODO see if we get other values for tx obj from block
@@ -73,6 +98,57 @@ export class BlockScanner {
 
   getTransactionsFromRange(lastBlock, newLastBlock) {
     return this.scanBlocks(lastBlock + 1, newLastBlock)
+  }
+
+
+  processBlock(blockIndex): Promise<void> {
+    return this.getTransactions(blockIndex)
+      .then(transactions => {
+        console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
+        return transactions.length == 0
+          ? Promise.resolve()
+          : promiseEach(transactions, tx => {
+            console.log('Saving transaction', tx.hash)
+            return this.manager.saveTransaction(tx, blockIndex)
+          })
+      })
+  }
+
+  processBlocks(blockIndex, endBlockNumber): Promise<void> {
+    const secondPassOffset = 5
+
+    if (blockIndex > endBlockNumber)
+      return Promise.resolve<void>()
+    return this.processBlock(blockIndex)
+      .then(() => {
+        console.log('Finished block', blockIndex)
+        return this.manager.setLastBlock(blockIndex)
+      })
+      .then(() => {
+        if (blockIndex > secondPassOffset) {
+          return this.processBlock(blockIndex - secondPassOffset)
+            .then(() => {
+              console.log('Second scan: Finished block', blockIndex - secondPassOffset)
+              return this.manager.setLastBlock(blockIndex)
+            })
+        }
+      })
+      .then(first => this.processBlocks(blockIndex + 1, endBlockNumber)
+      )
+  }
+
+  updateTransactions() {
+    return this.manager.getLastBlock()
+      .then(lastBlock => this.client.getBlockNumber()
+        .then(newLastBlock => {
+          console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
+          if (newLastBlock == lastBlock)
+            return Promise.resolve<void>()
+
+          return this.processBlocks(lastBlock + 1, newLastBlock)
+            .then(() => this.updatePending(newLastBlock - this.minimumConfirmations))
+        })
+      )
   }
 
 }//end BlockScanner class

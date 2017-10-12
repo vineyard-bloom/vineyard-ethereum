@@ -1,11 +1,13 @@
-import { EthereumClient } from './types';
+import { EthereumClient, EthereumTransaction } from './types';
 export declare type TransactionFilter = (transaction) => Promise<boolean>;
-export declare type TransactionMap = (transaction) => any;
-export declare class BlockScanner {
-    client: EthereumClient;
-    transactionFilter: TransactionFilter;
-    transactionMap: TransactionMap;
-    constructor(client: EthereumClient, transactionFilter: TransactionFilter, transactionMap: TransactionMap);
+export declare type TransactionMap = (transaction) => Promise<EthereumTransaction>;
+export declare class BlockScanner<Transaction extends EthereumTransaction> {
+    private client;
+    private minimumConfirmations;
+    private manager;
+    constructor(model: any, client: EthereumClient, minimumConfirmations?: number);
+    private resolveTransaction(transaction);
+    private updatePending(newLastBlock);
     createTransaction(e: any, block: any): {
         hash: any;
         nonce: any;
@@ -24,4 +26,7 @@ export declare class BlockScanner {
     getTransactions(i: number): Promise<any[]>;
     scanBlocks(i: any, endBlockNumber: any): Promise<any[]>;
     getTransactionsFromRange(lastBlock: any, newLastBlock: any): Promise<any[]>;
+    processBlock(blockIndex: any): Promise<void>;
+    processBlocks(blockIndex: any, endBlockNumber: any): Promise<void>;
+    updateTransactions(): any;
 }

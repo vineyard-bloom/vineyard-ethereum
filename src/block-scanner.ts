@@ -3,7 +3,7 @@ import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './ty
 
 //more strongly typed eventually
 export type TransactionFilter = (transaction) => Promise<boolean>
-export type TransactionMap = (transaction) => Promise<EthereumTransaction || null>
+export type TransactionMap = (transaction) => Promise<EthereumTransaction>
 
 export class BlockScanner<Transaction extends EthereumTransaction> {
   private client: EthereumClient

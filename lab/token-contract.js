@@ -16,10 +16,13 @@ var TokenContract = /** @class */ (function () {
         for (var _i = 4; _i < arguments.length; _i++) {
             params[_i - 4] = arguments[_i];
         }
+        //address = token contract address
+        //func = token contract method to call
         this.loadContract(abi)
             .then(function (contract) {
             return contract.at(address)
                 .then(function (instance) {
+                //last param is total tx object
                 return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }]));
                 var _a;
             });

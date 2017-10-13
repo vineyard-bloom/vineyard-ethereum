@@ -1,4 +1,4 @@
-import { Web3EthereumClient } from "../src";
+import { Web3EthereumClient } from '../src';
 export declare class TokenContract {
     private client;
     private web3;

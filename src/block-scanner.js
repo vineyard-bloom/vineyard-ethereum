@@ -19,7 +19,7 @@ var BlockScanner = /** @class */ (function () {
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
-                console.log('Confirming transaction', result.txid);
+                console.log('Confirming transaction', result);
                 return _this.manager.setStatus(transaction, 1)
                     .then(function () { return _this.manager.onConfirm(transaction); });
             }
@@ -28,11 +28,14 @@ var BlockScanner = /** @class */ (function () {
     BlockScanner.prototype.updatePending = function (newLastBlock) {
         var _this = this;
         return this.manager.getResolvedTransactions(newLastBlock)
-            .then(function (transactions) { return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); }); });
+            .then(function (transactions) {
+            console.log('***TRANSACTIONS: ', transactions);
+            promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
+        });
     };
     BlockScanner.prototype.createTransaction = function (e, block) {
         //TODO see if we get other values for tx obj from block
-        console.log('block in blockScanner.createTx: ', block);
+        // console.log('block in blockScanner.createTx: ', block)
         return {
             hash: e.hash,
             nonce: e.nonce,
@@ -90,7 +93,7 @@ var BlockScanner = /** @class */ (function () {
             return transactions.length == 0
                 ? Promise.resolve()
                 : promise_each2_1.each(transactions, function (tx) {
-                    console.log('Saving transaction', tx.hash);
+                    console.log('Saving transaction', tx);
                     return _this.manager.saveTransaction(tx, blockIndex);
                 });
         });

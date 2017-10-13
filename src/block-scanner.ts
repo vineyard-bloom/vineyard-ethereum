@@ -16,7 +16,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     this.minimumConfirmations = minimumConfirmations
   }
 
-  private resolveTransaction(transaction: Transaction): Promise<any> {
+  private resolveTransaction(transaction): Promise<any> {
   return this.client.getTransaction(transaction.txid)
     .then(result => {
       if (!result || !result.blockNumber) {
@@ -25,7 +25,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
           .then(() => this.manager.onDenial(transaction))
       }
       else {
-        console.log('Confirming transaction', result.txid)
+        console.log('Confirming transaction', result)
         return this.manager.setStatus(transaction, 1)
           .then(() => this.manager.onConfirm(transaction))
       }
@@ -34,12 +34,14 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
 
   private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.getResolvedTransactions(newLastBlock)
-      .then(transactions => promiseEach(transactions, transaction => this.resolveTransaction(transaction)))
+      .then(transactions => {
+        console.log('***TRANSACTIONS: ', transactions)
+        promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
   }
 
   createTransaction(e, block) {
     //TODO see if we get other values for tx obj from block
-    console.log('block in blockScanner.createTx: ', block)
+    // console.log('block in blockScanner.createTx: ', block)
     return {
       hash: e.hash,//doesnt exist in this case
       nonce: e.nonce,//doesnt exist
@@ -50,8 +52,8 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       to: e.to,
       value: e.value,
       time: new Date(block.timestamp * 1000),
-      gasPrice: e.gasPrice,//just gasUsed
-      gas: e.gas,//just gasUsed
+      gasPrice: e.gasPrice,
+      gas: e.gas,
       input: e.input
     }
   }
@@ -104,7 +106,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
         return transactions.length == 0
           ? Promise.resolve()
           : promiseEach(transactions, tx => {
-            console.log('Saving transaction', tx.hash)
+            console.log('Saving transaction', tx)
             return this.manager.saveTransaction(tx, blockIndex)
           })
       })

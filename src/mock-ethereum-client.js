@@ -101,7 +101,7 @@ var MockEthereumClient = /** @class */ (function () {
         return Promise.resolve(this.blocks[blockIndex]);
     };
     MockEthereumClient.prototype.getBlockNumber = function () {
-        return this.blocks.length - 1;
+        return Promise.resolve(this.blocks.length - 1);
     };
     MockEthereumClient.prototype.getGas = function () {
         return Promise.resolve(21000);

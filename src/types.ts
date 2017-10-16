@@ -7,7 +7,7 @@ export interface EthereumTransaction {
   value: any
   gas: number
   hash: number
-  contractAddress: string
+  contractAddress?: string
 }
 
 export interface Block {

@@ -11,7 +11,7 @@ var BlockScanner = /** @class */ (function () {
     }
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
-        console.log('in here 1');
+        console.log('in here 1', transaction);
         return this.client.getTransaction(transaction.txid)
             .then(function (result) {
             if (!result || !result.blockNumber) {
@@ -24,7 +24,7 @@ var BlockScanner = /** @class */ (function () {
                 return _this.manager.setStatus(transaction, 1)
                     .then(function () { return _this.manager.onConfirm(transaction); });
             }
-        });
+        }).catch(function (e) { console.error(e); });
     };
     BlockScanner.prototype.updatePending = function (newLastBlock) {
         var _this = this;
@@ -32,7 +32,8 @@ var BlockScanner = /** @class */ (function () {
             .then(function (transactions) {
             console.log('***TRANSACTIONS: ', transactions);
             promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
-        });
+        })
+            .catch(function (e) { console.error(e); });
     };
     BlockScanner.prototype.createTransaction = function (e, block) {
         //TODO see if we get other values for tx obj from block
@@ -54,7 +55,7 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;
-        console.log('in here 3');
+        console.log('in here 3', transactions);
         var result = [];
         return promise_each2_1.each(transactions
             .filter(function (e) { return function () { return _this.manager.transactionFilter(e); }; })

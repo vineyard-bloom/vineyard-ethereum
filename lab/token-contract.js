@@ -36,19 +36,37 @@ var TokenContract = /** @class */ (function () {
         }
         //address = token contract address
         //func = token contract method to call
-        this.loadContract(abi)
+        return this.loadContract(abi)
             .then(function (contract) {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
-                Promise.resolve((_a = instance.transfer).sendTransaction.apply(_a, params.concat([{ from: from, gas: 4712388 }])))
+                // this.watchContract(instance, from)
+                return Promise.resolve((_a = instance.transfer).sendTransaction.apply(_a, params.concat([{ from: from, gas: 4712388 }])))
                     .then(function (result) {
                     console.log(result);
+                    return result;
                 }).catch(function (e) {
                     console.error(e);
                 });
                 var _a;
             });
         });
+    };
+    TokenContract.prototype.getTransactionReceipt = function (hash) {
+        return Promise.resolve(this.web3.eth.getTransactionReceipt(hash))
+            .then(function (result) {
+            return result;
+        })
+            .catch(function (e) {
+            console.error(e);
+        });
+    };
+    TokenContract.prototype.watchContract = function (instance, from) {
+        var myEvent = instance.Transfer({ from: from }, { fromBlock: 0, toBlock: 'latest' });
+        myEvent.watch(function (error, result) {
+            console.log('watch results: ', result);
+        });
+        // const myResults = myEvent.get(function(error, logs){})
     };
     //TODO deploy contract with truffle from in here for easy onboarding
     //different approach with truffle-contract directly - not working

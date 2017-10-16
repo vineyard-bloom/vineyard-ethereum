@@ -17,7 +17,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private resolveTransaction(transaction): Promise<any> {
-    console.log('in here 1')
+    console.log('in here 1', transaction)
   return this.client.getTransaction(transaction.txid)
     .then(result => {
       if (!result || !result.blockNumber) {
@@ -30,7 +30,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
         return this.manager.setStatus(transaction, 1)
           .then(() => this.manager.onConfirm(transaction))
       }
-    })
+    }).catch(e => {console.error(e)})
   }
 
   private updatePending(newLastBlock: number): Promise<void> {
@@ -38,6 +38,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       .then(transactions => {
         console.log('***TRANSACTIONS: ', transactions)
         promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
+      .catch(e => {console.error(e)})
   }
 
   createTransaction(e, block) {
@@ -60,7 +61,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
-    console.log('in here 3')
+    console.log('in here 3', transactions)
     let result = []
 
     return promiseEach(transactions

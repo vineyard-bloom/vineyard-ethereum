@@ -11,6 +11,7 @@ var BlockScanner = /** @class */ (function () {
     }
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
+        console.log('in here 1');
         return this.client.getTransaction(transaction.txid)
             .then(function (result) {
             if (!result || !result.blockNumber) {
@@ -53,6 +54,7 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;
+        console.log('in here 3');
         var result = [];
         return promise_each2_1.each(transactions
             .filter(function (e) { return function () { return _this.manager.transactionFilter(e); }; })
@@ -67,6 +69,7 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
+        console.log('in here 2');
         return this.client.getBlock(i)
             .then(function (block) {
             if (!block || !block.transactions)
@@ -87,6 +90,7 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.processBlock = function (blockIndex) {
         var _this = this;
+        console.log('in here 0.5');
         return this.getTransactions(blockIndex)
             .then(function (transactions) {
             console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
@@ -101,6 +105,7 @@ var BlockScanner = /** @class */ (function () {
     BlockScanner.prototype.processBlocks = function (blockIndex, endBlockNumber) {
         var _this = this;
         var secondPassOffset = 5;
+        console.log('in here 0', blockIndex, endBlockNumber);
         if (blockIndex > endBlockNumber)
             return Promise.resolve();
         return this.processBlock(blockIndex)

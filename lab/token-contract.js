@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var truffle_contract_1 = require("truffle-contract");
 var TokenContract = /** @class */ (function () {
     function TokenContract(client) {
         this.client = client;
@@ -26,6 +27,45 @@ var TokenContract = /** @class */ (function () {
                 return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }]));
                 var _a;
             });
+        });
+    };
+    TokenContract.prototype.transfer = function (abi, address, func, from) {
+        var params = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            params[_i - 4] = arguments[_i];
+        }
+        //address = token contract address
+        //func = token contract method to call
+        this.loadContract(abi)
+            .then(function (contract) {
+            return Promise.resolve(contract.at(address))
+                .then(function (instance) {
+                Promise.resolve((_a = instance.transfer).sendTransaction.apply(_a, params.concat([{ from: from, gas: 4712388 }])))
+                    .then(function (result) {
+                    console.log(result);
+                }).catch(function (e) {
+                    console.error(e);
+                });
+                var _a;
+            });
+        });
+    };
+    //TODO deploy contract with truffle from in here for easy onboarding
+    //different approach with truffle-contract directly - not working
+    TokenContract.prototype.setupContract = function (abi, address, func, from) {
+        var params = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            params[_i - 4] = arguments[_i];
+        }
+        var newContract = truffle_contract_1.default(abi);
+        newContract.setProvider(this.client);
+        newContract.deployed()
+            .then(function (instance) {
+            //last param is total tx object
+            return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }])).then(function (result) {
+                console.log(result);
+            });
+            var _a;
         });
     };
     return TokenContract;

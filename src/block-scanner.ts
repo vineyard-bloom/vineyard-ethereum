@@ -17,6 +17,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private resolveTransaction(transaction): Promise<any> {
+    console.log('in here 1')
   return this.client.getTransaction(transaction.txid)
     .then(result => {
       if (!result || !result.blockNumber) {
@@ -59,6 +60,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
+    console.log('in here 3')
     let result = []
 
     return promiseEach(transactions
@@ -76,6 +78,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   getTransactions(i: number): Promise<any[]> {
+    console.log('in here 2')
     return this.client.getBlock(i)
       .then(block => {
         if (!block || !block.transactions)
@@ -100,6 +103,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
 
 
   processBlock(blockIndex): Promise<void> {
+    console.log('in here 0.5')
     return this.getTransactions(blockIndex)
       .then(transactions => {
         console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
@@ -114,6 +118,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
 
   processBlocks(blockIndex, endBlockNumber): Promise<void> {
     const secondPassOffset = 5
+    console.log('in here 0', blockIndex, endBlockNumber)
 
     if (blockIndex > endBlockNumber)
       return Promise.resolve<void>()

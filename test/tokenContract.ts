@@ -6,7 +6,7 @@ const TestRPC = require('ethereumjs-testrpc');
 
 const ethConfig = config.testRpc ? TestRPC.provider() : 'http://localhost:8545'
 
-const abi = require('./res/TEST.abi.js')
+const abi = require('./res/abi.json')
 
 // should be config.abi
 // const abi = [
@@ -244,18 +244,17 @@ const abi = require('./res/TEST.abi.js')
 // const address = "0x6b9f85527043d105326453d664a687025354c443"
 
 //testrpc salt contract address
-const address = '0x908acd7ecad69409a5ad26a87dda0ff3df7799e5'
+const address = '0x811372aee24feb836a0f639d3291426e9e4d4bff'
 
 const ethClient = new Web3EthereumClient({http: ethConfig, sweepAddress: ''})
 // const node = new GethNode()
 const tokenContract = new TokenContract(ethClient)
 
-
 //add promises
 // node.start().then(() => {
 //   console.log('node started')
-  // tokenContract.interactWithContract(abi, address, 'transfer', ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1], 10)
-  tokenContract.interactWithContract(abi, address, 'transfer', 'fefaaa8ed3373da6f4bf54f491bad9029d0be749', '0x6fc520fc3b6facbe26f1b4ff159f2aecbb032032', 10)
+  tokenContract.transfer(abi, address, 'transfer', ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1], ethClient.toWei(10))
+  // tokenContract.transfer(abi, address, 'transfer', 'fefaaa8ed3373da6f4bf54f491bad9029d0be749', '0x6fc520fc3b6facbe26f1b4ff159f2aecbb032032', 10)
     // .then(txid => {
     //   console.log('*transaction successful*', txid)
     // }).catch(e => {

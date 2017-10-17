@@ -30,8 +30,14 @@ const tokenContract = new TokenContract(ethClient)
 //add promises
 // node.start().then(() => {
 //   console.log('node started')
-
-
+// tokenContract.watchContract()
+// tokenContract.loadContract(abi)
+//   .then(contract => {
+//     tokenContract.loadContractAddress(contract, address)
+//     .then(instance => {
+// tokenContract.watchContract(instance, address)
+//   .then(res => {
+//     console.log('***res', res, ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1])
 
 // for (var i = 0; i < 23; ++i) {
 tokenContract.transfer(abi, address, 'transfer', ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1], ethClient.toWei(10))
@@ -42,14 +48,13 @@ tokenContract.transfer(abi, address, 'transfer', ethClient.getWeb3().eth.account
   }).catch(e => {
     console.error(e)
   })
-// }
-  // tokenContract.transfer(abi, address, 'transfer', 'fefaaa8ed3373da6f4bf54f491bad9029d0be749', '0x6fc520fc3b6facbe26f1b4ff159f2aecbb032032', 10)
-    // .then(txid => {
-    //   console.log('*transaction successful*', txid)
-    // }).catch(e => {
-    //   console.error('*error* ', e)
-    // })
 // }).catch(e => {
-//   console.error('*error* ', e)
-// })
+//     console.error(e)
+//   })
+// }).catch(e => {
+//     console.error(e)
+//   })
+// }).catch(e => {
+//     console.error(e)
+//   })
 // node.stop()

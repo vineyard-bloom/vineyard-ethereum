@@ -17,11 +17,10 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private resolveTransaction(transaction): Promise<any> {
-    console.log('in here 1', transaction)
   return this.client.getTransaction(transaction.txid)
     .then(result => {
       if (!result || !result.blockNumber) {
-        console.log('Denying transaction', result.txid)
+        console.log('Denying transaction', result)
         return this.manager.setStatus(transaction, 2)
           .then(() => this.manager.onDenial(transaction))
       }
@@ -36,14 +35,11 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.getResolvedTransactions(newLastBlock)
       .then(transactions => {
-        console.log('***TRANSACTIONS: ', transactions)
         promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
       .catch(e => {console.error(e)})
   }
 
   createTransaction(e, block) {
-    //TODO see if we get other values for tx obj from block
-    // console.log('block in blockScanner.createTx: ', block)
     return {
       hash: e.hash,//doesnt exist in this case
       nonce: e.nonce,//doesnt exist
@@ -61,25 +57,29 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
-    console.log('in here 3', transactions)
+    //should be empty if tx does not meet filter params
     let result = []
 
+    // return transactions.filter(e => this.manager.transactionFilter(e))
+
     return promiseEach(transactions
-      .filter(e => () => this.manager.transactionFilter(e))
-      .map(e => () => this.manager.transactionMap(e)
-        .then(success => {
-          if (success) {
-            console.log('tx after map and filter: ', e)
-            result.push(this.createTransaction(e, block))
-          }
+      .filter(tx => {
+        return this.manager.transactionFilter(tx)
+        .then(matchingTx => {
+          return this.manager.transactionMap(matchingTx)
+          .then(mappedTx => {
+            if(mappedTx) {
+              console.log('tx after map and filter: ', mappedTx)
+              result.push(this.createTransaction(mappedTx, block))
+              return result
+            }
+          })
         })
-      )
-    )
-      .then(() => result)
+      })
+    ).then(() => result)
   }
 
   getTransactions(i: number): Promise<any[]> {
-    console.log('in here 2')
     return this.client.getBlock(i)
       .then(block => {
         if (!block || !block.transactions)
@@ -102,16 +102,14 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     return this.scanBlocks(lastBlock + 1, newLastBlock)
   }
 
-
   processBlock(blockIndex): Promise<void> {
-    console.log('in here 0.5')
     return this.getTransactions(blockIndex)
       .then(transactions => {
         console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
         return transactions.length == 0
           ? Promise.resolve()
           : promiseEach(transactions, tx => {
-            console.log('Saving transaction', tx)
+            // console.log('Saving transaction', tx)
             return this.manager.saveTransaction(tx, blockIndex)
           })
       })
@@ -119,7 +117,6 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
 
   processBlocks(blockIndex, endBlockNumber): Promise<void> {
     const secondPassOffset = 5
-    console.log('in here 0', blockIndex, endBlockNumber)
 
     if (blockIndex > endBlockNumber)
       return Promise.resolve<void>()

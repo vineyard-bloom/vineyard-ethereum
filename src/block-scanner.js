@@ -11,11 +11,10 @@ var BlockScanner = /** @class */ (function () {
     }
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
-        console.log('in here 1', transaction);
         return this.client.getTransaction(transaction.txid)
             .then(function (result) {
             if (!result || !result.blockNumber) {
-                console.log('Denying transaction', result.txid);
+                console.log('Denying transaction', result);
                 return _this.manager.setStatus(transaction, 2)
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
@@ -30,14 +29,11 @@ var BlockScanner = /** @class */ (function () {
         var _this = this;
         return this.manager.getResolvedTransactions(newLastBlock)
             .then(function (transactions) {
-            console.log('***TRANSACTIONS: ', transactions);
             promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
         })
             .catch(function (e) { console.error(e); });
     };
     BlockScanner.prototype.createTransaction = function (e, block) {
-        //TODO see if we get other values for tx obj from block
-        // console.log('block in blockScanner.createTx: ', block)
         return {
             hash: e.hash,
             nonce: e.nonce,
@@ -55,22 +51,26 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;
-        console.log('in here 3', transactions);
+        //should be empty if tx does not meet filter params
         var result = [];
+        // return transactions.filter(e => this.manager.transactionFilter(e))
         return promise_each2_1.each(transactions
-            .filter(function (e) { return function () { return _this.manager.transactionFilter(e); }; })
-            .map(function (e) { return function () { return _this.manager.transactionMap(e)
-            .then(function (success) {
-            if (success) {
-                console.log('tx after map and filter: ', e);
-                result.push(_this.createTransaction(e, block));
-            }
-        }); }; }))
-            .then(function () { return result; });
+            .filter(function (tx) {
+            return _this.manager.transactionFilter(tx)
+                .then(function (matchingTx) {
+                return _this.manager.transactionMap(matchingTx)
+                    .then(function (mappedTx) {
+                    if (mappedTx) {
+                        console.log('tx after map and filter: ', mappedTx);
+                        result.push(_this.createTransaction(mappedTx, block));
+                        return result;
+                    }
+                });
+            });
+        })).then(function () { return result; });
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
-        console.log('in here 2');
         return this.client.getBlock(i)
             .then(function (block) {
             if (!block || !block.transactions)
@@ -91,14 +91,13 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.processBlock = function (blockIndex) {
         var _this = this;
-        console.log('in here 0.5');
         return this.getTransactions(blockIndex)
             .then(function (transactions) {
             console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
             return transactions.length == 0
                 ? Promise.resolve()
                 : promise_each2_1.each(transactions, function (tx) {
-                    console.log('Saving transaction', tx);
+                    // console.log('Saving transaction', tx)
                     return _this.manager.saveTransaction(tx, blockIndex);
                 });
         });
@@ -106,7 +105,6 @@ var BlockScanner = /** @class */ (function () {
     BlockScanner.prototype.processBlocks = function (blockIndex, endBlockNumber) {
         var _this = this;
         var secondPassOffset = 5;
-        console.log('in here 0', blockIndex, endBlockNumber);
         if (blockIndex > endBlockNumber)
             return Promise.resolve();
         return this.processBlock(blockIndex)

@@ -18,10 +18,10 @@ export declare class BlockScanner<Transaction extends EthereumTransaction> {
         hash: any;
         input: any;
         nonce: any;
+        time: Date;
         to: any;
         transactionIndex: any;
         value: any;
-        time: Date;
     };
     gatherTransactions(block: any, transactions: any): Promise<any[]>;
     getTransactions(i: number): Promise<any[]>;

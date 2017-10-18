@@ -44,10 +44,10 @@ var BlockScanner = /** @class */ (function () {
             hash: data.transaction.hash,
             input: data.transaction.input,
             nonce: data.transaction.nonce,
+            time: new Date(block.timestamp * 1000),
             to: data.to,
             transactionIndex: data.transaction.transactionIndex,
-            value: data.value,
-            time: new Date(block.timestamp * 1000)
+            value: data.value
         };
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
@@ -59,8 +59,8 @@ var BlockScanner = /** @class */ (function () {
         return this.manager.filterSaltTransactions(transactions)
             .then(function (result) { return _this.manager.filterAccountAddresses(transactions)
             .then(function (result2) {
-            return result2.map(_this.createTransaction);
-        }); });
+            return result2.map(function (tx) { return _this.createTransaction(tx, block); });
+        }); }
         // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
         //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))
         //   .then(filteredTxs => promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
@@ -68,57 +68,8 @@ var BlockScanner = /** @class */ (function () {
         //       .then(result => result)
         //     )
         //   )
+        );
     };
-    //filter is synchronous 
-    // const filteredTxs = transactions.filter((tx) => this.manager.transactionFilter(tx))
-    //promiseEach expects an array and an async function
-    //promiseEach returns a chain of .then() promises
-    //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
-    //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
-    // promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
-    // .then(mappedTxs => promiseEach(mappedTxs, mappedTx => this.createTransaction(mappedTxs, block))
-    //   .then(result => result)
-    // )
-    // const mappedTxs = filteredTxs.map((tx) => this.transactionMap(tx))
-    // return filteredTxs.map((tx) => this.createTransaction(tx, block))
-    // gatherTransactions(block, transactions): Promise<any[]> {
-    //   //should be empty if tx does not meet filter params
-    //   let result = []
-    //   // return transactions.filter(e => this.manager.transactionFilter(e))
-    //   // function filter(transactions){
-    //   //   return transactions.filter(tx, this.manager.transactionFilter(tx))
-    //   // }
-    //   Promise.resolve(transactions.filter(this.manager.transactionFilter))
-    //     .then(filteredTxs => {
-    //       this.manager.transactionMap(filteredTxs)
-    //         .then(mappedTxs => {
-    //           console.log(mappedTxs)
-    //         })
-    //     })
-    //   // .then( matchingTxs => {
-    //   //   promiseEach(matchingTxs => {
-    //   //     return this.manager.transactionMap(matchingTxs)
-    //   //   })
-    //   // }).then(mappedTx => {
-    //   //     result.push(this.createTransaction(mappedTx, block))
-    //   //     return result
-    //   // })
-    //   // return promiseEach( transactions
-    //   //   .filter(tx => {
-    //   //     return this.manager.transactionFilter(tx)
-    //   //     .then(matchingTx => {
-    //   //       return this.manager.transactionMap(matchingTx)
-    //   //       .then(mappedTx => {
-    //   //         if(mappedTx) {
-    //   //           console.log('tx after map and filter: ', mappedTx)
-    //   //           result.push(this.createTransaction(mappedTx, block))
-    //   //           return result
-    //   //         }
-    //   //       })
-    //   //     })
-    //   //   })
-    //   // ).then(() => result)
-    // }
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
         return this.client.getBlock(i)

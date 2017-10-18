@@ -50,10 +50,10 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       hash: data.transaction.hash,
       input: data.transaction.input,
       nonce: data.transaction.nonce,
+      time: new Date(block.timestamp * 1000),
       to: data.to,
       transactionIndex: data.transaction.transactionIndex,
-      value: data.value,
-      time: new Date(block.timestamp * 1000)
+      value: data.value
 
     }
   }
@@ -66,7 +66,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     return this.manager.filterSaltTransactions(transactions)
       .then(result => this.manager.filterAccountAddresses(transactions)
       .then(result2 => {
-        return result2.map(this.createTransaction)
+        return result2.map(tx => this.createTransaction(tx, block))
         })
     // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
     //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))

@@ -40,7 +40,7 @@ const tokenContract = new TokenContract(ethClient)
 //     console.log('***res', res, ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1])
 
 //make number of tx's logged to what last block number was for client?
-// for (var i = 0; i < 23; ++i) {
+// for (var i = 0; i < 2; ++i) {
 tokenContract.transfer(abi, address, 'transfer', ethClient.getWeb3().eth.accounts[0], ethClient.getWeb3().eth.accounts[1], ethClient.toWei(10))
   .then(hash => {
     tokenContract.getTransactionReceipt(hash).then(result => {

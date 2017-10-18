@@ -55,29 +55,84 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       input: e.input
     }
   }
-
   gatherTransactions(block, transactions): Promise<any[]> {
-    //should be empty if tx does not meet filter params
-    let result = []
+    //promiseEach expects an array and an async function
+    //promiseEach returns a chain of .then() promises
+    //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
+    //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
 
-    // return transactions.filter(e => this.manager.transactionFilter(e))
-
-    return promiseEach(transactions
-      .filter(tx => {
-        return this.manager.transactionFilter(tx)
-        .then(matchingTx => {
-          return this.manager.transactionMap(matchingTx)
-          .then(mappedTx => {
-            if(mappedTx) {
-              console.log('tx after map and filter: ', mappedTx)
-              result.push(this.createTransaction(mappedTx, block))
-              return result
-            }
-          })
-        })
-      })
-    ).then(() => result)
+    const filtered = this.manager.filterSaltTransactions(transactions)
+    // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
+    //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))
+    //   .then(filteredTxs => promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
+    //     .then(mappedTxs => promiseEach(mappedTxs, mappedTx => this.createTransaction(mappedTxs, block))
+    //       .then(result => result)
+    //     )
+    //   )
   }
+
+  //filter is synchronous 
+    // const filteredTxs = transactions.filter((tx) => this.manager.transactionFilter(tx))
+
+    //promiseEach expects an array and an async function
+    //promiseEach returns a chain of .then() promises
+    //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
+    //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
+    // promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
+    // .then(mappedTxs => promiseEach(mappedTxs, mappedTx => this.createTransaction(mappedTxs, block))
+    //   .then(result => result)
+    // )
+
+
+// const mappedTxs = filteredTxs.map((tx) => this.transactionMap(tx))
+
+// return filteredTxs.map((tx) => this.createTransaction(tx, block))
+
+  // gatherTransactions(block, transactions): Promise<any[]> {
+  //   //should be empty if tx does not meet filter params
+  //   let result = []
+
+  //   // return transactions.filter(e => this.manager.transactionFilter(e))
+
+  //   // function filter(transactions){
+  //   //   return transactions.filter(tx, this.manager.transactionFilter(tx))
+  //   // }
+
+  //   Promise.resolve(transactions.filter(this.manager.transactionFilter))
+  //     .then(filteredTxs => {
+  //       this.manager.transactionMap(filteredTxs)
+  //         .then(mappedTxs => {
+  //           console.log(mappedTxs)
+  //         })
+  //     })
+
+  //   // .then( matchingTxs => {
+  //   //   promiseEach(matchingTxs => {
+  //   //     return this.manager.transactionMap(matchingTxs)
+  //   //   })
+  //   // }).then(mappedTx => {
+  //   //     result.push(this.createTransaction(mappedTx, block))
+  //   //     return result
+  //   // })
+
+
+
+  //   // return promiseEach( transactions
+  //   //   .filter(tx => {
+  //   //     return this.manager.transactionFilter(tx)
+  //   //     .then(matchingTx => {
+  //   //       return this.manager.transactionMap(matchingTx)
+  //   //       .then(mappedTx => {
+  //   //         if(mappedTx) {
+  //   //           console.log('tx after map and filter: ', mappedTx)
+  //   //           result.push(this.createTransaction(mappedTx, block))
+  //   //           return result
+  //   //         }
+  //   //       })
+  //   //     })
+  //   //   })
+  //   // ).then(() => result)
+  // }
 
   getTransactions(i: number): Promise<any[]> {
     return this.client.getBlock(i)
@@ -108,10 +163,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
         console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
         return transactions.length == 0
           ? Promise.resolve()
-          : promiseEach(transactions, tx => {
-            // console.log('Saving transaction', tx)
-            return this.manager.saveTransaction(tx, blockIndex)
-          })
+          : promiseEach(transactions, tx => this.manager.saveTransaction(tx, blockIndex))
       })
   }
 

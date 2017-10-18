@@ -8,19 +8,20 @@ export declare class BlockScanner<Transaction extends EthereumTransaction> {
     constructor(model: any, client: EthereumClient, minimumConfirmations?: number);
     private resolveTransaction(transaction);
     private updatePending(newLastBlock);
-    createTransaction(e: any, block: any): {
-        hash: any;
-        nonce: any;
+    createTransaction(data: any, block: any): {
         blockHash: any;
         blockNumber: any;
-        transactionIndex: any;
+        contractAddress: any;
         from: any;
+        gas: any;
+        gasPrice: any;
+        hash: any;
+        input: any;
+        nonce: any;
         to: any;
+        transactionIndex: any;
         value: any;
         time: Date;
-        gasPrice: any;
-        gas: any;
-        input: any;
     };
     gatherTransactions(block: any, transactions: any): Promise<any[]>;
     getTransactions(i: number): Promise<any[]>;

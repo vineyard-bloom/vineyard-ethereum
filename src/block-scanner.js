@@ -33,20 +33,21 @@ var BlockScanner = /** @class */ (function () {
         })
             .catch(function (e) { console.error(e); });
     };
-    BlockScanner.prototype.createTransaction = function (e, block) {
+    BlockScanner.prototype.createTransaction = function (data, block) {
         return {
-            hash: e.hash,
-            nonce: e.nonce,
-            blockHash: e.blockHash,
-            blockNumber: e.blockNumber,
-            transactionIndex: e.transactionIndex,
-            from: e.from,
-            to: e.to,
-            value: e.value,
-            time: new Date(block.timestamp * 1000),
-            gasPrice: e.gasPrice,
-            gas: e.gas,
-            input: e.input
+            blockHash: data.transaction.blockHash,
+            blockNumber: data.transaction.blockNumber,
+            contractAddress: data.transaction.to,
+            from: data.transaction.from,
+            gas: data.transaction.gasUsed,
+            gasPrice: data.transaction.gasPrice,
+            hash: data.transaction.hash,
+            input: data.transaction.input,
+            nonce: data.transaction.nonce,
+            to: data.to,
+            transactionIndex: data.transaction.transactionIndex,
+            value: data.value,
+            time: new Date(block.timestamp * 1000)
         };
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
@@ -54,7 +55,12 @@ var BlockScanner = /** @class */ (function () {
         //promiseEach returns a chain of .then() promises
         //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
         //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
-        var filtered = this.manager.filterSaltTransactions(transactions);
+        var _this = this;
+        return this.manager.filterSaltTransactions(transactions)
+            .then(function (result) { return _this.manager.filterAccountAddresses(transactions)
+            .then(function (result2) {
+            return result2.map(_this.createTransaction);
+        }); });
         // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
         //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))
         //   .then(filteredTxs => promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))

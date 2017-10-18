@@ -31,9 +31,8 @@ export class TokenContract {
     })
   }
 
-  transfer(abi, address, func, from, ...params) {
+  transfer(abi, address, from, ...params) {
     //address = token contract address
-    //func = token contract method to call
     return this.loadContract(abi)
     .then(contract => {
       return Promise.resolve(contract.at(address))
@@ -69,7 +68,7 @@ export class TokenContract {
   // const myResults = myEvent.get(function(error, logs){})
   }
 
-//TODO deploy contract with truffle from in here for easy onboarding
+  //TODO deploy contract with truffle from in here for easy onboarding
 
   //different approach with truffle-contract directly - not working
   setupContract(abi, address, func, from, ...params) {

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_js_1 = require("bignumber.js");
-var PredefinedAddressSource = (function () {
+var PredefinedAddressSource = /** @class */ (function () {
     function PredefinedAddressSource(addresses) {
         this.index = 0;
         this.addresses = addresses;
@@ -12,7 +12,7 @@ var PredefinedAddressSource = (function () {
     return PredefinedAddressSource;
 }());
 exports.PredefinedAddressSource = PredefinedAddressSource;
-var RandomAddressSource = (function () {
+var RandomAddressSource = /** @class */ (function () {
     function RandomAddressSource() {
     }
     RandomAddressSource.prototype.generateAddress = function () {
@@ -21,7 +21,7 @@ var RandomAddressSource = (function () {
     return RandomAddressSource;
 }());
 exports.RandomAddressSource = RandomAddressSource;
-var MockEthereumClient = (function () {
+var MockEthereumClient = /** @class */ (function () {
     function MockEthereumClient(addressSource) {
         this.addresses = {};
         this.blocks = [];
@@ -101,7 +101,7 @@ var MockEthereumClient = (function () {
         return Promise.resolve(this.blocks[blockIndex]);
     };
     MockEthereumClient.prototype.getBlockNumber = function () {
-        return this.blocks.length - 1;
+        return Promise.resolve(this.blocks.length - 1);
     };
     MockEthereumClient.prototype.getGas = function () {
         return Promise.resolve(21000);

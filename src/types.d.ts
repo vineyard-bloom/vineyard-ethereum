@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import Bristle from './sweep.js';
 export interface EthereumTransaction {
     to: string;
@@ -5,6 +6,7 @@ export interface EthereumTransaction {
     value: any;
     gas: number;
     hash: number;
+    contractAddress?: string;
 }
 export interface Block {
     transactions: EthereumTransaction[];
@@ -29,7 +31,7 @@ export interface EthereumClient {
 export interface AddressSource {
     generateAddress(): Promise<string>;
 }
-export declare const gasWei: any;
+export declare const gasWei: BigNumber;
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
     saveTransaction(transaction: EthereumTransaction, blockIndex: number): any;
     getLastBlock(): Promise<number>;

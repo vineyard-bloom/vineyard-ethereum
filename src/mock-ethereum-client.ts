@@ -116,8 +116,8 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(this.blocks [blockIndex])
   }
 
-  getBlockNumber(): number {
-    return this.blocks.length - 1
+  getBlockNumber(): Promise<number> {
+    return Promise.resolve(this.blocks.length - 1)
   }
 
   getGas(): Promise<number> {

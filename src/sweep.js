@@ -2,15 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var bignumber_js_1 = require("bignumber.js");
+var token_contract_1 = require("../lab/token-contract");
 function gweiToWei(amount) {
     return amount.times("1000000000");
 }
 exports.gweiToWei = gweiToWei;
-var Broom = /** @class */ (function () {
+var Broom = (function () {
     function Broom(config, ethereumManager, ethereumClient) {
         this.config = config;
         this.manager = ethereumManager;
         this.client = ethereumClient;
+        this.tokenContract = new token_contract_1.TokenContract(this.client);
     }
     Broom.prototype.singleSweep = function (address) {
         var _this = this;
@@ -57,6 +59,34 @@ var Broom = /** @class */ (function () {
             return promise_each2_1.each(addresses, function (address) { return _this.singleSweep(address); });
         })
             .then(function () { return console.log('Finished Ethereum sweep'); });
+    };
+    Broom.prototype.tokenSweep = function (abi) {
+        var _this = this;
+        console.log('Starting Token sweep');
+        return this.manager.getDustyAddresses()
+            .then(function (addresses) {
+            console.log('Dusty addresses', addresses.length, addresses);
+            return promise_each2_1.each(addresses, function (address) { return _this.tokenSingleSweep(abi, address); });
+        })
+            .then(function () { return console.log('Finished Token sweep'); });
+    };
+    Broom.prototype.tokenSingleSweep = function (abi, address) {
+        var _this = this;
+        return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+            .then(function (balance) {
+            console.log('Sweeping address', address);
+            return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
+                .then(function (tx) {
+                console.log('Sweeping address succeeded', tx.hash);
+                return _this.saveSweepRecord({
+                    from: address,
+                    to: _this.config.sweepAddress,
+                    status: 0,
+                    txid: tx.hash,
+                    amount: balance
+                });
+            });
+        });
     };
     return Broom;
 }());

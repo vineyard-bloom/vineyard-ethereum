@@ -1,6 +1,7 @@
 import {each as promiseEach} from 'promise-each2'
 import {EthereumTransaction, SweepManager} from './types'
 import BigNumber from 'bignumber.js';
+import {TokenContract} from "../lab/token-contract";
 
 export interface Bristle {
   from: string
@@ -25,11 +26,13 @@ export class Broom {
   private manager: SweepManager
   private client
   private config: SweepConfig
+  private tokenContract: TokenContract
 
   constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient) {
     this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
+    this.tokenContract = new TokenContract(this.client)
   }
 
   private singleSweep(address): Promise<Bristle> {
@@ -78,5 +81,33 @@ export class Broom {
         return promiseEach(addresses, address => this.singleSweep(address))
       })
       .then(() => console.log('Finished Ethereum sweep'))
+  }
+
+  tokenSweep(abi) {
+    console.log('Starting Token sweep')
+    return this.manager.getDustyAddresses()
+      .then(addresses => {
+        console.log('Dusty addresses', addresses.length, addresses)
+        return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
+      })
+      .then(() => console.log('Finished Token sweep'))
+  }
+
+  tokenSingleSweep(abi, address) {
+    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+      .then(balance => {
+          console.log('Sweeping address', address)
+          return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
+            .then(tx => {
+              console.log('Sweeping address succeeded', tx.hash)
+              return this.saveSweepRecord({
+                from: address,
+                to: this.config.sweepAddress,
+                status: 0,
+                txid: tx.hash,
+                amount: balance
+              })
+            })
+      })
   }
 }

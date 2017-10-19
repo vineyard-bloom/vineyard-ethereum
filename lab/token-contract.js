@@ -12,43 +12,50 @@ var TokenContract = /** @class */ (function () {
     TokenContract.prototype.loadContract = function (abi) {
         return Promise.resolve(this.web3.eth.contract(abi));
     };
-    TokenContract.prototype.interactWithContract = function (abi, address, func, from) {
-        var params = [];
-        for (var _i = 4; _i < arguments.length; _i++) {
-            params[_i - 4] = arguments[_i];
-        }
-        //address = token contract address
-        //func = token contract method to call
-        this.loadContract(abi)
+    TokenContract.prototype.getTotalSupply = function (abi, address) {
+        return this.loadContract(abi)
             .then(function (contract) {
-            return contract.at(address)
+            return Promise.resolve(contract.at(address))
                 .then(function (instance) {
-                //last param is total tx object
-                return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }]));
-                var _a;
+                return instance.totalSupply.call();
             });
         });
     };
-    TokenContract.prototype.transfer = function (abi, address, func, from) {
-        var params = [];
-        for (var _i = 4; _i < arguments.length; _i++) {
-            params[_i - 4] = arguments[_i];
-        }
+    TokenContract.prototype.getData = function (abi, address, from) {
+        return this.loadContract(abi)
+            .then(function (contract) {
+            return Promise.resolve(contract.at(address))
+                .then(function (instance) {
+                return instance.balanceOf.getData(from);
+            });
+        });
+    };
+    TokenContract.prototype.getBalanceOf = function (abi, address, from) {
         //address = token contract address
         //func = token contract method to call
         return this.loadContract(abi)
             .then(function (contract) {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
+                //last param is total tx object
+                return instance.balanceOf.call(from);
+            });
+        });
+    };
+    TokenContract.prototype.transfer = function (abi, address, from, to, value) {
+        //address = token contract address
+        return this.loadContract(abi)
+            .then(function (contract) {
+            return Promise.resolve(contract.at(address))
+                .then(function (instance) {
                 // this.watchContract(instance, from)
-                return Promise.resolve((_a = instance.transfer).sendTransaction.apply(_a, params.concat([{ from: from, gas: 4712388 }])))
+                return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
                     .then(function (result) {
                     console.log(result);
                     return result;
                 }).catch(function (e) {
                     console.error(e);
                 });
-                var _a;
             });
         });
     };

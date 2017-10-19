@@ -58,23 +58,11 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     }
   }
   gatherTransactions(block, transactions): Promise<any[]> {
-    //promiseEach expects an array and an async function
-    //promiseEach returns a chain of .then() promises
-    //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
-    //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
-
     return this.manager.filterSaltTransactions(transactions)
-      .then(result => this.manager.filterAccountAddresses(transactions)
+      .then(result => this.manager.filterAccountAddresses(result)
       .then(result2 => {
         return result2.map(tx => this.createTransaction(tx, block))
         })
-    // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
-    //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))
-    //   .then(filteredTxs => promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
-    //     .then(mappedTxs => promiseEach(mappedTxs, mappedTx => this.createTransaction(mappedTxs, block))
-    //       .then(result => result)
-    //     )
-    //   )
     )}
 
   getTransactions(i: number): Promise<any[]> {
@@ -134,6 +122,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   updateTransactions() {
+    console.log('Starting Block Scanner')
     return this.manager.getLastBlock()
       .then(lastBlock => this.client.getBlockNumber()
         .then(newLastBlock => {

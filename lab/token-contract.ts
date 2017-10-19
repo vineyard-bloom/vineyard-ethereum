@@ -18,27 +18,47 @@ export class TokenContract {
     return Promise.resolve(this.web3.eth.contract(abi))
   }
 
-  interactWithContract(abi, address, func, from, ...params) {
-    //address = token contract address
-    //func = token contract method to call
-    this.loadContract(abi)
+  getTotalSupply(abi, address) {
+    return this.loadContract(abi)
     .then(contract => {
-      return contract.at(address)
+      return Promise.resolve(contract.at(address))
       .then(instance => {
-        //last param is total tx object
-        return instance.func.sendTransaction(...params, {from: from})
+        return instance.totalSupply.call()
+      })
+    })  
+  }
+
+  getData(abi, address, from){
+    return this.loadContract(abi)
+    .then(contract => {
+      return Promise.resolve(contract.at(address))
+      .then(instance => {
+        return instance.balanceOf.getData(from)
       })
     })
   }
 
-  transfer(abi, address, from, ...params) {
+  getBalanceOf(abi, address, from) {
+    //address = token contract address
+    //func = token contract method to call
+    return this.loadContract(abi)
+    .then(contract => {
+      return Promise.resolve(contract.at(address))
+      .then(instance => {
+        //last param is total tx object
+        return instance.balanceOf.call(from)
+      })
+    })
+  }
+
+  transfer(abi, address, from, to, value) {
     //address = token contract address
     return this.loadContract(abi)
     .then(contract => {
       return Promise.resolve(contract.at(address))
         .then(instance => {
           // this.watchContract(instance, from)
-          return Promise.resolve(instance.transfer.sendTransaction(...params, {from: from, gas: 4712388}))
+          return Promise.resolve(instance.transfer.sendTransaction(to, value, {from: from, gas: 4712388}))
           .then(result => {
             console.log(result)
             return result

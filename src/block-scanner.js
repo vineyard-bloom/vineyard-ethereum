@@ -51,24 +51,12 @@ var BlockScanner = /** @class */ (function () {
         };
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
-        //promiseEach expects an array and an async function
-        //promiseEach returns a chain of .then() promises
-        //so here, we take transactions, and (simplified) return txFilter(tx1).then(txFilter(tx2).then(...etc)
-        //CHECK does promiseEach wait until all txs are filtered? and the resulting array is all filtered txs?
         var _this = this;
         return this.manager.filterSaltTransactions(transactions)
-            .then(function (result) { return _this.manager.filterAccountAddresses(transactions)
+            .then(function (result) { return _this.manager.filterAccountAddresses(result)
             .then(function (result2) {
             return result2.map(function (tx) { return _this.createTransaction(tx, block); });
-        }); }
-        // promiseEach(transactions, trans => this.manager.filterSaltTransactions(trans))
-        //   .then(saltTxs => this.manager.filterAccountAddresses(saltTxs))
-        //   .then(filteredTxs => promiseEach(filteredTxs, matchingTx => this.manager.transactionMap(matchingTx))
-        //     .then(mappedTxs => promiseEach(mappedTxs, mappedTx => this.createTransaction(mappedTxs, block))
-        //       .then(result => result)
-        //     )
-        //   )
-        );
+        }); });
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
@@ -123,6 +111,7 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.updateTransactions = function () {
         var _this = this;
+        console.log('Starting Block Scanner');
         return this.manager.getLastBlock()
             .then(function (lastBlock) { return _this.client.getBlockNumber()
             .then(function (newLastBlock) {

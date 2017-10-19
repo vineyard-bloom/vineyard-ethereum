@@ -17,9 +17,12 @@ export declare class Broom {
     private manager;
     private client;
     private config;
+    private tokenContract;
     constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
     private singleSweep(address);
     calculateSendAmount(amount: any): any;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
+    tokenSweep(abi: any): Promise<void>;
+    tokenSingleSweep(abi: any, address: any): Promise<any>;
 }

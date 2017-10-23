@@ -12,6 +12,7 @@
   "dependencies": {
     "bignumber.js": "^4.0.2",
     "promise-each2": "^1.0.0",
+    "truffle-contract": "^3.0.0",
     "web3": "0.19.1"
   },
   "devDependencies": {
@@ -21,7 +22,6 @@
     "mocha": "^3.2.0",
     "rimraf": "^2.6.1",
     "source-map-support": "^0.4.14",
-    "truffle-contract": "^3.0.0",
     "typescript": "^2.1.6"
   }
 }

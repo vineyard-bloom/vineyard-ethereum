@@ -64,9 +64,12 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
-    return this.getTransactionData(transactions)
-      .then(txs => this.manager.filterSaltTransactions(txs)
-      .then(result => this.manager.filterAccountAddresses(result)
+    // return this.getTransactionData(transactions)
+      return this.manager.filterSaltTransactions(transactions)
+      .then(result => {
+        console.log('***FILTERED TRANSACTIONS: ', transactions)
+        this.manager.filterAccountAddresses(result)
+      }
       .then(result2 => result2.map(tx => this.createTransaction(tx, block))))
     )}
 
@@ -75,7 +78,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       .then(block => {
         if (!block || !block.transactions)
           return Promise.resolve([])
-        console.log('***BLOCK.TRANSACTIONS', block.transactions)
+        // console.log('***BLOCK.TRANSACTIONS', block.transactions)
         return this.gatherTransactions(block, block.transactions)
       })
   }

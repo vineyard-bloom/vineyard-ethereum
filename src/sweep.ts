@@ -110,4 +110,30 @@ export class Broom {
             })
       })
   }
+
+  needsGas(abi, address):Promise<boolean> {
+    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+      .then(tokenBalance => this.client.getBalance(address)
+        .then(ethBalance => parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000)
+      )
+  }
+
+  gasTransaction(abi, address) {
+    return this.needsGas(abi, address)
+      .then(gasLess => {
+        if(gasLess) {
+          return this.client.send(address, this.config.tokenContractAddress, 0.0003)
+        }
+      })
+  }
+
+  provideGas(abi) {
+    console.log('Starting Salt Gas Provider')
+    return this.manager.getDustyAddresses()
+      .then(addresses => {
+        console.log('Dusty addresses', addresses.length, addresses)
+        return promiseEach(addresses, address => this.gasTransaction(abi, address))
+      })
+      .then(() => console.log('Finished Salt Gas Provider job'))
+  }
 }

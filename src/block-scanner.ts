@@ -39,38 +39,10 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       .catch(e => {console.error(e)})
   }
 
-  createTransaction(data, block) {
-    return {
-      blockHash: data.transaction.blockHash,
-      blockNumber: data.transaction.blockNumber,
-      contractAddress: data.transaction.to,
-      from: data.transaction.from,
-      gas: data.transaction.gasUsed,
-      gasPrice: data.transaction.gasPrice,
-      hash: data.transaction.hash,
-      input: data.transaction.input,
-      nonce: data.transaction.nonce,
-      time: new Date(block.timestamp * 1000),
-      to: data.to,
-      transactionIndex: data.transaction.transactionIndex,
-      value: data.value
-
-    }
-  }
-
-  getTransactionData(transactions){
-    // return promiseEach(transactions, txid => this.client.getTransaction(txid))
-    return Promise.resolve(transactions.map(tx => this.client.getTransaction(tx)))
-  }
-
   gatherTransactions(block, transactions): Promise<any[]> {
-    // return this.getTransactionData(transactions)
       return this.manager.filterSaltTransactions(transactions)
-      .then(result => {
-        console.log('***FILTERED TRANSACTIONS: ', transactions)
-        this.manager.filterAccountAddresses(result)
-      }
-      .then(result2 => result2.map(tx => this.createTransaction(tx, block))))
+      .then(saltTransactions => this.manager.filterAccountAddresses(saltTransactions))
+      .then(databaseAddresses => databaseAddresses.map(tx => this.manager.mapTransaction(tx, block))
     )}
 
   getTransactions(i: number): Promise<any[]> {
@@ -78,7 +50,6 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
       .then(block => {
         if (!block || !block.transactions)
           return Promise.resolve([])
-        // console.log('***BLOCK.TRANSACTIONS', block.transactions)
         return this.gatherTransactions(block, block.transactions)
       })
   }
@@ -130,7 +101,6 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   updateTransactions() {
-    console.log('Starting Block Scanner')
     return this.manager.getLastBlock()
       .then(lastBlock => this.client.getBlockNumber()
         .then(newLastBlock => {

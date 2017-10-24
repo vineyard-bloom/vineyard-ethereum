@@ -33,30 +33,11 @@ var BlockScanner = /** @class */ (function () {
         })
             .catch(function (e) { console.error(e); });
     };
-    BlockScanner.prototype.createTransaction = function (data, block) {
-        return {
-            blockHash: data.transaction.blockHash,
-            blockNumber: data.transaction.blockNumber,
-            contractAddress: data.transaction.to,
-            from: data.transaction.from,
-            gas: data.transaction.gasUsed,
-            gasPrice: data.transaction.gasPrice,
-            hash: data.transaction.hash,
-            input: data.transaction.input,
-            nonce: data.transaction.nonce,
-            time: new Date(block.timestamp * 1000),
-            to: data.to,
-            transactionIndex: data.transaction.transactionIndex,
-            value: data.value
-        };
-    };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;
         return this.manager.filterSaltTransactions(transactions)
-            .then(function (result) { return _this.manager.filterAccountAddresses(result)
-            .then(function (result2) {
-            return result2.map(function (tx) { return _this.createTransaction(tx, block); });
-        }); });
+            .then(function (saltTransactions) { return _this.manager.filterAccountAddresses(saltTransactions); })
+            .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); });
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
@@ -111,7 +92,6 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.updateTransactions = function () {
         var _this = this;
-        console.log('Starting Block Scanner');
         return this.manager.getLastBlock()
             .then(function (lastBlock) { return _this.client.getBlockNumber()
             .then(function (newLastBlock) {

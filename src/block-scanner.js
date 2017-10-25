@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
+var utility_1 = require("./utility");
 var BlockScanner = /** @class */ (function () {
     function BlockScanner(model, client, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 13; }
@@ -11,15 +12,15 @@ var BlockScanner = /** @class */ (function () {
     }
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
-        return this.client.getTransaction(transaction.txid)
-            .then(function (result) {
-            if (!result || !result.blockNumber) {
-                console.log('Denying transaction', result);
+        return utility_1.isTransactionValid(this.client, transaction.txid)
+            .then(function (valid) {
+            if (!valid) {
+                console.log('Denying transaction', transaction.txid);
                 return _this.manager.setStatus(transaction, 2)
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
-                console.log('Confirming transaction', result);
+                console.log('Confirming transaction', transaction.txid);
                 return _this.manager.setStatus(transaction, 1)
                     .then(function () { return _this.manager.onConfirm(transaction); });
             }

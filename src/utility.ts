@@ -86,6 +86,22 @@ export function getTransactions(client: EthereumClient, addressManager: AddressM
     })
 }
 
+export function isTransactionValid(client: EthereumClient, txid): Promise<Boolean | void> {
+  return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
+    .then(transaction => {
+      //'0x0' == failed tx, might still be mined in block, though
+      //'0x1' == successful
+      if (transaction && transaction.blockNumber && transaction.status === '0x1'){
+        return Promise.resolve(false)
+      } else {
+        return Promise.resolve(true)
+      }
+    }).catch(e => {
+      console.error('ERROR GETTING TRANSACTION RECEIPT: ', e)
+      return Promise.resolve()
+    })
+}
+
 function scanBlocks(client: EthereumClient, addressManager: AddressManager, i, endBlockNumber): Promise<any[]> {
   if (i > endBlockNumber)
     return Promise.resolve([])

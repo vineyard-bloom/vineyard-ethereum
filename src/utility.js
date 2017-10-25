@@ -80,6 +80,23 @@ function getTransactions(client, addressManager, i) {
     });
 }
 exports.getTransactions = getTransactions;
+function isTransactionValid(client, txid) {
+    return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
+        .then(function (transaction) {
+        //'0x0' == failed tx, might still be mined in block, though
+        //'0x1' == successful
+        if (transaction && transaction.blockNumber && transaction.status === '0x1') {
+            return Promise.resolve(false);
+        }
+        else {
+            return Promise.resolve(true);
+        }
+    }).catch(function (e) {
+        console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);
+        return Promise.resolve();
+    });
+}
+exports.isTransactionValid = isTransactionValid;
 function scanBlocks(client, addressManager, i, endBlockNumber) {
     if (i > endBlockNumber)
         return Promise.resolve([]);

@@ -92,7 +92,7 @@ var Broom = /** @class */ (function () {
         var _this = this;
         return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
             .then(function (tokenBalance) { return _this.client.getBalance(address)
-            .then(function (ethBalance) { return tokenBalance > 0 && ethBalance < 300000000000000; }); });
+            .then(function (ethBalance) { return parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000; }); });
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;

@@ -18,6 +18,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private resolveTransaction(transaction): Promise<any> {
+  console.log('RESOLVING TRANSACTION: ', transaction.txid)
   return isTransactionValid(this.client, transaction.txid)
     .then(valid => {
       if (!valid) {

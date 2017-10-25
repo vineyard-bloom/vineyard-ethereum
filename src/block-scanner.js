@@ -12,6 +12,7 @@ var BlockScanner = /** @class */ (function () {
     }
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
+        console.log('RESOLVING TRANSACTION: ', transaction.txid);
         return utility_1.isTransactionValid(this.client, transaction.txid)
             .then(function (valid) {
             if (!valid) {

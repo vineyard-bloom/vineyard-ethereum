@@ -92,9 +92,9 @@ export function isTransactionValid(client: EthereumClient, txid): Promise<Boolea
       //'0x0' == failed tx, might still be mined in block, though
       //'0x1' == successful
       if (transaction && transaction.blockNumber && transaction.status === '0x1'){
-        return Promise.resolve(false)
-      } else {
         return Promise.resolve(true)
+      } else {
+        return Promise.resolve(false)
       }
     }).catch(e => {
       console.error('ERROR GETTING TRANSACTION RECEIPT: ', e)

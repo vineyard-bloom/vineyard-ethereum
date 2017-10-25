@@ -1,5 +1,6 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './types';
+import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './types'
+import { isTransactionValid } from './utility'
 
 //more strongly typed eventually
 export type TransactionFilter = (transaction) => Promise<boolean>
@@ -17,15 +18,15 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private resolveTransaction(transaction): Promise<any> {
-  return this.client.getTransaction(transaction.txid)
-    .then(result => {
-      if (!result || !result.blockNumber) {
-        console.log('Denying transaction', result)
+  return isTransactionValid(this.client, transaction.txid)
+    .then(valid => {
+      if (!valid) {
+        console.log('Denying transaction', transaction.txid)
         return this.manager.setStatus(transaction, 2)
           .then(() => this.manager.onDenial(transaction))
       }
       else {
-        console.log('Confirming transaction', result)
+        console.log('Confirming transaction', transaction.txid)
         return this.manager.setStatus(transaction, 1)
           .then(() => this.manager.onConfirm(transaction))
       }

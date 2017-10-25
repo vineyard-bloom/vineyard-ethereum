@@ -88,6 +88,31 @@ var Broom = /** @class */ (function () {
             });
         });
     };
+    Broom.prototype.needsGas = function (abi, address) {
+        var _this = this;
+        return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+            .then(function (tokenBalance) { return _this.client.getBalance(address)
+            .then(function (ethBalance) { return tokenBalance > 0 && ethBalance < 300000000000000; }); });
+    };
+    Broom.prototype.gasTransaction = function (abi, address) {
+        var _this = this;
+        return this.needsGas(abi, address)
+            .then(function (gasLess) {
+            if (gasLess) {
+                return _this.client.send(address, _this.config.tokenContractAddress, 0.0003);
+            }
+        });
+    };
+    Broom.prototype.provideGas = function (abi) {
+        var _this = this;
+        console.log('Starting Salt Gas Provider');
+        return this.manager.getDustyAddresses()
+            .then(function (addresses) {
+            console.log('Dusty addresses', addresses.length, addresses);
+            return promise_each2_1.each(addresses, function (address) { return _this.gasTransaction(abi, address); });
+        })
+            .then(function () { return console.log('Finished Salt Gas Provider job'); });
+    };
     return Broom;
 }());
 exports.Broom = Broom;

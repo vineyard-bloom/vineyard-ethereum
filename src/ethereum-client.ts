@@ -26,7 +26,7 @@ export class Web3EthereumClient implements EthereumClient {
   getTransactionStatus(txid: string): Promise<number> {
     const web3GetTransactionReceipt = util.promisify(this.web3.eth.getTransactionReceipt)
     return web3GetTransactionReceipt(txid).then((transaction: Web3TransactionReceipt) => {
-      return transaction.status.substring(2) 
+      return parseInt(transaction.status.substring(2)) 
     })
   }
 

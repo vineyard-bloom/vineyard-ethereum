@@ -86,10 +86,10 @@ function isTransactionValid(client, txid) {
         //'0x0' == failed tx, might still be mined in block, though
         //'0x1' == successful
         if (transaction && transaction.blockNumber && transaction.status === '0x1') {
-            return Promise.resolve(false);
+            return Promise.resolve(true);
         }
         else {
-            return Promise.resolve(true);
+            return Promise.resolve(false);
         }
     }).catch(function (e) {
         console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);

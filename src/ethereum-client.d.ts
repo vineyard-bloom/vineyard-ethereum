@@ -7,7 +7,8 @@ export declare class Web3EthereumClient implements EthereumClient {
     private web3;
     constructor(ethereumConfig: Web3EthereumClientConfig);
     getWeb3(): any;
-    getTransaction(txid: any): Promise<{}>;
+    getTransactionStatus(txid: string): Promise<number>;
+    getTransaction(txid: string): Promise<{}>;
     getCoinbase(): Promise<any>;
     toWei(amount: number): any;
     fromWei(amount: number): string;

@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import Bristle from './sweep.js';
+import { ReadClient } from "vineyard-blockchain";
 export interface EthereumTransaction {
     to: string;
     from: string;
@@ -8,13 +9,26 @@ export interface EthereumTransaction {
     hash: number;
     contractAddress?: string;
 }
+export interface Web3TransactionReceipt {
+    blockHash: string;
+    blockNumber: number;
+    transactionHash: string;
+    transactionIndex: number;
+    from: string;
+    to: string;
+    cumulativeGasUsed: number;
+    gasUsed: number;
+    contractAddress: string;
+    logs: {}[];
+    status: string;
+}
 export interface Block {
     transactions: EthereumTransaction[];
 }
 export interface AddressManager {
     hasAddress(address: string): Promise<boolean>;
 }
-export interface EthereumClient {
+export interface EthereumClient extends ReadClient {
     checkAllBalances(): Promise<any>;
     createAddress(): Promise<string>;
     getBalance(address: string): Promise<any>;
@@ -25,7 +39,7 @@ export interface EthereumClient {
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
     getCoinbase(): Promise<string>;
-    getTransaction(txid: any): Promise<any>;
+    getTransaction(txid: string): Promise<any>;
     getGas(): Promise<number>;
 }
 export interface AddressSource {

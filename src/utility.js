@@ -81,19 +81,27 @@ function getTransactions(client, addressManager, i) {
 }
 exports.getTransactions = getTransactions;
 function isTransactionValid(client, txid) {
-    return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
-        .then(function (transaction) {
+    return new Promise(function (resolve, reject) {
+        client.web3.eth.getTransactionReceipt(txid, function (err, receipt) {
+            if (err) {
+                console.error('Error getting transaction receipt for ', txid, 'with message ', err.message);
+                reject(new Error(err));
+            }
+            else {
+                resolve(receipt);
+            }
+        });
+    }).then(function (transaction) {
         //'0x0' == failed tx, might still be mined in block, though
         //'0x1' == successful
         if (transaction && transaction.blockNumber && transaction.status === '0x1') {
-            return Promise.resolve(true);
+            console.log('VALID TRANSACTION: ', transaction);
+            return true;
         }
         else {
-            return Promise.resolve(false);
+            console.log('INVALID TRANSACTION: ', transaction);
+            return false;
         }
-    }).catch(function (e) {
-        console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);
-        return Promise.resolve();
     });
 }
 exports.isTransactionValid = isTransactionValid;

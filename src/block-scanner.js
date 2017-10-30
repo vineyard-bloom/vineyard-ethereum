@@ -16,12 +16,12 @@ var BlockScanner = /** @class */ (function () {
         return utility_1.isTransactionValid(this.client, transaction.txid)
             .then(function (valid) {
             if (!valid) {
-                console.log('Denying transaction', transaction.txid);
+                console.log('Denying transaction', transaction);
                 return _this.manager.setStatus(transaction, 2)
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
-                console.log('Confirming transaction', transaction.txid);
+                console.log('Confirming transaction', transaction);
                 return _this.manager.setStatus(transaction, 1)
                     .then(function () { return _this.manager.onConfirm(transaction); });
             }
@@ -65,7 +65,7 @@ var BlockScanner = /** @class */ (function () {
         var _this = this;
         return this.getTransactions(blockIndex)
             .then(function (transactions) {
-            console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
+            console.log('Scanning block ', blockIndex, 'at ', new Date(), 'tx-count:', transactions.length);
             return transactions.length == 0
                 ? Promise.resolve()
                 : promise_each2_1.each(transactions, function (tx) { return _this.manager.saveTransaction(tx, blockIndex); });

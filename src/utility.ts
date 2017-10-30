@@ -87,18 +87,25 @@ export function getTransactions(client: EthereumClient, addressManager: AddressM
 }
 
 export function isTransactionValid(client: EthereumClient, txid): Promise<Boolean | void> {
-  return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
-    .then(transaction => {
+  return new Promise ((resolve, reject) => {
+    client.web3.eth.getTransactionReceipt(txid, (err, receipt) => {
+      if(err){
+        console.error('Error getting transaction receipt for ', txid, 'with message ', err.message)
+        reject(new Error(err))
+      } else {
+        resolve(receipt)
+      }
+    })
+  }).then(transaction => {
       //'0x0' == failed tx, might still be mined in block, though
       //'0x1' == successful
       if (transaction && transaction.blockNumber && transaction.status === '0x1'){
-        return Promise.resolve(true)
+        console.log('VALID TRANSACTION: ', transaction)
+        return true
       } else {
-        return Promise.resolve(false)
+        console.log('INVALID TRANSACTION: ', transaction)
+        return false
       }
-    }).catch(e => {
-      console.error('ERROR GETTING TRANSACTION RECEIPT: ', e)
-      return Promise.resolve()
     })
 }
 

@@ -1,5 +1,5 @@
 import { Block, EthereumClient, EthereumTransaction } from "./types";
-import { FullBlock, BlockInfo } from "vineyard-blockchain";
+import { FullBlock, BlockInfo, TransactionStatus } from "vineyard-blockchain";
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;
@@ -10,7 +10,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     getWeb3(): any;
     getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo>;
     getFullBlock(block: BlockInfo): Promise<FullBlock>;
-    getTransactionStatus(txid: string): Promise<number>;
+    getTransactionStatus(txid: string): Promise<TransactionStatus>;
     getTransaction(txid: string): Promise<{}>;
     getCoinbase(): Promise<any>;
     toWei(amount: number): any;

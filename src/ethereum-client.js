@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
+var vineyard_blockchain_1 = require("vineyard-blockchain");
 var util = require("util");
 var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig) {
@@ -36,7 +37,7 @@ var Web3EthereumClient = /** @class */ (function () {
     Web3EthereumClient.prototype.getTransactionStatus = function (txid) {
         var web3GetTransactionReceipt = util.promisify(this.web3.eth.getTransactionReceipt);
         return web3GetTransactionReceipt(txid).then(function (transaction) {
-            return parseInt(transaction.status.substring(2));
+            return transaction.status.substring(2) == "0" ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted;
         });
     };
     Web3EthereumClient.prototype.getTransaction = function (txid) {

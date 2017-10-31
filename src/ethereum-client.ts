@@ -2,7 +2,7 @@ import * as Web3 from 'web3'
 import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 import {AddressManager, Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt} from "./types";
-import {ExternalTransaction} from "vineyard-blockchain";
+import {ExternalTransaction, FullBlock, BlockInfo} from "vineyard-blockchain";
 const util = require("util")
 
 
@@ -22,7 +22,30 @@ export class Web3EthereumClient implements EthereumClient {
   getWeb3() {
     return this.web3
   }
-  
+
+  getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo> {
+   const web3GetBlock = util.promisify(this.web3.eth.getBlock)
+   return web3GetBlock(previousBlock.index + 1).then((nextBlock: Block) => {
+     return {
+       hash: nextBlock.hash,
+       index: nextBlock.number,
+       timeMinded: nextBlock.timestamp
+     }
+   })
+  }
+
+  getFullBlock(block: BlockInfo): Promise<FullBlock> {
+    const web3GetBlock = util.promisify(this.web3.eth.getBlock)
+    return web3GetBlock(block).then((fullBlock: Block) => {
+      return {
+        hash: fullBlock.hash,
+        index: fullBlock.number,
+        timeMined: fullBlock.timestamp,
+        transactions: fullBlock.transactions
+      }
+    })
+  }
+
   getTransactionStatus(txid: string): Promise<number> {
     const web3GetTransactionReceipt = util.promisify(this.web3.eth.getTransactionReceipt)
     return web3GetTransactionReceipt(txid).then((transaction: Web3TransactionReceipt) => {

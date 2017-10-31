@@ -28,6 +28,9 @@ export interface Web3TransactionReceipt {
 
 export interface Block {
   transactions: EthereumTransaction[]
+  hash: string
+  number: number 
+  timestamp: number
 }
 
 export interface AddressManager {

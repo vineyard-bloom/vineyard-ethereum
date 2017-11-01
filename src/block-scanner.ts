@@ -31,7 +31,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
         return this.manager.setStatus(transaction, 1)
           .then(() => this.manager.onConfirm(transaction))
       }
-    }).catch(e => {console.error(e)})
+    }).catch(e => {console.error('Error resolving transation: ', e)})
   }
 
   private updatePending(newLastBlock: number): Promise<void> {
@@ -72,7 +72,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   processBlock(blockIndex): Promise<void> {
     return this.getTransactions(blockIndex)
       .then(transactions => {
-        console.log('Scanning block ', blockIndex, 'at ', new Date(), 'tx-count:', transactions.length)
+        console.log('Scanning block', blockIndex, 'at', new Date(), 'tx-count:', transactions.length)
         return transactions.length == 0
           ? Promise.resolve()
           : promiseEach(transactions, tx => this.manager.saveTransaction(tx, blockIndex))

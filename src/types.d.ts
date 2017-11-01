@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import Bristle from './sweep.js';
-import { ReadClient } from "vineyard-blockchain";
+import { ReadClient, ExternalTransaction } from "vineyard-blockchain";
 export interface EthereumTransaction {
     to: string;
     from: string;
@@ -42,7 +42,7 @@ export interface EthereumClient extends ReadClient {
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
     getCoinbase(): Promise<string>;
-    getTransaction(txid: string): Promise<any>;
+    getTransaction(txid: string): Promise<ExternalTransaction>;
     getGas(): Promise<number>;
 }
 export interface AddressSource {

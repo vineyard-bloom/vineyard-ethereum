@@ -53,7 +53,7 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getTransaction(txid: string) {
+  getTransaction(txid: string): Promise<ExternalTransaction> {
     return new Promise((resolve, reject) => {
       this.web3.eth.getTransaction(txid, (err, block) => {
         if (err) {

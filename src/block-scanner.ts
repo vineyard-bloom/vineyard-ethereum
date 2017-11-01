@@ -35,22 +35,26 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   private updatePending(newLastBlock: number): Promise<void> {
+    console.log('IN UPDATE PENDING')
     return this.manager.getResolvedTransactions(newLastBlock)
       .then(transactions => {
-        promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
+        console.log('RESOLVED TRANSACTIONS ', transactions)
+        return promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
       .catch(e => {console.error(e)})
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
       return this.manager.filterSaltTransactions(transactions)
       .then(saltTransactions => this.manager.filterAccountAddresses(saltTransactions))
-      .then(databaseAddresses => databaseAddresses.map(tx => this.manager.mapTransaction(tx, block))
-    )}
+      .then(databaseAddresses => databaseAddresses.map(tx => this.manager.mapTransaction(tx, block)))
+      .catch(e => {console.error('ERROR GATHERING TRANSACTIONS: ', e)})
+    }
 
   getTransactions(i: number): Promise<any[]> {
     return this.client.getBlock(i)
       .then(block => {
         if (!block || !block.transactions)
+          console.log('GETTING TRANSACTIONS OF BLOCK ', i)
           return Promise.resolve([])
         return this.gatherTransactions(block, block.transactions)
       })
@@ -113,7 +117,10 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
             return Promise.resolve<void>()
 
           return this.processBlocks(lastBlock + 1, newLastBlock)
-            .then(() => this.updatePending(newLastBlock - this.minimumConfirmations))
+            .then(() => {
+              console.log('STARTING UPDATE PENDING, newLastBlock: ', newLastBlock)
+              return this.updatePending(newLastBlock - this.minimumConfirmations)
+            })
         })
       )
   }

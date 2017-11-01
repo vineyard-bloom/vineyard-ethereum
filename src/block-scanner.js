@@ -29,9 +29,11 @@ var BlockScanner = /** @class */ (function () {
     };
     BlockScanner.prototype.updatePending = function (newLastBlock) {
         var _this = this;
+        console.log('IN UPDATE PENDING');
         return this.manager.getResolvedTransactions(newLastBlock)
             .then(function (transactions) {
-            promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
+            console.log('RESOLVED TRANSACTIONS ', transactions);
+            return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
         })
             .catch(function (e) { console.error(e); });
     };
@@ -39,14 +41,16 @@ var BlockScanner = /** @class */ (function () {
         var _this = this;
         return this.manager.filterSaltTransactions(transactions)
             .then(function (saltTransactions) { return _this.manager.filterAccountAddresses(saltTransactions); })
-            .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); });
+            .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); })
+            .catch(function (e) { console.error('ERROR GATHERING TRANSACTIONS: ', e); });
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;
         return this.client.getBlock(i)
             .then(function (block) {
             if (!block || !block.transactions)
-                return Promise.resolve([]);
+                console.log('GETTING TRANSACTIONS OF BLOCK ', i);
+            return Promise.resolve([]);
             return _this.gatherTransactions(block, block.transactions);
         });
     };
@@ -101,7 +105,10 @@ var BlockScanner = /** @class */ (function () {
             if (newLastBlock == lastBlock)
                 return Promise.resolve();
             return _this.processBlocks(lastBlock + 1, newLastBlock)
-                .then(function () { return _this.updatePending(newLastBlock - _this.minimumConfirmations); });
+                .then(function () {
+                console.log('STARTING UPDATE PENDING, newLastBlock: ', newLastBlock);
+                return _this.updatePending(newLastBlock - _this.minimumConfirmations);
+            });
         }); });
     };
     return BlockScanner;

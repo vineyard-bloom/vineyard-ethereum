@@ -1,3 +1,4 @@
+import * as Web3 from 'web3';
 import { Block, EthereumClient, EthereumTransaction } from "./types";
 import { ExternalTransaction, FullBlock, BlockInfo, TransactionStatus } from "vineyard-blockchain";
 export interface Web3EthereumClientConfig {
@@ -6,7 +7,7 @@ export interface Web3EthereumClientConfig {
 }
 export declare class Web3EthereumClient implements EthereumClient {
     private web3;
-    constructor(ethereumConfig: Web3EthereumClientConfig);
+    constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3);
     getWeb3(): any;
     getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo>;
     getFullBlock(block: BlockInfo): Promise<FullBlock>;

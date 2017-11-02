@@ -12,10 +12,10 @@ export interface Web3EthereumClientConfig {
 }
 
 export class Web3EthereumClient implements EthereumClient {
-  private web3
+  private web3: Web3
 
-  constructor(ethereumConfig: Web3EthereumClientConfig) {
-    this.web3 = new Web3()
+  constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3) {
+    this.web3 = web3 || new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
   }
 

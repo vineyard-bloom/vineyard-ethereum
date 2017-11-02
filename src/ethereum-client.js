@@ -7,8 +7,7 @@ var vineyard_blockchain_1 = require("vineyard-blockchain");
 var util = require("util");
 var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
-        this.web3 = web3 || new Web3();
-        this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
+        this.web3 = web3 || new Web3(ethereumConfig.http);
     }
     Web3EthereumClient.prototype.getWeb3 = function () {
         return this.web3;

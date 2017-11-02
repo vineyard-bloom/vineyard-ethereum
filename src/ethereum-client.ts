@@ -23,16 +23,16 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BlockInfo> {
-    const web3GetBlock = util.promisify(this.web3.eth.getBlock)
-    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
-    return web3GetBlock(nextBlockIndex).then((nextBlock: Block) => {
-      return {
-        hash: nextBlock.hash,
-        index: nextBlock.number,
-        timeMinded: nextBlock.timestamp
-      }
-    })
-   }
+   const web3GetBlock = util.promisify(this.web3.eth.getBlock)
+   const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
+   return web3GetBlock(nextBlockIndex).then((nextBlock: Block) => {
+     return {
+       hash: nextBlock.hash,
+       index: nextBlock.number,
+       timeMinded: nextBlock.timestamp
+     }
+   })
+  }
 
   getFullBlock(block: BlockInfo): Promise<FullBlock> {
     const web3GetBlock = util.promisify(this.web3.eth.getBlock)

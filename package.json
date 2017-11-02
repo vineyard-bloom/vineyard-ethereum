@@ -14,7 +14,7 @@
     "promise-each2": "^1.0.0",
     "truffle-contract": "^3.0.0",
     "vineyard-blockchain": "vineyard-bloom/vineyard-blockchain#1.0.0-beta",
-    "web3": "^1.0.0-beta.24"
+    "web3": "^1.0.0-beta.20"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.40",

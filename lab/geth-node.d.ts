@@ -35,7 +35,7 @@ export declare class GethNode {
     getNodeUrl(): string;
     isRunning(): boolean;
     isConnected(): any;
-    mineBlocks(blockCount: number): Promise<any>;
+    mineBlocks(blockCount: number): any;
     addPeer(enode: string): void;
     listPeers(): void;
     stop(): Promise<void> | Promise<{}>;

@@ -134,7 +134,7 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction> {
+  c {
     const transaction = from && typeof from === 'object'
       ? from as any
       : {from: from, to: to, value: amount, gas: 21000}

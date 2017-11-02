@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { Block, EthereumClient, EthereumTransaction } from "./types";
+import { EthereumClient } from "./types";
 import { ExternalTransaction, FullBlock, BlockInfo, TransactionStatus } from "vineyard-blockchain";
 export interface Web3EthereumClientConfig {
     http: string;
@@ -20,11 +20,9 @@ export declare class Web3EthereumClient implements EthereumClient {
     getAccounts(): Promise<string[]>;
     getBalance(address: string): Promise<any>;
     unlockAccount(address: string): Promise<{}>;
-    send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction>;
-    importAddress(address: string): Promise<void>;
-    generate(blockCount: number): Promise<void>;
-    checkAllBalances(): Promise<any>;
-    getBlock(blockIndex: number): Promise<Block>;
-    getBlockNumber(): Promise<number>;
-    getGas(): Promise<any>;
+    c: {
+        const: any;
+        if(): any;
+    };
+    transaction: any;
 }

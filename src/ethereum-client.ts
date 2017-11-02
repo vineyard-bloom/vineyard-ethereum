@@ -1,9 +1,9 @@
-import * as Web3 from 'web3'
 import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 import {AddressManager, Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt} from "./types";
 import {ExternalTransaction, FullBlock, BlockInfo, TransactionStatus} from "vineyard-blockchain";
 const util = require("util")
+const Web3 = require("web3")
 
 
 export interface Web3EthereumClientConfig {
@@ -23,9 +23,8 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BlockInfo> {
-   const web3GetBlock = util.promisify(this.web3.eth.getBlock)
    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
-   return web3GetBlock(nextBlockIndex).then((nextBlock: Block) => {
+   return this.web3.eth.getBlock(nextBlockIndex).then((nextBlock: Block) => {
      return {
        hash: nextBlock.hash,
        index: nextBlock.number,

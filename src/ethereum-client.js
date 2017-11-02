@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Web3 = require("web3");
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
 var vineyard_blockchain_1 = require("vineyard-blockchain");
 var util = require("util");
+var Web3 = require("web3");
 var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
         this.web3 = web3 || new Web3(ethereumConfig.http);
@@ -13,9 +13,8 @@ var Web3EthereumClient = /** @class */ (function () {
         return this.web3;
     };
     Web3EthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
-        var web3GetBlock = util.promisify(this.web3.eth.getBlock);
         var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
-        return web3GetBlock(nextBlockIndex).then(function (nextBlock) {
+        return this.web3.eth.getBlock(nextBlockIndex).then(function (nextBlock) {
             return {
                 hash: nextBlock.hash,
                 index: nextBlock.number,

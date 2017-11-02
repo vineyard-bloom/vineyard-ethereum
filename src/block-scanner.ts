@@ -54,7 +54,6 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     return this.client.getBlock(i)
       .then(block => {
         if (!block || !block.transactions)
-          console.log('GETTING TRANSACTIONS OF BLOCK ', i)
           return Promise.resolve([])
         return this.gatherTransactions(block, block.transactions)
       })

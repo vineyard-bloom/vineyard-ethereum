@@ -49,8 +49,7 @@ var BlockScanner = /** @class */ (function () {
         return this.client.getBlock(i)
             .then(function (block) {
             if (!block || !block.transactions)
-                console.log('GETTING TRANSACTIONS OF BLOCK ', i);
-            return Promise.resolve([]);
+                return Promise.resolve([]);
             return _this.gatherTransactions(block, block.transactions);
         });
     };

@@ -14,7 +14,8 @@ var Web3EthereumClient = /** @class */ (function () {
     };
     Web3EthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
         var web3GetBlock = util.promisify(this.web3.eth.getBlock);
-        return web3GetBlock(previousBlock.index + 1).then(function (nextBlock) {
+        var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
+        return web3GetBlock(nextBlockIndex).then(function (nextBlock) {
             return {
                 hash: nextBlock.hash,
                 index: nextBlock.number,

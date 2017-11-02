@@ -9,7 +9,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     private web3;
     constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3);
     getWeb3(): any;
-    getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo>;
+    getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BlockInfo>;
     getFullBlock(block: BlockInfo): Promise<FullBlock>;
     getTransactionStatus(txid: string): Promise<TransactionStatus>;
     getTransaction(txid: string): Promise<ExternalTransaction>;

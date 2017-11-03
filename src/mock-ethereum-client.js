@@ -21,11 +21,35 @@ var RandomAddressSource = /** @class */ (function () {
     return RandomAddressSource;
 }());
 exports.RandomAddressSource = RandomAddressSource;
+var MockEth = /** @class */ (function () {
+    function MockEth() {
+        this.coinbase = "";
+    }
+    MockEth.prototype.getBalance = function (address) {
+        return address.balance;
+    };
+    MockEth.prototype.getBlock = function (blockNumber, blocks, cb) {
+        return blocks[blockNumber];
+    };
+    MockEth.prototype.getTransaction = function (txid, transactions) {
+        return transactions[txid];
+    };
+    return MockEth;
+}());
+exports.MockEth = MockEth;
+var MockWeb3 = /** @class */ (function () {
+    function MockWeb3(mockEth) {
+        this.mockEth = mockEth;
+    }
+    return MockWeb3;
+}());
+exports.MockWeb3 = MockWeb3;
 var MockEthereumClient = /** @class */ (function () {
-    function MockEthereumClient(addressSource) {
+    function MockEthereumClient(addressSource, mockWeb3) {
         this.addresses = {};
         this.blocks = [];
         this.txindex = 0;
+        this.mockWeb3 = mockWeb3;
         this.addressSource = addressSource;
         this.blocks.push({
             id: 0,
@@ -45,8 +69,23 @@ var MockEthereumClient = /** @class */ (function () {
     MockEthereumClient.prototype.getActiveBlock = function () {
         return this.blocks[this.blocks.length - 1];
     };
+    MockEthereumClient.prototype.getTransaction = function (txid) {
+        for (var block in this.blocks) {
+            return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions);
+        }
+    };
+    MockEthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
+        var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
+        return this.mockWeb3.mockEth.getBlock(nextBlockIndex, this.blocks, function (err, nextBlock) {
+            return {
+                hash: nextBlock.hash,
+                index: nextBlock.number,
+                timeMinded: nextBlock.timestamp
+            };
+        });
+    };
     MockEthereumClient.prototype.minePreviousBlock = function (block) {
-        var reward = block.transactions.reduce(function (a, b) { return a + b.gas; }, new bignumber_js_1.default(0))
+        var reward = block.transactions.reduce(function (a, b) { return a.plus(b.gas); }, new bignumber_js_1.default(0))
             + this.toWei(5);
         this.addresses[''] = this.addresses[''].plus(reward);
     };

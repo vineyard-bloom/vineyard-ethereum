@@ -20,13 +20,42 @@ export class RandomAddressSource implements AddressSource {
   }
 }
 
+export class MockEth {
+
+    coinbase: string
+
+    constructor() {
+      this.coinbase = ""
+    }
+
+    getBalance(address) {
+      return address.balance
+    }
+
+    getBlock(blockNumber, blocks, cb) {
+      return blocks[blockNumber]
+    }
+
+    getTransaction(txid, transactions) {
+      return transactions[txid] 
+    }
+}
+
+export class MockWeb3 {
+  mockEth: MockEth
+  constructor(mockEth: MockEth) {
+    this.mockEth = mockEth
+  }
+}
+
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
   private blocks: Block[] = []
   private txindex = 0
-
-  constructor(addressSource: AddressSource) {
+  private mockWeb3: MockWeb3
+  constructor(addressSource: AddressSource, mockWeb3: MockWeb3) {
+    this.mockWeb3 = mockWeb3
     this.addressSource = addressSource
     this.blocks.push({
       id: 0,
@@ -48,8 +77,25 @@ export class MockEthereumClient implements EthereumClient {
     return this.blocks[this.blocks.length - 1]
   }
 
+  getTransaction(txid: string) {
+    for (var block in this.blocks) {
+      return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions) 
+    }
+  }
+
+  getNextBlockInfo(previousBlock: number) {
+    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
+    return this.mockWeb3.mockEth.getBlock(nextBlockIndex, this.blocks, (err: any, nextBlock: Block) => {
+      return {
+        hash: nextBlock.hash,
+        index: nextBlock.number,
+        timeMinded: nextBlock.timestamp
+      }
+    })
+   }
+
   private minePreviousBlock(block: Block) {
-    const reward = block.transactions.reduce((a, b) => a + b.gas, new BigNumber(0))
+    const reward = block.transactions.reduce((a, b) => a.plus(b.gas), new BigNumber(0))
       + this.toWei(5)
     this.addresses[''] = this.addresses[''].plus(reward)
   }

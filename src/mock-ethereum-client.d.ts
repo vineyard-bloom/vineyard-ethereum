@@ -8,14 +8,28 @@ export declare class PredefinedAddressSource implements AddressSource {
 export declare class RandomAddressSource implements AddressSource {
     generateAddress(): Promise<string>;
 }
+export declare class MockEth {
+    coinbase: string;
+    constructor();
+    getBalance(address: any): any;
+    getBlock(blockNumber: any, blocks: any, cb: any): any;
+    getTransaction(txid: any, transactions: any): any;
+}
+export declare class MockWeb3 {
+    mockEth: MockEth;
+    constructor(mockEth: MockEth);
+}
 export declare class MockEthereumClient implements EthereumClient {
     private addressSource;
     private addresses;
     private blocks;
     private txindex;
-    constructor(addressSource: AddressSource);
+    private mockWeb3;
+    constructor(addressSource: AddressSource, mockWeb3: MockWeb3);
     createAddress(): Promise<string>;
     getActiveBlock(): Block;
+    getTransaction(txid: string): any;
+    getNextBlockInfo(previousBlock: number): any;
     private minePreviousBlock(block);
     generate(blockCount: number): Promise<void>;
     getBalance(address: string): Promise<number>;

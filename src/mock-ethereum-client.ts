@@ -89,7 +89,7 @@ export class MockEthereumClient implements EthereumClient {
       return {
         hash: nextBlock.hash,
         index: nextBlock.number,
-        timeMinded: nextBlock.timestamp
+        timeMined: nextBlock.timestamp
       }
     })
    }

@@ -80,7 +80,7 @@ var MockEthereumClient = /** @class */ (function () {
             return {
                 hash: nextBlock.hash,
                 index: nextBlock.number,
-                timeMinded: nextBlock.timestamp
+                timeMined: nextBlock.timestamp
             };
         });
     };

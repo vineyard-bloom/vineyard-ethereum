@@ -18,7 +18,7 @@ var Web3EthereumClient = /** @class */ (function () {
             return {
                 hash: nextBlock.hash,
                 index: nextBlock.number,
-                timeMinded: nextBlock.timestamp
+                timeMined: nextBlock.timestamp
             };
         });
     };

@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {AddressSource, Block, EthereumClient, EthereumTransaction} from "./types";
+import {BlockInfo, FullBlock} from "vineyard-blockchain"
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
@@ -83,7 +84,7 @@ export class MockEthereumClient implements EthereumClient {
     }
   }
 
-  getNextBlockInfo(previousBlock: number) {
+  getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo> {
     const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
     return this.mockWeb3.mockEth.getBlock(nextBlockIndex, this.blocks, (err: any, nextBlock: Block) => {
       return {
@@ -98,7 +99,7 @@ export class MockEthereumClient implements EthereumClient {
     return 0;
   }
 
-   getFullBlock(block: Block) {
+   getFullBlock(block: BlockInfo): Promise<FullBlock> {
       return {
         hash: block.hash,
         index: block.number,

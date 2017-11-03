@@ -94,6 +94,17 @@ export class MockEthereumClient implements EthereumClient {
     })
    }
 
+   getFullBlock(block) {
+    return this.mockWeb3.mockEth.getBlock(block, this.blocks, (fullBlock: Block) => {
+      return {
+        hash: fullBlock.hash,
+        index: fullBlock.number,
+        timeMined: fullBlock.timestamp,
+        transactions: fullBlock.transactions
+      }
+    })
+  }
+
   private minePreviousBlock(block: Block) {
     const reward = block.transactions.reduce((a, b) => a.plus(b.gas), new BigNumber(0))
       + this.toWei(5)

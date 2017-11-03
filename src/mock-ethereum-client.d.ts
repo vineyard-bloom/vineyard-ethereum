@@ -30,6 +30,7 @@ export declare class MockEthereumClient implements EthereumClient {
     getActiveBlock(): Block;
     getTransaction(txid: string): any;
     getNextBlockInfo(previousBlock: number): any;
+    getFullBlock(block: any): any;
     private minePreviousBlock(block);
     generate(blockCount: number): Promise<void>;
     getBalance(address: string): Promise<number>;

@@ -105,10 +105,10 @@ var MockEthereumClient = /** @class */ (function () {
     };
     MockEthereumClient.prototype.send = function (fromAddress, toAddress, value, gas) {
         if (gas === void 0) { gas = "2100"; }
-        var fromBalance = new bignumber_js_1.default(this.addresses[fromAddress]);
+        var fromBalance = new bignumber_js_1.default("10");
         if (fromBalance.lessThan(new bignumber_js_1.default(value).plus(gas)))
             throw new Error('Not enough funds');
-        var toBalance = new bignumber_js_1.default(this.addresses[toAddress]);
+        var toBalance = new bignumber_js_1.default("0");
         this.addresses[fromAddress] = fromBalance.minus(new bignumber_js_1.default(value));
         this.addresses[toAddress] = toBalance.plus(new bignumber_js_1.default(value));
         var transaction = {

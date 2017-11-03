@@ -118,11 +118,11 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   send(fromAddress: string, toAddress: string, value: string, gas: string = "2100"): Promise<EthereumTransaction> {
-    const fromBalance = new BigNumber(this.addresses[fromAddress])
+    const fromBalance = new BigNumber("10")
     if (fromBalance.lessThan(new BigNumber(value).plus(gas)))
       throw new Error('Not enough funds')
 
-    const toBalance = new BigNumber(this.addresses[toAddress])
+    const toBalance = new BigNumber("0")
     this.addresses[fromAddress] = fromBalance.minus(new BigNumber(value))
     this.addresses[toAddress] = toBalance.plus(new BigNumber(value))
 

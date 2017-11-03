@@ -30,6 +30,7 @@ export declare class MockEthereumClient implements EthereumClient {
     getActiveBlock(): Block;
     getTransaction(txid: string): any;
     getNextBlockInfo(previousBlock: number): any;
+    getTransactionStatus(txid: string): Promise<number>;
     getFullBlock(block: Block): {
         hash: string;
         index: number;

@@ -94,6 +94,10 @@ export class MockEthereumClient implements EthereumClient {
     })
    }
 
+   async getTransactionStatus(txid: string): Promise<number> {
+    return 0;
+  }
+
    getFullBlock(block: Block) {
       return {
         hash: block.hash,

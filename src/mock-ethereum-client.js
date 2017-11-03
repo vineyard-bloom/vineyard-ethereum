@@ -85,7 +85,7 @@ var MockEthereumClient = /** @class */ (function () {
         });
     };
     MockEthereumClient.prototype.getFullBlock = function (block) {
-        return this.mockWeb3.mockEth.getBlock(block, this.blocks, function (fullBlock) {
+        return this.mockWeb3.mockEth.getBlock(block.id, this.blocks, function (fullBlock) {
             return {
                 hash: fullBlock.hash,
                 index: fullBlock.number,

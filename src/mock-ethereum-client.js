@@ -85,14 +85,12 @@ var MockEthereumClient = /** @class */ (function () {
         });
     };
     MockEthereumClient.prototype.getFullBlock = function (block) {
-        return this.mockWeb3.mockEth.getBlock(block.id, this.blocks, function (fullBlock) {
-            return {
-                hash: fullBlock.hash,
-                index: fullBlock.number,
-                timeMined: fullBlock.timestamp,
-                transactions: fullBlock.transactions
-            };
-        });
+        return {
+            hash: block.hash,
+            index: block.number,
+            timeMined: block.timestamp,
+            transactions: block.transactions
+        };
     };
     MockEthereumClient.prototype.minePreviousBlock = function (block) {
         var reward = block.transactions.reduce(function (a, b) { return a.plus(b.gas); }, new bignumber_js_1.default(0))

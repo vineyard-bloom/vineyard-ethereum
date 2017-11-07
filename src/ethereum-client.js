@@ -12,6 +12,15 @@ var Web3EthereumClient = /** @class */ (function () {
     Web3EthereumClient.prototype.getWeb3 = function () {
         return this.web3;
     };
+    Web3EthereumClient.prototype.getLastBlock = function () {
+        return this.web3.eth.blockNumber(function (err, lastBlock) {
+            return {
+                hash: lastBlock.hash,
+                index: lastBlock.number,
+                timeMined: lastBlock.timestamp
+            };
+        });
+    };
     Web3EthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
         var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
         return this.web3.eth.getBlock(nextBlockIndex, function (err, nextBlock) {

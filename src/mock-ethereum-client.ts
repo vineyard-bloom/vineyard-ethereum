@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {AddressSource, Block, EthereumClient, EthereumTransaction} from "./types";
-import {BlockInfo, FullBlock} from "vineyard-blockchain"
+import {BlockInfo, FullBlock, Address} from "vineyard-blockchain"
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
@@ -29,15 +29,19 @@ export class MockEth {
       this.coinbase = ""
     }
 
-    getBalance(address) {
-      return address.balance
+    getBalance(address: Address) {
+      return address.balance:
     }
 
-    getBlock(blockNumber, blocks, cb) {
+    getBlock(blockNumber: number, blocks: Block[], cb: any) {
       return blocks[blockNumber]
     }
 
-    getTransaction(txid, transactions) {
+    blockNumber(blocks: Block[], cb) {
+      return blocks[blocks.length-1]
+    }
+
+    getTransaction(txid: string, transactions: EthereumTransaction[]) {
       return transactions[txid] 
     }
 }
@@ -82,6 +86,17 @@ export class MockEthereumClient implements EthereumClient {
     for (var block in this.blocks) {
       return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions) 
     }
+  }
+
+
+  getLastBlock(): Promise<BlockInfo> {
+    return this.mockWeb3.mockEth.blockNumber(this.blocks, (err: any, lastBlock: Block) => {
+      return {
+        hash: lastBlock.hash,
+        index: lastBlock.number,
+        timeMined: lastBlock.timestamp
+      }
+    })
   }
 
   getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo> {
@@ -151,7 +166,7 @@ export class MockEthereumClient implements EthereumClient {
     }
 
     this.getActiveBlock().transactions.push(transaction)
-
+    
     return Promise.resolve(transaction)
   }
 

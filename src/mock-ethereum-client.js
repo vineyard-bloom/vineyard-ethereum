@@ -66,6 +66,9 @@ var MockEth = /** @class */ (function () {
     MockEth.prototype.getBlock = function (blockNumber, blocks, cb) {
         return blocks[blockNumber];
     };
+    MockEth.prototype.blockNumber = function (blocks, cb) {
+        return blocks[blocks.length - 1];
+    };
     MockEth.prototype.getTransaction = function (txid, transactions) {
         return transactions[txid];
     };
@@ -108,6 +111,15 @@ var MockEthereumClient = /** @class */ (function () {
         for (var block in this.blocks) {
             return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions);
         }
+    };
+    MockEthereumClient.prototype.getLastBlock = function () {
+        return this.mockWeb3.mockEth.blockNumber(this.blocks, function (err, lastBlock) {
+            return {
+                hash: lastBlock.hash,
+                index: lastBlock.number,
+                timeMined: lastBlock.timestamp
+            };
+        });
     };
     MockEthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
         var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;

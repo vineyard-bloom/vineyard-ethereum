@@ -1,5 +1,5 @@
 import { AddressSource, Block, EthereumClient, EthereumTransaction } from "./types";
-import { BlockInfo, FullBlock, Address } from "vineyard-blockchain";
+import { BlockInfo, FullBlock } from "vineyard-blockchain";
 export declare class PredefinedAddressSource implements AddressSource {
     private addresses;
     private index;
@@ -12,10 +12,10 @@ export declare class RandomAddressSource implements AddressSource {
 export declare class MockEth {
     coinbase: string;
     constructor();
-    getBalance(address: Address): any;
-    getBlock(blockNumber: number, blocks: Block[], cb: any): Block;
-    blockNumber(blocks: Block[], cb: any): Block;
-    getTransaction(txid: string, transactions: EthereumTransaction[]): any;
+    getBalance(address: any): any;
+    getBlock(blockNumber: any, blocks: any, cb: any): any;
+    blockNumber(blocks: any, cb: any): any;
+    getTransaction(txid: any, transactions: any): any;
 }
 export declare class MockWeb3 {
     mockEth: MockEth;
@@ -30,8 +30,8 @@ export declare class MockEthereumClient implements EthereumClient {
     constructor(addressSource: AddressSource, mockWeb3: MockWeb3);
     createAddress(): Promise<string>;
     getActiveBlock(): Block;
-    getTransaction(txid: string): any;
     getLastBlock(): Promise<BlockInfo>;
+    getTransaction(txid: string): any;
     getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo>;
     getTransactionStatus(txid: string): Promise<number>;
     getFullBlock(block: BlockInfo): Promise<FullBlock>;

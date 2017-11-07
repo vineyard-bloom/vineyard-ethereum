@@ -107,11 +107,6 @@ var MockEthereumClient = /** @class */ (function () {
     MockEthereumClient.prototype.getActiveBlock = function () {
         return this.blocks[this.blocks.length - 1];
     };
-    MockEthereumClient.prototype.getTransaction = function (txid) {
-        for (var block in this.blocks) {
-            return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions);
-        }
-    };
     MockEthereumClient.prototype.getLastBlock = function () {
         return this.mockWeb3.mockEth.blockNumber(this.blocks, function (err, lastBlock) {
             return {
@@ -120,6 +115,11 @@ var MockEthereumClient = /** @class */ (function () {
                 timeMined: lastBlock.timestamp
             };
         });
+    };
+    MockEthereumClient.prototype.getTransaction = function (txid) {
+        for (var block in this.blocks) {
+            return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions);
+        }
     };
     MockEthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
         var nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;

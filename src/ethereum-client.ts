@@ -1,7 +1,7 @@
 import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 import {AddressManager, Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt} from "./types";
-import {ExternalTransaction, FullBlock, BlockInfo, TransactionStatus} from "vineyard-blockchain";
+import {ExternalTransaction, FullBlock, BlockInfo, TransactionStatus, Resolve} from "vineyard-blockchain";
 const util = require("util")
 const Web3 = require("web3")
 
@@ -12,9 +12,9 @@ export interface Web3EthereumClientConfig {
 }
 
 export class Web3EthereumClient implements EthereumClient {
-  private web3: Web3
+  private web3: Web3Client
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3) {
+  constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
     this.web3 = web3 || new Web3(ethereumConfig.http)
   }
 
@@ -63,7 +63,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getTransaction(txid: string): Promise<ExternalTransaction> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: Resolve<ExternalTransaction>, reject) => {
       this.web3.eth.getTransaction(txid, (err, block) => {
         if (err) {
           console.error('Error querying transaction', txid, 'with message', err.message)
@@ -236,3 +236,5 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 }
+
+export type Web3Client = any

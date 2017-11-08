@@ -37,8 +37,10 @@ export class MockEth {
       return blocks[blockNumber]
     }
 
-    blockNumber(blocks, cb) {
-      return blocks[blocks.length -1]
+    blockNumber(blocks) {
+      return new Promise((resolve:any, reject: any) => {
+        resolve(blocks[blocks.length -1])
+      })
     }
 
     getTransaction(txid, transactions) {
@@ -63,9 +65,11 @@ export class MockEthereumClient implements EthereumClient {
     this.mockWeb3 = mockWeb3
     this.addressSource = addressSource
     this.blocks.push({
-      id: 0,
+      number: 0,
       transactions: [],
       timestamp: Math.floor(Date.now() / 1000),
+      hash: 'tx-hash-' + this.txindex++
+
     })
     this.addresses[''] = new BigNumber("10000000000000000000000000000")
   }
@@ -83,14 +87,16 @@ export class MockEthereumClient implements EthereumClient {
   }
 
   getLastBlock(): Promise<BlockInfo> {
-    return this.mockWeb3.mockEth.blockNumber(this.blocks, (err: any, lastBlock: Block) => {
-      return {
-        hash: lastBlock.hash,
-        index: lastBlock.number,
-        timeMined: lastBlock.timestamp
-      }
-    })
-  }
+      return this.mockWeb3.mockEth.blockNumber(this.blocks).then((lastBlock: Block) => {
+        return {
+          id: lastBlock.hash,
+          currency: "ethereum",
+          hash: lastBlock.hash,
+          index: lastBlock.number,
+          timeMined: new Date(lastBlock.timestamp)
+        }
+      }) 
+    }
 
   getTransaction(txid: string) {
     for (var block in this.blocks) {
@@ -132,7 +138,8 @@ export class MockEthereumClient implements EthereumClient {
     for (let i = 0; i < blockCount; ++i) {
       this.minePreviousBlock(this.getActiveBlock())
       this.blocks.push({
-        id: this.blocks.length,
+        hash: 'tx-hash-' + this.txindex++,
+        number: this.blocks.length,
         transactions: [],
         timestamp: Math.floor(Date.now() / 1000),
       })
@@ -160,7 +167,7 @@ export class MockEthereumClient implements EthereumClient {
       value: value,
       gas: gas,
       blockNumber: this.blocks.length - 1,
-      // time: Math.floor(Date.now() / 1000),
+      timeReceived: Math.floor(Date.now() / 1000),
       hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
     }
 

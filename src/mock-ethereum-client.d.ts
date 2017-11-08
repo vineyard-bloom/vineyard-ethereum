@@ -14,7 +14,7 @@ export declare class MockEth {
     constructor();
     getBalance(address: any): any;
     getBlock(blockNumber: any, blocks: any, cb: any): any;
-    blockNumber(blocks: any, cb: any): any;
+    blockNumber(blocks: any): Promise<{}>;
     getTransaction(txid: any, transactions: any): any;
 }
 export declare class MockWeb3 {

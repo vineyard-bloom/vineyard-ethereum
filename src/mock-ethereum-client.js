@@ -66,8 +66,10 @@ var MockEth = /** @class */ (function () {
     MockEth.prototype.getBlock = function (blockNumber, blocks, cb) {
         return blocks[blockNumber];
     };
-    MockEth.prototype.blockNumber = function (blocks, cb) {
-        return blocks[blocks.length - 1];
+    MockEth.prototype.blockNumber = function (blocks) {
+        return new Promise(function (resolve, reject) {
+            resolve(blocks[blocks.length - 1]);
+        });
     };
     MockEth.prototype.getTransaction = function (txid, transactions) {
         return transactions[txid];
@@ -90,9 +92,10 @@ var MockEthereumClient = /** @class */ (function () {
         this.mockWeb3 = mockWeb3;
         this.addressSource = addressSource;
         this.blocks.push({
-            id: 0,
+            number: 0,
             transactions: [],
             timestamp: Math.floor(Date.now() / 1000),
+            hash: 'tx-hash-' + this.txindex++
         });
         this.addresses[''] = new bignumber_js_1.default("10000000000000000000000000000");
     }
@@ -108,11 +111,13 @@ var MockEthereumClient = /** @class */ (function () {
         return this.blocks[this.blocks.length - 1];
     };
     MockEthereumClient.prototype.getLastBlock = function () {
-        return this.mockWeb3.mockEth.blockNumber(this.blocks, function (err, lastBlock) {
+        return this.mockWeb3.mockEth.blockNumber(this.blocks).then(function (lastBlock) {
             return {
+                id: lastBlock.hash,
+                currency: "ethereum",
                 hash: lastBlock.hash,
                 index: lastBlock.number,
-                timeMined: lastBlock.timestamp
+                timeMined: new Date(lastBlock.timestamp)
             };
         });
     };
@@ -155,7 +160,8 @@ var MockEthereumClient = /** @class */ (function () {
         for (var i = 0; i < blockCount; ++i) {
             this.minePreviousBlock(this.getActiveBlock());
             this.blocks.push({
-                id: this.blocks.length,
+                hash: 'tx-hash-' + this.txindex++,
+                number: this.blocks.length,
                 transactions: [],
                 timestamp: Math.floor(Date.now() / 1000),
             });
@@ -179,7 +185,7 @@ var MockEthereumClient = /** @class */ (function () {
             value: value,
             gas: gas,
             blockNumber: this.blocks.length - 1,
-            // time: Math.floor(Date.now() / 1000),
+            timeReceived: Math.floor(Date.now() / 1000),
             hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
         };
         this.getActiveBlock().transactions.push(transaction);

@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js';
 import Bristle from './sweep.js';
 import { ReadClient, ExternalTransaction } from "vineyard-blockchain";
+export interface FakeBlock {
+}
 export interface EthereumTransaction {
     to: string;
     from: string;

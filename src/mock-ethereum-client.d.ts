@@ -20,8 +20,8 @@ export declare class MockEthereumClient implements EthereumClient {
     generate(blockCount: number): Promise<void>;
     getBalance(address: string): Promise<number>;
     send(fromAddress: string, toAddress: string, value: string, gas?: string): Promise<EthereumTransaction>;
-    toWei(amount: number): string;
-    fromWei(amount: number): string;
+    toWei(amount: number): any;
+    fromWei(amount: number): any;
     importAddress(address: string): Promise<void>;
     getAccounts(): Promise<string>;
     getBlock(blockIndex: number): Promise<Block>;

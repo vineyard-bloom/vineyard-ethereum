@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gethServer_1 = require("./gethServer");
 var child_process = require('child_process');
 var fs = require('fs');
-var GethLab = /** @class */ (function () {
+var GethLab = (function () {
     function GethLab(config, client, server) {
         if (server === void 0) { server = new gethServer_1.GethServer(); }
         this.defaultAddress = "";

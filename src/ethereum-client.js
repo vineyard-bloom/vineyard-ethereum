@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Web3 = require("web3");
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
-var Web3EthereumClient = /** @class */ (function () {
+var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig) {
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));

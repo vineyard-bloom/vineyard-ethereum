@@ -7,7 +7,7 @@ function gweiToWei(amount) {
     return amount.times("1000000000");
 }
 exports.gweiToWei = gweiToWei;
-var Broom = /** @class */ (function () {
+var Broom = (function () {
     function Broom(config, ethereumManager, ethereumClient) {
         this.config = config;
         this.manager = ethereumManager;
@@ -72,7 +72,8 @@ var Broom = /** @class */ (function () {
     };
     Broom.prototype.tokenSingleSweep = function (abi, address) {
         var _this = this;
-        return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+        return this.client.unlockAccunt(address)
+            .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
             .then(function (balance) {
             console.log('Sweeping address', address);
             return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
@@ -86,20 +87,23 @@ var Broom = /** @class */ (function () {
                     amount: balance
                 });
             });
-        });
+        }); });
     };
     Broom.prototype.needsGas = function (abi, address) {
         var _this = this;
-        return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+        return this.client.unlockAccount(address)
+            .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
             .then(function (tokenBalance) { return _this.client.getBalance(address)
-            .then(function (ethBalance) { return parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000; }); });
+            .then(function (ethBalance) { return parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
+        var readableAddress = address.slice(2);
+        var readableHotWallet = this.config.hotWalletAddress.slice(2);
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
-                return _this.client.send(address, _this.config.tokenContractAddress, 0.0003);
+                return _this.client.send(readableHotWallet, readableAddress, 0.0003);
             }
         });
     };

@@ -180,9 +180,10 @@ var MockEthereumClient = /** @class */ (function () {
         this.addresses[fromAddress] = fromBalance.minus(new bignumber_js_1.default(value));
         this.addresses[toAddress] = toBalance.plus(new bignumber_js_1.default(value));
         var transaction = {
+            txid: "txid" + this.txindex++,
             from: fromAddress,
             to: toAddress,
-            value: value,
+            amount: value,
             gas: gas,
             blockNumber: this.blocks.length - 1,
             timeReceived: Math.floor(Date.now() / 1000),

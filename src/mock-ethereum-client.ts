@@ -162,9 +162,10 @@ export class MockEthereumClient implements EthereumClient {
     this.addresses[toAddress] = toBalance.plus(new BigNumber(value))
 
     const transaction = {
+      txid: "txid" + this.txindex++,
       from: fromAddress,
       to: toAddress,
-      value: value,
+      amount: value,
       gas: gas,
       blockNumber: this.blocks.length - 1,
       timeReceived: Math.floor(Date.now() / 1000),

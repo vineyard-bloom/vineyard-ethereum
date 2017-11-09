@@ -123,10 +123,12 @@ export class Broom {
   }
 
   gasTransaction(abi, address) {
+    const readableAddress = address.slice(2)
+    const readableHotWallet = this.config.hotWalletAddress.slice(2)
     return this.needsGas(abi, address)
       .then(gasLess => {
         if(gasLess) {
-          return this.client.send(this.config.hotWalletAddress, address, 0.0003)
+          return this.client.send(readableHotWallet, readableAddress, 0.0003)
         }
       })
   }

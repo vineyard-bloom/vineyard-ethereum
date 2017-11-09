@@ -43,12 +43,10 @@ var TokenContract = (function () {
         });
     };
     TokenContract.prototype.transfer = function (abi, address, from, to, value) {
-        //address = token contract address
         return this.loadContract(abi)
             .then(function (contract) {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
-                // this.watchContract(instance, from)
                 return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
                     .then(function (result) {
                     console.log(result);

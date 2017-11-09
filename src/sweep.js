@@ -75,18 +75,20 @@ var Broom = (function () {
         return this.client.unlockAccount(address)
             .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
             .then(function (balance) {
-            console.log('Sweeping address', address);
-            return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
-                .then(function (tx) {
-                console.log('Sweeping address succeeded', tx.hash);
-                return _this.saveSweepRecord({
-                    from: address,
-                    to: _this.config.sweepAddress,
-                    status: 0,
-                    txid: tx.hash,
-                    amount: balance
+            if (new bignumber_js_1.default(balance).toNumber() > 0) {
+                console.log('Sweeping address', address);
+                return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
+                    .then(function (tx) {
+                    console.log('Sweeping address succeeded', tx.hash);
+                    return _this.saveSweepRecord({
+                        from: address,
+                        to: _this.config.sweepAddress,
+                        status: 0,
+                        txid: tx.hash,
+                        amount: balance
+                    });
                 });
-            });
+            }
         }); }).catch(function (err) { return console.error("Error sweeping address: " + address + ":\n " + err); });
     };
     Broom.prototype.needsGas = function (abi, address) {
@@ -94,7 +96,7 @@ var Broom = (function () {
         return this.client.unlockAccount(address)
             .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
             .then(function (tokenBalance) { return _this.client.getBalance(address)
-            .then(function (ethBalance) { return parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
+            .then(function (ethBalance) { return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;

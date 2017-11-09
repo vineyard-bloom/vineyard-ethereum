@@ -97,18 +97,20 @@ export class Broom {
     return this.client.unlockAccount(address)
         .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
           .then(balance => {
-            console.log('Sweeping address', address)
-            return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
-              .then(tx => {
-                console.log('Sweeping address succeeded', tx.hash)
-                return this.saveSweepRecord({
-                  from: address,
-                  to: this.config.sweepAddress,
-                  status: 0,
-                  txid: tx.hash,
-                  amount: balance
+            if(new BigNumber(balance).toNumber() > 0) {
+              console.log('Sweeping address', address)
+              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
+                .then(tx => {
+                  console.log('Sweeping address succeeded', tx.hash)
+                  return this.saveSweepRecord({
+                    from: address,
+                    to: this.config.sweepAddress,
+                    status: 0,
+                    txid: tx.hash,
+                    amount: balance
+                  })
                 })
-              })
+            }
           })
         ).catch(err => console.error(`Error sweeping address: ${address}:\n ${err}`))
   }
@@ -117,7 +119,7 @@ export class Broom {
     return this.client.unlockAccount(address)
       .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
       .then(tokenBalance => this.client.getBalance(address)
-      .then(ethBalance => parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000)
+      .then(ethBalance => new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000)
       )
     )
   }

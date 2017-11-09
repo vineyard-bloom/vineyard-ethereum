@@ -52,12 +52,10 @@ export class TokenContract {
   }
 
   transfer(abi, address, from, to, value) {
-    //address = token contract address
     return this.loadContract(abi)
     .then(contract => {
       return Promise.resolve(contract.at(address))
         .then(instance => {
-          // this.watchContract(instance, from)
           return Promise.resolve(instance.transfer.sendTransaction(to, value, {from: from, gas: 4712388}))
           .then(result => {
             console.log(result)

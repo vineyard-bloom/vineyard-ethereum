@@ -72,7 +72,8 @@ var Broom = (function () {
     };
     Broom.prototype.tokenSingleSweep = function (abi, address) {
         var _this = this;
-        return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+        return this.client.unlockAccount(address)
+            .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
             .then(function (balance) {
             console.log('Sweeping address', address);
             return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
@@ -86,7 +87,7 @@ var Broom = (function () {
                     amount: balance
                 });
             });
-        });
+        }); });
     };
     Broom.prototype.needsGas = function (abi, address) {
         var _this = this;

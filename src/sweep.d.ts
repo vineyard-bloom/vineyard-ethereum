@@ -24,7 +24,7 @@ export declare class Broom {
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
     tokenSweep(abi: any): Promise<void>;
-    tokenSingleSweep(abi: any, address: any): Promise<any>;
+    tokenSingleSweep(abi: any, address: any): any;
     needsGas(abi: any, address: any): Promise<boolean>;
     gasTransaction(abi: any, address: any): Promise<any>;
     provideGas(abi: any): Promise<void>;

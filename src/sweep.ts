@@ -94,21 +94,23 @@ export class Broom {
   }
 
   tokenSingleSweep(abi, address) {
-    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
-      .then(balance => {
-          console.log('Sweeping address', address)
-          return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
-            .then(tx => {
-              console.log('Sweeping address succeeded', tx.hash)
-              return this.saveSweepRecord({
-                from: address,
-                to: this.config.sweepAddress,
-                status: 0,
-                txid: tx.hash,
-                amount: balance
+    return this.client.unlockAccunt(address)
+        .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+          .then(balance => {
+            console.log('Sweeping address', address)
+            return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
+              .then(tx => {
+                console.log('Sweeping address succeeded', tx.hash)
+                return this.saveSweepRecord({
+                  from: address,
+                  to: this.config.sweepAddress,
+                  status: 0,
+                  txid: tx.hash,
+                  amount: balance
+                })
               })
-            })
-      })
+          })
+        )
   }
 
   needsGas(abi, address):Promise<boolean> {

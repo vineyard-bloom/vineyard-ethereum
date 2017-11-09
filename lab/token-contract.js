@@ -43,11 +43,13 @@ var TokenContract = (function () {
         });
     };
     TokenContract.prototype.transfer = function (abi, address, from, to, value) {
+        var _this = this;
         return this.loadContract(abi)
             .then(function (contract) {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
-                return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
+                var getData = instance.transfer.getData(to, value);
+                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, data: getData }))
                     .then(function (result) {
                     console.log(result);
                     return result;

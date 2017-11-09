@@ -114,17 +114,19 @@ export class Broom {
   }
 
   needsGas(abi, address):Promise<boolean> {
-    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+    return this.client.unlockAccount(address)
+      .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
       .then(tokenBalance => this.client.getBalance(address)
-        .then(ethBalance => parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000)
+      .then(ethBalance => parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000)
       )
+    )
   }
 
   gasTransaction(abi, address) {
     return this.needsGas(abi, address)
       .then(gasLess => {
         if(gasLess) {
-          return this.client.send(address, this.config.tokenContractAddress, 0.0003)
+          return this.client.send(this.config.hotWalletAddress, address, 0.0003)
         }
       })
   }

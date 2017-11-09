@@ -87,7 +87,7 @@ var Broom = (function () {
                     amount: balance
                 });
             });
-        }); });
+        }); }).catch(function (err) { return console.error("Error sweeping address: " + address + ":\n " + err); });
     };
     Broom.prototype.needsGas = function (abi, address) {
         var _this = this;
@@ -105,7 +105,7 @@ var Broom = (function () {
             if (gasLess) {
                 return _this.client.send(readableHotWallet, readableAddress, 0.0003);
             }
-        });
+        }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };
     Broom.prototype.provideGas = function (abi) {
         var _this = this;

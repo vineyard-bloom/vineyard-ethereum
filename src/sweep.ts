@@ -110,7 +110,7 @@ export class Broom {
                 })
               })
           })
-        )
+        ).catch(err => console.error(`Error sweeping address: ${address}:\n ${err}`))
   }
 
   needsGas(abi, address):Promise<boolean> {
@@ -130,7 +130,7 @@ export class Broom {
         if(gasLess) {
           return this.client.send(readableHotWallet, readableAddress, 0.0003)
         }
-      })
+      }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }
 
   provideGas(abi) {

@@ -169,6 +169,7 @@ export class MockEthereumClient implements EthereumClient {
       gas: gas,
       blockNumber: this.blocks.length - 1,
       timeReceived: Math.floor(Date.now() / 1000),
+      confirmations: 11,
       hash: 'tx-hash-' + this.txindex++ //this.blocks.length + '.' + this.getActiveBlock().transactions.length
     }
 

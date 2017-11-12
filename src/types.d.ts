@@ -45,7 +45,7 @@ export interface EthereumClient extends ReadClient {
     getBlockNumber(): Promise<number>;
     getCoinbase(): Promise<string>;
     getTransaction(txid: string): Promise<ExternalTransaction>;
-    getGas(): Promise<number>;
+    getGas(): Promise<BigNumber>;
 }
 export interface AddressSource {
     generateAddress(): Promise<string>;

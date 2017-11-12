@@ -51,13 +51,13 @@ var Web3EthereumClient = /** @class */ (function () {
     Web3EthereumClient.prototype.getTransaction = function (txid) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.web3.eth.getTransaction(txid, function (err, block) {
+            _this.web3.eth.getTransaction(txid, function (err, transaction) {
                 if (err) {
                     console.error('Error querying transaction', txid, 'with message', err.message);
                     reject(new Error(err));
                 }
                 else {
-                    resolve(block);
+                    resolve(transaction);
                 }
             });
         });

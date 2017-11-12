@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { Block, EthereumClient, EthereumTransaction } from "./types";
 import { ExternalTransaction, FullBlock, BlockInfo, TransactionStatus } from "vineyard-blockchain";
 export interface Web3EthereumClientConfig {
@@ -18,14 +19,14 @@ export declare class Web3EthereumClient implements EthereumClient {
     fromWei(amount: number): string;
     createAddress(): Promise<string>;
     getAccounts(): Promise<string[]>;
-    getBalance(address: string): Promise<any>;
-    unlockAccount(address: string): Promise<{}>;
+    getBalance(address: string): Promise<string>;
+    unlockAccount(address: string): Promise<boolean>;
     send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction>;
     importAddress(address: string): Promise<void>;
     generate(blockCount: number): Promise<void>;
     checkAllBalances(): Promise<any>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
-    getGas(): Promise<any>;
+    getGas(): Promise<BigNumber>;
 }
 export declare type Web3Client = any;

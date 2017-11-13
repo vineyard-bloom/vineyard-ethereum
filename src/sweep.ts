@@ -16,6 +16,8 @@ export interface SweepConfig {
   minSweepAmount
   gas
   gasPrice
+  hotWallet
+  tokenContractAddress
 }
 
 export function gweiToWei(amount) {
@@ -85,12 +87,23 @@ export class Broom {
 
   tokenSweep(abi) {
     console.log('Starting Token sweep')
-    return this.manager.getDustyAddresses()
-      .then(addresses => {
-        console.log('Dusty addresses', addresses.length, addresses)
-        return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
+    return this.provideGas(abi).then(blockHeight => {
+      return this.waitForGasProvisionConfirmations(blockHeight).then(() => {
+        return this.manager.getDustyAddresses()
+          .then(addresses => {
+            console.log('Dusty addresses', addresses.length, addresses)
+            return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
+          })
       })
-      .then(() => console.log('Finished Token sweep'))
+    }).then(() => console.log('Finished Token sweep'))
+  }
+
+  waitForGasProvisionConfirmations(blockHeight) {
+    if (this.client.eth.blockNumber > blockHeight + 13) {
+      return Promise.resolve(true)
+    } else {
+      setTimeout(this.waitForGasProvisionConfirmations, 5000, blockHeight)
+    }
   }
 
   tokenSingleSweep(abi, address) {
@@ -105,7 +118,7 @@ export class Broom {
                   return this.saveSweepRecord({
                     from: address,
                     to: this.config.sweepAddress,
-                    status: 0,
+                    status: 1,
                     txid: tx.hash,
                     amount: balance
                   })
@@ -126,7 +139,7 @@ export class Broom {
 
   gasTransaction(abi, address) {
     const readableAddress = address.slice(2)
-    const readableHotWallet = this.config.hotWalletAddress.slice(2)
+    const readableHotWallet = this.config.hotWallet.slice(2)
     return this.needsGas(abi, address)
       .then(gasLess => {
         if(gasLess) {
@@ -137,11 +150,25 @@ export class Broom {
 
   provideGas(abi) {
     console.log('Starting Salt Gas Provider')
-    return this.manager.getDustyAddresses()
-      .then(addresses => {
-        console.log('Dusty addresses', addresses.length, addresses)
-        return promiseEach(addresses, address => this.gasTransaction(abi, address))
-      })
-      .then(() => console.log('Finished Salt Gas Provider job'))
+    let highestTransaction = 0
+    return this.client.unlockAccount(this.config.hotWallet)
+      .then(() => this.manager.getDustyAddresses()
+        .then(addresses => {
+          console.log('Dusty addresses', addresses.length, addresses)
+          return promiseEach(addresses, address => {
+            return this.gasTransaction(abi, address)
+              .then(txid => this.client.getTransaction(txid)
+                .then(tx => {
+                  if (tx.blockNumber > highestTransaction) {
+                    highestTransaction = tx.blockNumber
+                  }
+                })
+              )
+          })
+        })
+      ).then(() => {
+          console.log('Finished Salt Gas Provider job. Wait for confirmation of block ' + highestTransaction)
+          return highestTransaction
+        })
   }
 }

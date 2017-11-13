@@ -11,6 +11,8 @@ export interface SweepConfig {
     minSweepAmount: any;
     gas: any;
     gasPrice: any;
+    hotWallet: any;
+    tokenContractAddress: any;
 }
 export declare function gweiToWei(amount: any): any;
 export declare class Broom {
@@ -23,9 +25,10 @@ export declare class Broom {
     calculateSendAmount(amount: any): any;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
-    tokenSweep(abi: any): Promise<void>;
+    tokenSweep(abi: any): any;
+    waitForGasProvisionConfirmations(blockHeight: any): Promise<boolean> | undefined;
     tokenSingleSweep(abi: any, address: any): any;
     needsGas(abi: any, address: any): Promise<boolean>;
     gasTransaction(abi: any, address: any): Promise<any>;
-    provideGas(abi: any): Promise<void>;
+    provideGas(abi: any): any;
 }

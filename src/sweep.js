@@ -63,12 +63,23 @@ var Broom = (function () {
     Broom.prototype.tokenSweep = function (abi) {
         var _this = this;
         console.log('Starting Token sweep');
-        return this.manager.getDustyAddresses()
-            .then(function (addresses) {
-            console.log('Dusty addresses', addresses.length, addresses);
-            return promise_each2_1.each(addresses, function (address) { return _this.tokenSingleSweep(abi, address); });
-        })
-            .then(function () { return console.log('Finished Token sweep'); });
+        return this.provideGas(abi).then(function (blockHeight) {
+            return _this.waitForGasProvisionConfirmations(blockHeight).then(function () {
+                return _this.manager.getDustyAddresses()
+                    .then(function (addresses) {
+                    console.log('Dusty addresses', addresses.length, addresses);
+                    return promise_each2_1.each(addresses, function (address) { return _this.tokenSingleSweep(abi, address); });
+                });
+            });
+        }).then(function () { return console.log('Finished Token sweep'); });
+    };
+    Broom.prototype.waitForGasProvisionConfirmations = function (blockHeight) {
+        if (this.client.eth.blockNumber > blockHeight + 13) {
+            return Promise.resolve(true);
+        }
+        else {
+            setTimeout(this.waitForGasProvisionConfirmations, 5000, blockHeight);
+        }
     };
     Broom.prototype.tokenSingleSweep = function (abi, address) {
         var _this = this;
@@ -83,7 +94,7 @@ var Broom = (function () {
                     return _this.saveSweepRecord({
                         from: address,
                         to: _this.config.sweepAddress,
-                        status: 0,
+                        status: 1,
                         txid: tx.hash,
                         amount: balance
                     });
@@ -101,7 +112,7 @@ var Broom = (function () {
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
         var readableAddress = address.slice(2);
-        var readableHotWallet = this.config.hotWalletAddress.slice(2);
+        var readableHotWallet = this.config.hotWallet.slice(2);
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
@@ -112,12 +123,24 @@ var Broom = (function () {
     Broom.prototype.provideGas = function (abi) {
         var _this = this;
         console.log('Starting Salt Gas Provider');
-        return this.manager.getDustyAddresses()
+        var highestTransaction = 0;
+        return this.client.unlockAccount(this.config.hotWallet)
+            .then(function () { return _this.manager.getDustyAddresses()
             .then(function (addresses) {
             console.log('Dusty addresses', addresses.length, addresses);
-            return promise_each2_1.each(addresses, function (address) { return _this.gasTransaction(abi, address); });
-        })
-            .then(function () { return console.log('Finished Salt Gas Provider job'); });
+            return promise_each2_1.each(addresses, function (address) {
+                return _this.gasTransaction(abi, address)
+                    .then(function (txid) { return _this.client.getTransaction(txid)
+                    .then(function (tx) {
+                    if (tx.blockNumber > highestTransaction) {
+                        highestTransaction = tx.blockNumber;
+                    }
+                }); });
+            });
+        }); }).then(function () {
+            console.log('Finished Salt Gas Provider job. Wait for confirmation of block ' + highestTransaction);
+            return highestTransaction;
+        });
     };
     return Broom;
 }());

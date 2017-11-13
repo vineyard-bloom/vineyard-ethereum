@@ -107,9 +107,78 @@ var Web3EthereumClient = /** @class */ (function () {
         });
     };
     Web3EthereumClient.prototype.getTransactionStatus = function (txid) {
-        var web3GetTransactionReceipt = util.promisify(this.web3.eth.getTransactionReceipt);
-        return web3GetTransactionReceipt(txid).then(function (transaction) {
-            return transaction.status.substring(2) == "0" ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted;
+        return __awaiter(this, void 0, void 0, function () {
+            var transactionReceipt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getTransactionReceipt(txid)];
+                    case 1:
+                        transactionReceipt = _a.sent();
+                        return [2 /*return*/, transactionReceipt.status.substring(2) == "0" ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted];
+                }
+            });
+        });
+    };
+    Web3EthereumClient.prototype.unlockAccount = function (address) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            try {
+                _this.web3.personal.unlockAccount(address, function (err, result) {
+                    if (err)
+                        reject(new Error("Error unlocking account: " + err.message));
+                    else
+                        resolve(result);
+                });
+            }
+            catch (error) {
+                reject(new Error("Error unlocking account: " + address + '.  ' + error.message));
+            }
+        });
+    };
+    Web3EthereumClient.prototype.send = function (from, to, amount) {
+        var _this = this;
+        var transaction = from && typeof from === 'object'
+            ? from
+            : { from: from, to: to, value: amount, gas: 21000 };
+        if (!transaction.from)
+            throw Error("Ethereum transaction.from cannot be empty.");
+        if (!transaction.to)
+            throw Error("Ethereum transaction.to cannot be empty.");
+        if (transaction.from === '')
+            transaction.from = this.web3.eth.coinbase;
+        var original = Object.assign({}, transaction);
+        transaction.value = transaction.value.toString();
+        transaction.gasPrice = this.web3.toWei(transaction.gasPrice, 'gwei');
+        return this.unlockAccount(transaction.from)
+            .then(function () {
+            // const hexAmount = this.web3.toHex(amount)
+            return new Promise(function (resolve, reject) {
+                _this.web3.eth.sendTransaction(transaction, function (err, txid) {
+                    if (err) {
+                        console.log('Error sending (original)', original);
+                        reject('Error sending to ' + to + ": " + err);
+                    }
+                    else {
+                        console.log('Sent Ethereum transaction', txid, _this.web3.eth.getTransaction(txid));
+                        transaction.hash = txid;
+                        resolve(transaction);
+                    }
+                });
+            });
+        });
+    };
+    Web3EthereumClient.prototype.getTransactionReceipt = function (txid) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getTransactionReceipt(txid, function (err, transaction) {
+                if (err) {
+                    console.error('Error querying transaction', txid, 'with message', err.message);
+                    reject(err);
+                }
+                else {
+                    resolve(transaction);
+                }
+            });
         });
     };
     Web3EthereumClient.prototype.getTransaction = function (txid) {
@@ -118,7 +187,7 @@ var Web3EthereumClient = /** @class */ (function () {
             _this.web3.eth.getTransaction(txid, function (err, transaction) {
                 if (err) {
                     console.error('Error querying transaction', txid, 'with message', err.message);
-                    reject(new Error(err));
+                    reject(err);
                 }
                 else {
                     resolve(transaction);
@@ -170,54 +239,6 @@ var Web3EthereumClient = /** @class */ (function () {
                     reject(new Error("Error getting balance: " + err.message));
                 else
                     resolve(result);
-            });
-        });
-    };
-    Web3EthereumClient.prototype.unlockAccount = function (address) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            try {
-                _this.web3.personal.unlockAccount(address, function (err, result) {
-                    if (err)
-                        reject(new Error("Error unlocking account: " + err.message));
-                    else
-                        resolve(result);
-                });
-            }
-            catch (error) {
-                reject(new Error("Error unlocking account: " + address + '.  ' + error.message));
-            }
-        });
-    };
-    Web3EthereumClient.prototype.send = function (from, to, amount) {
-        var _this = this;
-        var transaction = from && typeof from === 'object'
-            ? from
-            : { from: from, to: to, value: amount, gas: 21000 };
-        if (!transaction.from)
-            throw Error("Ethereum transaction.from cannot be empty.");
-        if (!transaction.to)
-            throw Error("Ethereum transaction.to cannot be empty.");
-        if (transaction.from === '')
-            transaction.from = this.web3.eth.coinbase;
-        var original = Object.assign({}, transaction);
-        transaction.value = transaction.value.toString();
-        transaction.gasPrice = this.web3.toWei(transaction.gasPrice, 'gwei');
-        return this.unlockAccount(transaction.from)
-            .then(function () {
-            // const hexAmount = this.web3.toHex(amount)
-            return new Promise(function (resolve, reject) {
-                _this.web3.eth.sendTransaction(transaction, function (err, txid) {
-                    if (err) {
-                        console.log('Error sending (original)', original);
-                        reject('Error sending to ' + to + ": " + err);
-                    }
-                    else {
-                        console.log('Sent Ethereum transaction', txid, _this.web3.eth.getTransaction(txid));
-                        transaction.hash = txid;
-                        resolve(transaction);
-                    }
-                });
             });
         });
     };

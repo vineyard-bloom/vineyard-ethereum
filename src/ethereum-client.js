@@ -89,14 +89,21 @@ var Web3EthereumClient = /** @class */ (function () {
         });
     };
     Web3EthereumClient.prototype.getFullBlock = function (block) {
-        var web3GetBlock = util.promisify(this.web3.eth.getBlock);
-        return web3GetBlock(block).then(function (fullBlock) {
-            return {
-                hash: fullBlock.hash,
-                index: fullBlock.number,
-                timeMined: fullBlock.timestamp,
-                transactions: fullBlock.transactions
-            };
+        return __awaiter(this, void 0, void 0, function () {
+            var fullBlock;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getBlock(block.index)];
+                    case 1:
+                        fullBlock = _a.sent();
+                        return [2 /*return*/, {
+                                hash: fullBlock.hash,
+                                index: fullBlock.number,
+                                timeMined: new Date(fullBlock.timestamp),
+                                transactions: fullBlock.transactions
+                            }];
+                }
+            });
         });
     };
     Web3EthereumClient.prototype.getTransactionStatus = function (txid) {

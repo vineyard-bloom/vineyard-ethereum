@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import Bristle from './sweep.js'
-import {ReadClient, ExternalTransaction} from "vineyard-blockchain"
+import {ReadClient, SingleTransaction as Transaction, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
 
 export interface FakeBlock {
   
@@ -31,7 +31,7 @@ export interface Web3TransactionReceipt {
 
 
 export interface Block {
-  transactions: EthereumTransaction[]
+  transactions: Transaction[]
   hash: string
   number: number 
   timestamp: number
@@ -41,7 +41,7 @@ export interface AddressManager {
   hasAddress(address: string): Promise<boolean>
 }
 
-export interface EthereumClient extends ReadClient {
+export interface EthereumClient extends ReadClient<Transaction> {
   checkAllBalances(): Promise<any>
   createAddress(): Promise<string>
   getBalance(address: string): Promise<any>

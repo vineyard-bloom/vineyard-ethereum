@@ -1,5 +1,5 @@
 import { AddressSource, Block, EthereumClient, EthereumTransaction } from "./types";
-import { BlockInfo, FullBlock } from "vineyard-blockchain";
+import { BlockInfo, FullBlock, ExternalSingleTransaction as ExternalTransaction } from "vineyard-blockchain";
 export declare class PredefinedAddressSource implements AddressSource {
     private addresses;
     private index;
@@ -34,7 +34,7 @@ export declare class MockEthereumClient implements EthereumClient {
     getTransaction(txid: string): any;
     getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo>;
     getTransactionStatus(txid: string): Promise<number>;
-    getFullBlock(block: BlockInfo): Promise<FullBlock>;
+    getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>>;
     private minePreviousBlock(block);
     generate(blockCount: number): Promise<void>;
     getBalance(address: string): Promise<number>;

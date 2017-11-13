@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {AddressSource, Block, EthereumClient, EthereumTransaction} from "./types";
-import {BlockInfo, FullBlock} from "vineyard-blockchain"
+import {BlockInfo, FullBlock, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
@@ -119,7 +119,7 @@ export class MockEthereumClient implements EthereumClient {
     return 0;
   }
 
-   getFullBlock(block: BlockInfo): Promise<FullBlock> {
+   getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
       return {
         hash: block.hash,
         index: block.number,

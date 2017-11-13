@@ -41,7 +41,7 @@ export interface AddressManager {
   hasAddress(address: string): Promise<boolean>
 }
 
-export interface EthereumClient extends ReadClient<Transaction> {
+export interface EthereumClient extends ReadClient<ExternalTransaction> {
   checkAllBalances(): Promise<any>
   createAddress(): Promise<string>
   getBalance(address: string): Promise<any>

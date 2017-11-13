@@ -1,7 +1,7 @@
 import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
 import {AddressManager, Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt} from "./types";
-import {ExternalTransaction, FullBlock, BlockInfo, TransactionStatus, Resolve} from "vineyard-blockchain";
+import {ExternalTransaction, FullBlock, BlockInfo, BaseBlock, TransactionStatus, Resolve} from "vineyard-blockchain";
 const util = require("util")
 const Web3 = require("web3")
 
@@ -22,25 +22,25 @@ export class Web3EthereumClient implements EthereumClient {
     return this.web3
   }
 
-  getLastBlock(): Promise<BlockInfo> {
-    return this.web3.eth.blockNumber((err: any, lastBlock: Block) => {
-      return {
-        hash: lastBlock.hash,
-        index: lastBlock.number,
-        timeMined: lastBlock.timestamp
-      }
-    })
+  async getLastBlock(): Promise<BaseBlock> {
+      let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
+        return {
+          hash: lastBlock.hash,
+          index: lastBlock.number,
+          timeMined: new Date(lastBlock.timestamp),
+          currency: "ETH00000-0000-0000-0000-000000000000"
+        }
   }
 
-  getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BlockInfo> {
+  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock> {
    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
-   return this.web3.eth.getBlock(nextBlockIndex, (err: any, nextBlock: Block) => {
+   let nextBlock:Block = await this.getBlock(nextBlockIndex)
      return {
        hash: nextBlock.hash,
        index: nextBlock.number,
-       timeMined: nextBlock.timestamp
+       timeMined: new Date(nextBlock.timestamp),
+       currency: "ETH00000-0000-0000-0000-000000000000"
      }
-   })
   }
 
   getFullBlock(block: BlockInfo): Promise<FullBlock> {

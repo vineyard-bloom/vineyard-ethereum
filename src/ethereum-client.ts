@@ -43,7 +43,7 @@ export class Web3EthereumClient implements EthereumClient {
      }
   }
 
-  async getFullBlock(block: BlockInfo): Promise<FullBlock<Transaction>> {
+  async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
       return {
         hash: fullBlock.hash,

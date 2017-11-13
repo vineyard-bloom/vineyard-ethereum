@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt } from "./types";
-import { SingleTransaction as Transaction, ExternalSingleTransaction as ExternalTransaction, FullBlock, BlockInfo, BaseBlock, TransactionStatus } from "vineyard-blockchain";
+import { ExternalSingleTransaction as ExternalTransaction, FullBlock, BlockInfo, BaseBlock, TransactionStatus } from "vineyard-blockchain";
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;
@@ -11,7 +11,7 @@ export declare class Web3EthereumClient implements EthereumClient {
     getWeb3(): any;
     getLastBlock(): Promise<BaseBlock>;
     getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock>;
-    getFullBlock(block: BlockInfo): Promise<FullBlock<Transaction>>;
+    getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>>;
     getTransactionStatus(txid: string): Promise<TransactionStatus>;
     unlockAccount(address: string): Promise<boolean>;
     send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction>;

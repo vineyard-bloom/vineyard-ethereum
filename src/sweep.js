@@ -111,12 +111,10 @@ var Broom = (function () {
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
-        var readableAddress = address.slice(2);
-        var readableHotWallet = this.config.hotWallet.slice(2);
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
-                return _this.client.send(readableHotWallet, readableAddress, 0.0003);
+                return _this.client.send(_this.config.hotWallet, address, 0.0003);
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };

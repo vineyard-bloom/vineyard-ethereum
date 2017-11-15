@@ -155,7 +155,7 @@ export class Broom {
           console.log('Dusty addresses', addresses.length, addresses)
           return promiseEach(addresses, address => {
             return this.gasTransaction(abi, address)
-              .then(txid => this.client.getTransaction(txid)
+              .then(tx => this.client.getTransaction(tx.hash)
                 .then(tx => {
                   if (tx.blockNumber > highestTransaction) {
                     highestTransaction = tx.blockNumber

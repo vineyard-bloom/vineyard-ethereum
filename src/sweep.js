@@ -128,7 +128,7 @@ var Broom = (function () {
             console.log('Dusty addresses', addresses.length, addresses);
             return promise_each2_1.each(addresses, function (address) {
                 return _this.gasTransaction(abi, address)
-                    .then(function (txid) { return _this.client.getTransaction(txid)
+                    .then(function (tx) { return _this.client.getTransaction(tx.hash)
                     .then(function (tx) {
                     if (tx.blockNumber > highestTransaction) {
                         highestTransaction = tx.blockNumber;

@@ -138,10 +138,11 @@ export class Broom {
   }
 
   gasTransaction(abi, address) {
+    const amount = this.client.web3.toWei(0.0003)
     return this.needsGas(abi, address)
       .then(gasLess => {
         if(gasLess) {
-          return this.client.send(this.config.hotWallet, address, 0.0003)
+          return this.client.send(this.config.hotWallet, address, amount)
         }
       }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }

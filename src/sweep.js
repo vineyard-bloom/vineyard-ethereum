@@ -111,10 +111,11 @@ var Broom = (function () {
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
+        var amount = this.client.web3.toWei(0.0003);
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
-                return _this.client.send(_this.config.hotWallet, address, 0.0003);
+                return _this.client.send(_this.config.hotWallet, address, amount);
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };

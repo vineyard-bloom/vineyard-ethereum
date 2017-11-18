@@ -15,7 +15,8 @@ export class Web3EthereumClient implements EthereumClient {
   private web3: Web3Client
 
   constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
-    this.web3 = web3 || new Web3(ethereumConfig.http)
+    this.web3 = web3 || new Web3()
+    this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
   }
 
   getWeb3() {

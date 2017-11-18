@@ -42,7 +42,8 @@ var util = require("util");
 var Web3 = require("web3");
 var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
-        this.web3 = web3 || new Web3(ethereumConfig.http);
+        this.web3 = web3 || new Web3();
+        this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
     }
     Web3EthereumClient.prototype.getWeb3 = function () {
         return this.web3;

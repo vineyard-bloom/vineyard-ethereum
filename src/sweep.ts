@@ -124,14 +124,14 @@ export class Broom {
     return this.manager.isAwaitingGas(address)
       .then(bool => {
         if(bool) {
+          return false
+        } else {
           return this.client.unlockAccount(address)
             .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
               .then(tokenBalance => this.client.getBalance(address)
                 .then(ethBalance => new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000)
               )
             )
-        } else {
-          return bool
         }
       })
   }

@@ -63,23 +63,12 @@ var Broom = (function () {
     Broom.prototype.tokenSweep = function (abi) {
         var _this = this;
         console.log('Starting Token sweep');
-        return this.provideGas(abi).then(function (blockHeight) {
-            return _this.waitForGasProvisionConfirmations(blockHeight).then(function () {
-                return _this.manager.getDustyAddresses()
-                    .then(function (addresses) {
-                    console.log('Dusty addresses', addresses.length, addresses);
-                    return promise_each2_1.each(addresses, function (address) { return _this.tokenSingleSweep(abi, address); });
-                });
-            });
-        }).then(function () { return console.log('Finished Token sweep'); });
-    };
-    Broom.prototype.waitForGasProvisionConfirmations = function (blockHeight) {
-        if (this.client.eth.blockNumber > blockHeight + 13) {
-            return Promise.resolve(true);
-        }
-        else {
-            setTimeout(this.waitForGasProvisionConfirmations, 5000, blockHeight);
-        }
+        return this.provideGas(abi)
+            .then(function () { return _this.manager.getDustyAddresses()
+            .then(function (addresses) {
+            console.log('Dusty addresses', addresses.length, addresses);
+            return promise_each2_1.each(addresses, function (address) { return _this.tokenSingleSweep(abi, address); });
+        }); }).then(function () { return console.log('Finished Token sweep'); });
     };
     Broom.prototype.tokenSingleSweep = function (abi, address) {
         var _this = this;
@@ -97,17 +86,25 @@ var Broom = (function () {
                         status: 1,
                         txid: tx.hash,
                         amount: balance
-                    });
+                    }).then(function () { return _this.manager.removeGasTransaction(address); });
                 });
             }
         }); }).catch(function (err) { return console.error("Error sweeping address: " + address + ":\n " + err); });
     };
     Broom.prototype.needsGas = function (abi, address) {
         var _this = this;
-        return this.client.unlockAccount(address)
-            .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
-            .then(function (tokenBalance) { return _this.client.getBalance(address)
-            .then(function (ethBalance) { return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
+        return this.manager.isAwaitingGas(address)
+            .then(function (bool) {
+            if (bool) {
+                return _this.client.unlockAccount(address)
+                    .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
+                    .then(function (tokenBalance) { return _this.client.getBalance(address)
+                    .then(function (ethBalance) { return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
+            }
+            else {
+                return bool;
+            }
+        });
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
@@ -115,31 +112,22 @@ var Broom = (function () {
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
-                return _this.client.send(_this.config.hotWallet, address, amount);
+                return _this.client.send(_this.config.hotWallet, address, amount)
+                    .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };
     Broom.prototype.provideGas = function (abi) {
         var _this = this;
         console.log('Starting Salt Gas Provider');
-        var highestTransaction = 0;
         return this.client.unlockAccount(this.config.hotWallet)
             .then(function () { return _this.manager.getDustyAddresses()
             .then(function (addresses) {
             console.log('Dusty addresses', addresses.length, addresses);
             return promise_each2_1.each(addresses, function (address) {
-                return _this.gasTransaction(abi, address)
-                    .then(function (tx) { return _this.client.getTransaction(tx.hash)
-                    .then(function (tx) {
-                    if (tx.blockNumber > highestTransaction) {
-                        highestTransaction = tx.blockNumber;
-                    }
-                }); });
+                return _this.gasTransaction(abi, address);
             });
-        }); }).then(function () {
-            console.log('Finished Salt Gas Provider job. Wait for confirmation of block ' + highestTransaction);
-            return highestTransaction;
-        });
+        }); });
     };
     return Broom;
 }());

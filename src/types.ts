@@ -52,4 +52,7 @@ export interface GenericEthereumManager<EthereumTransaction> extends AddressMana
 export interface SweepManager {
   saveSweepRecord(bristle: Bristle): Promise<any>
   getDustyAddresses(): Promise<string[]>
+  removeGasTransaction(address: string): Promise<any>
+  saveGasTransaction(address: string, txid: string): Promise<any>
+  isAwaitingGas(address: string): Promise<boolean>
 }

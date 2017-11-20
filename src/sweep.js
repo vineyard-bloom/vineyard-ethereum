@@ -96,13 +96,13 @@ var Broom = (function () {
         return this.manager.isAwaitingGas(address)
             .then(function (bool) {
             if (bool) {
+                return false;
+            }
+            else {
                 return _this.client.unlockAccount(address)
                     .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
                     .then(function (ethBalance) { return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
-            }
-            else {
-                return bool;
             }
         });
     };

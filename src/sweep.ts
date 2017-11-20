@@ -13,11 +13,13 @@ export interface Bristle {
 
 export interface SweepConfig {
   sweepAddress: string,
-  minSweepAmount
-  gas
-  gasPrice
-  hotWallet
-  tokenContractAddress
+  enabled: boolean
+  minSweepAmount: string
+  gas: number
+  gasPrice: string
+  hotWallet: string
+  tokenContractAddress: string
+  testTokenContractAddress: string
 }
 
 export function gweiToWei(amount) {
@@ -87,23 +89,13 @@ export class Broom {
 
   tokenSweep(abi) {
     console.log('Starting Token sweep')
-    return this.provideGas(abi).then(blockHeight => {
-      return this.waitForGasProvisionConfirmations(blockHeight).then(() => {
-        return this.manager.getDustyAddresses()
-          .then(addresses => {
-            console.log('Dusty addresses', addresses.length, addresses)
-            return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
-          })
-      })
-    }).then(() => console.log('Finished Token sweep'))
-  }
-
-  waitForGasProvisionConfirmations(blockHeight) {
-    if (this.client.eth.blockNumber > blockHeight + 13) {
-      return Promise.resolve(true)
-    } else {
-      setTimeout(this.waitForGasProvisionConfirmations, 5000, blockHeight)
-    }
+    return this.provideGas(abi)
+      .then(() => this.manager.getDustyAddresses()
+        .then(addresses => {
+          console.log('Dusty addresses', addresses.length, addresses)
+          return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
+        })
+    ).then(() => console.log('Finished Token sweep'))
   }
 
   tokenSingleSweep(abi, address) {
@@ -121,7 +113,7 @@ export class Broom {
                     status: 1,
                     txid: tx.hash,
                     amount: balance
-                  })
+                  }).then(() => this.manager.removeGasTransaction(address))
                 })
             }
           })
@@ -129,12 +121,19 @@ export class Broom {
   }
 
   needsGas(abi, address):Promise<boolean> {
-    return this.client.unlockAccount(address)
-      .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
-      .then(tokenBalance => this.client.getBalance(address)
-      .then(ethBalance => new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000)
-      )
-    )
+    return this.manager.isAwaitingGas(address)
+      .then(bool => {
+        if(bool) {
+          return this.client.unlockAccount(address)
+            .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+              .then(tokenBalance => this.client.getBalance(address)
+                .then(ethBalance => new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000)
+              )
+            )
+        } else {
+          return bool
+        }
+      })
   }
 
   gasTransaction(abi, address) {
@@ -143,31 +142,21 @@ export class Broom {
       .then(gasLess => {
         if(gasLess) {
           return this.client.send(this.config.hotWallet, address, amount)
+            .then(tx => this.manager.saveGasTransaction(address, tx.hash))
         }
       }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }
 
   provideGas(abi) {
     console.log('Starting Salt Gas Provider')
-    let highestTransaction = 0
     return this.client.unlockAccount(this.config.hotWallet)
       .then(() => this.manager.getDustyAddresses()
         .then(addresses => {
           console.log('Dusty addresses', addresses.length, addresses)
           return promiseEach(addresses, address => {
             return this.gasTransaction(abi, address)
-              .then(tx => this.client.getTransaction(tx.hash)
-                .then(tx => {
-                  if (tx.blockNumber > highestTransaction) {
-                    highestTransaction = tx.blockNumber
-                  }
-                })
-              )
           })
         })
-      ).then(() => {
-          console.log('Finished Salt Gas Provider job. Wait for confirmation of block ' + highestTransaction)
-          return highestTransaction
-        })
+      )
   }
 }

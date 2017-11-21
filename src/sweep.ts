@@ -40,30 +40,41 @@ export class Broom {
   }
 
   private singleSweep(address): Promise<Bristle> {
-    return this.client.getBalance(address)
-      .then(balance => {
-        if (balance.greaterThan(this.config.minSweepAmount)) {
-          const sendAmount = this.calculateSendAmount(balance)
-          const transaction = {
-            from: address,
-            to: this.config.sweepAddress,
-            value: sendAmount,
-            gas: this.config.gas,
-            gasPrice: this.config.gasPrice,
-          }
-          console.log('Sweeping address', transaction)
-          return this.client.send(transaction)
-            .then(tx => {
-              console.log('Sweeping address succeeded', tx.hash)
-              return this.saveSweepRecord({
-                from: address,
-                to: this.config.sweepAddress,
-                status: 0,
-                txid: tx.hash,
-                amount: sendAmount
-              })
+    return this.manager.isAwaitingGas(address)
+      .then(bool => {
+        if(bool) {
+          return Promise.resolve()
+        } else {
+          return this.client.getBalance(address)
+            .then(balance => {
+              if (balance.greaterThan(this.config.minSweepAmount)) {
+                return this.sweepSendAndSave(balance, address)
+              }
             })
         }
+      })
+  }
+
+  private sweepSendAndSave(balance, address): Promise<any> {
+    const sendAmount = this.calculateSendAmount(balance)
+    const transaction = {
+      from: address,
+      to: this.config.sweepAddress,
+      value: sendAmount,
+      gas: this.config.gas,
+      gasPrice: this.config.gasPrice,
+    }
+    console.log('Sweeping address', transaction)
+    return this.client.send(transaction)
+      .then(tx => {
+        console.log('Sweeping address succeeded', tx.hash)
+        return this.saveSweepRecord({
+          from: address,
+          to: this.config.sweepAddress,
+          status: 0,
+          txid: tx.hash,
+          amount: sendAmount
+        })
       })
   }
 

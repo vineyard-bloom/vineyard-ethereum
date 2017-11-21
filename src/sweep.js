@@ -16,30 +16,42 @@ var Broom = (function () {
     }
     Broom.prototype.singleSweep = function (address) {
         var _this = this;
-        return this.client.getBalance(address)
-            .then(function (balance) {
-            if (balance.greaterThan(_this.config.minSweepAmount)) {
-                var sendAmount_1 = _this.calculateSendAmount(balance);
-                var transaction = {
-                    from: address,
-                    to: _this.config.sweepAddress,
-                    value: sendAmount_1,
-                    gas: _this.config.gas,
-                    gasPrice: _this.config.gasPrice,
-                };
-                console.log('Sweeping address', transaction);
-                return _this.client.send(transaction)
-                    .then(function (tx) {
-                    console.log('Sweeping address succeeded', tx.hash);
-                    return _this.saveSweepRecord({
-                        from: address,
-                        to: _this.config.sweepAddress,
-                        status: 0,
-                        txid: tx.hash,
-                        amount: sendAmount_1
-                    });
+        return this.manager.isAwaitingGas(address)
+            .then(function (bool) {
+            if (bool) {
+                return Promise.resolve();
+            }
+            else {
+                return _this.client.getBalance(address)
+                    .then(function (balance) {
+                    if (balance.greaterThan(_this.config.minSweepAmount)) {
+                        return _this.sweepSendAndSave(balance, address);
+                    }
                 });
             }
+        });
+    };
+    Broom.prototype.sweepSendAndSave = function (balance, address) {
+        var _this = this;
+        var sendAmount = this.calculateSendAmount(balance);
+        var transaction = {
+            from: address,
+            to: this.config.sweepAddress,
+            value: sendAmount,
+            gas: this.config.gas,
+            gasPrice: this.config.gasPrice,
+        };
+        console.log('Sweeping address', transaction);
+        return this.client.send(transaction)
+            .then(function (tx) {
+            console.log('Sweeping address succeeded', tx.hash);
+            return _this.saveSweepRecord({
+                from: address,
+                to: _this.config.sweepAddress,
+                status: 0,
+                txid: tx.hash,
+                amount: sendAmount
+            });
         });
     };
     Broom.prototype.calculateSendAmount = function (amount) {

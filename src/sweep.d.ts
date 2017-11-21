@@ -24,6 +24,7 @@ export declare class Broom {
     private tokenContract;
     constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
     private singleSweep(address);
+    private sweepSendAndSave(balance, address);
     calculateSendAmount(amount: any): any;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;

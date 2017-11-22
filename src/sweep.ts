@@ -152,6 +152,13 @@ export class Broom {
     return this.needsGas(abi, address)
       .then(gasLess => {
         if(gasLess) {
+          const transaction = {
+            from: this.config.hotWallet,
+            to: address,
+            gasPrice: this.config.gasPrice,
+            gas: this.config.gas,
+            value: amount
+          }
           return this.client.send(this.config.hotWallet, address, amount)
             .then(tx => this.manager.saveGasTransaction(address, tx.hash))
         }

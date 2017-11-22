@@ -124,6 +124,13 @@ var Broom = (function () {
         return this.needsGas(abi, address)
             .then(function (gasLess) {
             if (gasLess) {
+                var transaction = {
+                    from: _this.config.hotWallet,
+                    to: address,
+                    gasPrice: _this.config.gasPrice,
+                    gas: _this.config.gas,
+                    value: amount
+                };
                 return _this.client.send(_this.config.hotWallet, address, amount)
                     .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
             }

@@ -159,7 +159,7 @@ export class Broom {
             gas: this.config.gas,
             value: amount
           }
-          return this.client.send(this.config.hotWallet, address, amount)
+          return this.client.send(transaction)
             .then(tx => this.manager.saveGasTransaction(address, tx.hash))
         }
       }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))

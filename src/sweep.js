@@ -131,7 +131,7 @@ var Broom = (function () {
                     gas: _this.config.gas,
                     value: amount
                 };
-                return _this.client.send(_this.config.hotWallet, address, amount)
+                return _this.client.send(transaction)
                     .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });

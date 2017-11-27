@@ -140,9 +140,9 @@ export class Broom {
           return this.client.unlockAccount(address)
             .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
               .then(tokenBalance => this.client.getBalance(address)
-                .then(ethBalance => this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance)
+                .then(ethBalance => this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance.toNumber())
                   .then(response => {
-                  new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < response.gas ? new BigNumber(tokenBalance).toNumber() : false
+                  return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < response.gas ? new BigNumber(tokenBalance).toNumber() : false
                 })
               )
             )

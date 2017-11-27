@@ -57,7 +57,7 @@ export class TokenContract {
         .then(instance => {
           const getData = instance.transfer.getData(to, value)
           return {
-            gas: this.web3.eth.estimateGas({ to: to, data: getData}),
+            gas: this.web3.eth.estimateGas({ to: to, data: getData }),
             data: getData
           }
         })

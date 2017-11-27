@@ -114,9 +114,9 @@ var Broom = (function () {
                 return _this.client.unlockAccount(address)
                     .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
-                    .then(function (ethBalance) { return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance)
+                    .then(function (ethBalance) { return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance.toNumber())
                     .then(function (response) {
-                    new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < response.gas ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
+                    return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < response.gas ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
                 }); }); }); });
             }
         });

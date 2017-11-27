@@ -57,7 +57,8 @@ export class TokenContract {
       return Promise.resolve(contract.at(address))
         .then(instance => {
           const getData = instance.transfer.getData(to, value)
-          return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: 30000, gasPrice: 10000000000, data: getData}))
+          const gasEstimate = this.web3.eth.estimateGas({ to: to, data: getData })
+          return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: gasEstimate, gasPrice: 20000000000, data: getData}))
           .then(result => {
             console.log(result)
             return result

@@ -49,7 +49,8 @@ var TokenContract = (function () {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
                 var getData = instance.transfer.getData(to, value);
-                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: 30000, gasPrice: 10000000000, data: getData }))
+                var gasEstimate = _this.web3.eth.estimateGas({ to: to, data: getData });
+                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: gasEstimate, gasPrice: 20000000000, data: getData }))
                     .then(function (result) {
                     console.log(result);
                     return result;

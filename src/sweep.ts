@@ -142,7 +142,7 @@ export class Broom {
               .then(tokenBalance => this.client.getBalance(address)
                 .then(ethBalance => this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance.toNumber())
                   .then(response => {
-                    const totalGasEth = response.gas * parseFloat(this.config.gasPrice)
+                    const totalGasEth = response.gas * parseFloat(gweiToWei(this.config.gasPrice))
                     return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new BigNumber(tokenBalance).toNumber() : false
                 })
               )
@@ -158,7 +158,7 @@ export class Broom {
         if(tokenBalance) {
           return this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance)
             .then(response => {
-              const gasBuffer = 0.0001
+              const gasBuffer = parseFloat(gweiToWei(this.config.gasPrice)) * this.config.gas
               const transaction = {
                 from: this.config.hotWallet,
                 to: address,

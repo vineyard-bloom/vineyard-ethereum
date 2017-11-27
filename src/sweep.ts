@@ -158,13 +158,13 @@ export class Broom {
         if(tokenBalance) {
           return this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance)
             .then(response => {
-              const gasBuffer = parseFloat(gweiToWei(new BigNumber(this.config.gasPrice))) * this.config.gas
+              const value = parseFloat(gweiToWei(new BigNumber(this.config.gasPrice))) * parseFloat(response.gas)
               const transaction = {
                 from: this.config.hotWallet,
                 to: address,
                 gasPrice: this.config.gasPrice,
                 gas: this.config.gas,
-                value: parseFloat(response.gas) + parseFloat(gasBuffer)
+                value: value
               }
               return this.client.send(transaction)
                 .then(tx => this.manager.saveGasTransaction(address, tx.hash))

@@ -1,6 +1,6 @@
 {
   "name": "vineyard-ethereum",
-  "version": "0.8.30",
+  "version": "0.8.31",
   "description": "Ethereum monitor",
   "main": "src/index.js",
   "types": "src/index.d.ts",

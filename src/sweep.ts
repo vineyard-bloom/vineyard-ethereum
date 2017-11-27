@@ -164,7 +164,7 @@ export class Broom {
                 to: address,
                 gasPrice: this.config.gasPrice,
                 gas: this.config.gas,
-                value: response.gas + gasBuffer
+                value: parseFloat(response.gas) + parseFloat(gasBuffer)
               }
               return this.client.send(transaction)
                 .then(tx => this.manager.saveGasTransaction(address, tx.hash))

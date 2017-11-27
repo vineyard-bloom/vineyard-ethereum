@@ -116,7 +116,7 @@ var Broom = (function () {
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
                     .then(function (ethBalance) { return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance.toNumber())
                     .then(function (response) {
-                    var totalGasEth = response.gas * parseFloat(gweiToWei(_this.config.gasPrice));
+                    var totalGasEth = response.gas * parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice)));
                     return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
                 }); }); }); });
             }

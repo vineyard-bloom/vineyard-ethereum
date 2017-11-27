@@ -116,7 +116,7 @@ var Broom = (function () {
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
                     .then(function (ethBalance) { return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance.toNumber())
                     .then(function (response) {
-                    var totalGasEth = response.gas * parseFloat(_this.config.gasPrice);
+                    var totalGasEth = response.gas * parseFloat(gweiToWei(_this.config.gasPrice));
                     return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
                 }); }); }); });
             }
@@ -129,7 +129,7 @@ var Broom = (function () {
             if (tokenBalance) {
                 return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance)
                     .then(function (response) {
-                    var gasBuffer = 0.0001;
+                    var gasBuffer = parseFloat(gweiToWei(_this.config.gasPrice)) * _this.config.gas;
                     var transaction = {
                         from: _this.config.hotWallet,
                         to: address,

@@ -129,7 +129,7 @@ var Broom = (function () {
             if (tokenBalance) {
                 return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance)
                     .then(function (response) {
-                    var gasBuffer = parseFloat(gweiToWei(_this.config.gasPrice)) * _this.config.gas;
+                    var gasBuffer = parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice))) * _this.config.gas;
                     var transaction = {
                         from: _this.config.hotWallet,
                         to: address,

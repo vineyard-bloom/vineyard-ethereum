@@ -135,7 +135,7 @@ var Broom = (function () {
                         to: address,
                         gasPrice: _this.config.gasPrice,
                         gas: _this.config.gas,
-                        value: response.gas + gasBuffer
+                        value: parseFloat(response.gas) + parseFloat(gasBuffer)
                     };
                     return _this.client.send(transaction)
                         .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });

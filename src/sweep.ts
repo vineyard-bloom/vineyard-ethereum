@@ -142,7 +142,8 @@ export class Broom {
               .then(tokenBalance => this.client.getBalance(address)
                 .then(ethBalance => this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance.toNumber())
                   .then(response => {
-                  return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < response.gas ? new BigNumber(tokenBalance).toNumber() : false
+                    const totalGasEth = response.gas * parseFloat(this.config.gasPrice)
+                    return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new BigNumber(tokenBalance).toNumber() : false
                 })
               )
             )

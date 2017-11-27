@@ -140,7 +140,9 @@ export class Broom {
           return this.client.unlockAccount(address)
             .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
               .then(tokenBalance => this.client.getBalance(address)
-                .then(ethBalance => new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000)
+                .then(ethBalance => {
+                  new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000 ? new BigNumber(tokenBalance).toNumber() : false
+                })
               )
             )
         }
@@ -148,19 +150,22 @@ export class Broom {
   }
 
   gasTransaction(abi, address) {
-    const amount = this.client.web3.toWei(0.0003)
     return this.needsGas(abi, address)
-      .then(gasLess => {
-        if(gasLess) {
-          const transaction = {
-            from: this.config.hotWallet,
-            to: address,
-            gasPrice: this.config.gasPrice,
-            gas: this.config.gas,
-            value: amount
-          }
-          return this.client.send(transaction)
-            .then(tx => this.manager.saveGasTransaction(address, tx.hash))
+      .then(tokenBalance => {
+        if(tokenBalance) {
+          return this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance)
+            .then(response => {
+              const gasBuffer = 0.0001
+              const transaction = {
+                from: this.config.hotWallet,
+                to: address,
+                gasPrice: this.config.gasPrice,
+                gas: this.config.gas,
+                value: response.gas + gasBuffer
+              }
+              return this.client.send(transaction)
+                .then(tx => this.manager.saveGasTransaction(address, tx.hash))
+            })
         }
       }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }

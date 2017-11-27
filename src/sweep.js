@@ -114,25 +114,30 @@ var Broom = (function () {
                 return _this.client.unlockAccount(address)
                     .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
-                    .then(function (ethBalance) { return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000; }); }); });
+                    .then(function (ethBalance) {
+                    new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < 300000000000000 ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
+                }); }); });
             }
         });
     };
     Broom.prototype.gasTransaction = function (abi, address) {
         var _this = this;
-        var amount = this.client.web3.toWei(0.0003);
         return this.needsGas(abi, address)
-            .then(function (gasLess) {
-            if (gasLess) {
-                var transaction = {
-                    from: _this.config.hotWallet,
-                    to: address,
-                    gasPrice: _this.config.gasPrice,
-                    gas: _this.config.gas,
-                    value: amount
-                };
-                return _this.client.send(transaction)
-                    .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
+            .then(function (tokenBalance) {
+            if (tokenBalance) {
+                return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance)
+                    .then(function (response) {
+                    var gasBuffer = 0.0001;
+                    var transaction = {
+                        from: _this.config.hotWallet,
+                        to: address,
+                        gasPrice: _this.config.gasPrice,
+                        gas: _this.config.gas,
+                        value: response.gas + gasBuffer
+                    };
+                    return _this.client.send(transaction)
+                        .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
+                });
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };

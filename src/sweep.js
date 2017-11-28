@@ -89,7 +89,7 @@ var Broom = (function () {
             .then(function (balance) {
             if (new bignumber_js_1.default(balance).toNumber() > 0) {
                 console.log('Sweeping address', address);
-                return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.c[0])
+                return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.toNumber())
                     .then(function (tx) {
                     console.log('Sweeping address succeeded', tx.hash);
                     return _this.saveSweepRecord({
@@ -114,11 +114,10 @@ var Broom = (function () {
                 return _this.client.unlockAccount(address)
                     .then(function () { return _this.tokenContract.getBalanceOf(abi, _this.config.tokenContractAddress, address)
                     .then(function (tokenBalance) { return _this.client.getBalance(address)
-                    .then(function (ethBalance) { return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance.toNumber())
-                    .then(function (response) {
-                    var totalGasEth = response.gas * parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice)));
+                    .then(function (ethBalance) {
+                    var totalGasEth = 60000 * parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice)));
                     return new bignumber_js_1.default(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new bignumber_js_1.default(tokenBalance).toNumber() : false;
-                }); }); }); });
+                }); }); });
             }
         });
     };
@@ -127,19 +126,16 @@ var Broom = (function () {
         return this.needsGas(abi, address)
             .then(function (tokenBalance) {
             if (tokenBalance) {
-                return _this.tokenContract.contractGasAndData(abi, _this.config.tokenContractAddress, address, tokenBalance)
-                    .then(function (response) {
-                    var value = parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice))) * parseFloat(response.gas);
-                    var transaction = {
-                        from: _this.config.hotWallet,
-                        to: address,
-                        gasPrice: _this.config.gasPrice,
-                        gas: _this.config.gas,
-                        value: value
-                    };
-                    return _this.client.send(transaction)
-                        .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
-                });
+                var value = parseFloat(gweiToWei(new bignumber_js_1.default(_this.config.gasPrice))) * 60000;
+                var transaction = {
+                    from: _this.config.hotWallet,
+                    to: address,
+                    gasPrice: _this.config.gasPrice,
+                    gas: _this.config.gas,
+                    value: value
+                };
+                return _this.client.send(transaction)
+                    .then(function (tx) { return _this.manager.saveGasTransaction(address, tx.hash); });
             }
         }).catch(function (err) { return console.error("Error providing gas at address: " + address + ":\n " + err); });
     };

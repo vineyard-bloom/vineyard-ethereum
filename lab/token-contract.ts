@@ -51,29 +51,14 @@ export class TokenContract {
     })
   }
 
-  contractGasAndData(abi, tokenAddress, to, value) {
-    return this.loadContract(abi)
-      .then(contract => Promise.resolve(contract.at(tokenAddress))
-        .then(instance => {
-          const getData = instance.transfer.getData(to, value)
-          return {
-            gas: this.web3.eth.estimateGas({ to: to, data: getData }),
-            data: getData
-          }
-        })
-      )
-  }
-
   transfer(abi, address, from, to, value) {
-    return this.contractGasAndData(abi, address, to, value)
-      .then(response =>  Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: response.gas, gasPrice: 20000000000, data: response.data }))
-        .then(result => {
-          console.log(result)
-          return result
-        }).catch(e => {
-          console.error(e)
-        })
-      )
+    return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: 60000, gasPrice: 20000000000, data: response.data }))
+      .then(result => {
+        console.log(result)
+        return result
+      }).catch(e => {
+      console.error(e)
+    })
   }
 
   getTransactionReceipt(hash){

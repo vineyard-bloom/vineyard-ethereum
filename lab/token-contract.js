@@ -42,28 +42,14 @@ var TokenContract = (function () {
             });
         });
     };
-    TokenContract.prototype.contractGasAndData = function (abi, tokenAddress, to, value) {
-        var _this = this;
-        return this.loadContract(abi)
-            .then(function (contract) { return Promise.resolve(contract.at(tokenAddress))
-            .then(function (instance) {
-            var getData = instance.transfer.getData(to, value);
-            return {
-                gas: _this.web3.eth.estimateGas({ to: to, data: getData }),
-                data: getData
-            };
-        }); });
-    };
     TokenContract.prototype.transfer = function (abi, address, from, to, value) {
-        var _this = this;
-        return this.contractGasAndData(abi, address, to, value)
-            .then(function (response) { return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: response.gas, gasPrice: 20000000000, data: response.data }))
+        return Promise.resolve(this.web3.eth.sendTransaction({ to: address, from: from, gas: 60000, gasPrice: 20000000000, data: response.data }))
             .then(function (result) {
             console.log(result);
             return result;
         }).catch(function (e) {
             console.error(e);
-        }); });
+        });
     };
     TokenContract.prototype.getTransactionReceipt = function (hash) {
         return Promise.resolve(this.web3.eth.getTransactionReceipt(hash))

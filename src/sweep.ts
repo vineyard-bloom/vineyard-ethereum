@@ -115,7 +115,7 @@ export class Broom {
           .then(balance => {
             if(new BigNumber(balance).toNumber() > 0) {
               console.log('Sweeping address', address)
-              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
+              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.toNumber())
                 .then(tx => {
                   console.log('Sweeping address succeeded', tx.hash)
                   return this.saveSweepRecord({
@@ -140,14 +140,12 @@ export class Broom {
           return this.client.unlockAccount(address)
             .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
               .then(tokenBalance => this.client.getBalance(address)
-                .then(ethBalance => this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance.toNumber())
-                  .then(response => {
-                    const totalGasEth = response.gas * parseFloat(gweiToWei(new BigNumber(this.config.gasPrice)))
+                .then(ethBalance => {
+                    const totalGasEth = 60000 * parseFloat(gweiToWei(new BigNumber(this.config.gasPrice)))
                     return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new BigNumber(tokenBalance).toNumber() : false
                 })
               )
             )
-          )
         }
       })
   }
@@ -156,9 +154,7 @@ export class Broom {
     return this.needsGas(abi, address)
       .then(tokenBalance => {
         if(tokenBalance) {
-          return this.tokenContract.contractGasAndData(abi, this.config.tokenContractAddress, address, tokenBalance)
-            .then(response => {
-              const value = parseFloat(gweiToWei(new BigNumber(this.config.gasPrice))) * parseFloat(response.gas)
+              const value = parseFloat(gweiToWei(new BigNumber(this.config.gasPrice))) * 60000
               const transaction = {
                 from: this.config.hotWallet,
                 to: address,
@@ -168,7 +164,6 @@ export class Broom {
               }
               return this.client.send(transaction)
                 .then(tx => this.manager.saveGasTransaction(address, tx.hash))
-            })
         }
       }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }

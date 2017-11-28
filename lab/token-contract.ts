@@ -52,13 +52,20 @@ export class TokenContract {
   }
 
   transfer(abi, address, from, to, value) {
-    return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: 60000, gasPrice: 20000000000, data: response.data }))
-      .then(result => {
-        console.log(result)
-        return result
-      }).catch(e => {
-      console.error(e)
-    })
+    return this.loadContract(abi)
+      .then(contract => {
+        return Promise.resolve(contract.at(address))
+          .then(instance => {
+            const getData = instance.transfer.getData(to, value)
+            return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: 60000, gasPrice: 2000000000, data: getData}))
+              .then(result => {
+                console.log(result)
+                return result
+              }).catch(e => {
+                console.error(e)
+              })
+          })
+      })
   }
 
   getTransactionReceipt(hash){

@@ -49,7 +49,7 @@ var TokenContract = (function () {
             return Promise.resolve(contract.at(address))
                 .then(function (instance) {
                 var getData = instance.transfer.getData(to, value);
-                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: 60000, gasPrice: 6000000000, data: getData }))
+                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: 60000, gasPrice: 20000000000, data: getData }))
                     .then(function (result) {
                     console.log(result);
                     return result;

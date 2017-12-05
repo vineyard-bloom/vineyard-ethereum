@@ -51,7 +51,7 @@ export class Web3EthereumClient implements EthereumClient {
           txid: t.hash,
           to: t.to,
           from: t.from,
-          amount: new BigNumber(this.fromWei(t.value)),
+          amount: t.value,
           timeReceived: new Date(fullBlock.timestamp * 1000),
           confirmations: blockHeight - block.index,
           block: t.block,

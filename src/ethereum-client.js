@@ -91,7 +91,6 @@ var Web3EthereumClient = /** @class */ (function () {
     };
     Web3EthereumClient.prototype.getFullBlock = function (block) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
             var fullBlock, blockHeight, transactions;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -105,7 +104,7 @@ var Web3EthereumClient = /** @class */ (function () {
                             txid: t.hash,
                             to: t.to,
                             from: t.from,
-                            amount: new bignumber_js_1.default(_this.fromWei(t.value)),
+                            amount: t.value,
                             timeReceived: new Date(fullBlock.timestamp * 1000),
                             confirmations: blockHeight - block.index,
                             block: t.block,

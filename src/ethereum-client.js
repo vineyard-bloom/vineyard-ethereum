@@ -91,17 +91,30 @@ var Web3EthereumClient = /** @class */ (function () {
     };
     Web3EthereumClient.prototype.getFullBlock = function (block) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullBlock;
+            var fullBlock, blockHeight, transactions;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getBlock(block.index)];
                     case 1:
                         fullBlock = _a.sent();
+                        return [4 /*yield*/, this.getBlockNumber()];
+                    case 2:
+                        blockHeight = _a.sent();
+                        transactions = fullBlock.transactions.map(function (t) { return ({
+                            txid: t.hash,
+                            to: t.to,
+                            from: t.from,
+                            amount: t.value,
+                            timeReceived: new Date(fullBlock.timestamp),
+                            confirmations: blockHeight - block.index,
+                            block: t.block,
+                            status: t.status
+                        }); });
                         return [2 /*return*/, {
                                 hash: fullBlock.hash,
                                 index: fullBlock.number,
                                 timeMined: new Date(fullBlock.timestamp),
-                                transactions: fullBlock.transactions
+                                transactions: transactions
                             }];
                 }
             });

@@ -46,11 +46,22 @@ export class Web3EthereumClient implements EthereumClient {
 
   async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
+    let blockHeight = await this.getBlockNumber()
+    const transactions = fullBlock.transactions.map(t => ({
+          txid: t.hash,
+          to: t.to,
+          from: t.from,
+          amount: t.value,
+          timeReceived: new Date(fullBlock.timestamp),
+          confirmations: blockHeight - block.index,
+          block: t.block,
+          status: t.status
+        })) 
       return {
         hash: fullBlock.hash,
         index: fullBlock.number,
         timeMined: new Date(fullBlock.timestamp),
-        transactions: fullBlock.transactions
+        transactions: transactions 
       }
   }
 

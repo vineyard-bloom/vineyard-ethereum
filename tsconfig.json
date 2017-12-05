@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "strict": true,
+    "strict": false,
     "sourceMap": true,
     "declaration": true,
     "newLine": "lf",

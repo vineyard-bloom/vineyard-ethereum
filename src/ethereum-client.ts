@@ -28,7 +28,7 @@ export class Web3EthereumClient implements EthereumClient {
         return {
           hash: lastBlock.hash,
           index: lastBlock.number,
-          timeMined: new Date(lastBlock.timestamp),
+          timeMined: new Date(lastBlock.timestamp * 1000),
           currency: "ETH00000-0000-0000-0000-000000000000"
         }
   }
@@ -39,7 +39,7 @@ export class Web3EthereumClient implements EthereumClient {
      return {
        hash: nextBlock.hash,
        index: nextBlock.number,
-       timeMined: new Date(nextBlock.timestamp),
+       timeMined: new Date(nextBlock.timestamp * 1000),
        currency: "ETH00000-0000-0000-0000-000000000000"
      }
   }
@@ -52,7 +52,7 @@ export class Web3EthereumClient implements EthereumClient {
           to: t.to,
           from: t.from,
           amount: t.value,
-          timeReceived: new Date(fullBlock.timestamp),
+          timeReceived: new Date(fullBlock.timestamp * 1000),
           confirmations: blockHeight - block.index,
           block: t.block,
           status: t.status

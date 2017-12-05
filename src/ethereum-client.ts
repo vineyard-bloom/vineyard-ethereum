@@ -60,7 +60,7 @@ export class Web3EthereumClient implements EthereumClient {
       return {
         hash: fullBlock.hash,
         index: fullBlock.number,
-        timeMined: new Date(fullBlock.timestamp),
+        timeMined: new Date(fullBlock.timestamp * 1000),
         transactions: transactions 
       }
   }

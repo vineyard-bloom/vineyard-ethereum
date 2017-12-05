@@ -113,7 +113,7 @@ var Web3EthereumClient = /** @class */ (function () {
                         return [2 /*return*/, {
                                 hash: fullBlock.hash,
                                 index: fullBlock.number,
-                                timeMined: new Date(fullBlock.timestamp),
+                                timeMined: new Date(fullBlock.timestamp * 1000),
                                 transactions: transactions
                             }];
                 }

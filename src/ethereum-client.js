@@ -63,7 +63,7 @@ var Web3EthereumClient = /** @class */ (function () {
                                 hash: lastBlock.hash,
                                 index: lastBlock.number,
                                 timeMined: new Date(lastBlock.timestamp * 1000),
-                                currency: "ETH00000-0000-0000-0000-000000000000"
+                                currency: 2
                             }];
                 }
             });
@@ -83,7 +83,7 @@ var Web3EthereumClient = /** @class */ (function () {
                                 hash: nextBlock.hash,
                                 index: nextBlock.number,
                                 timeMined: new Date(nextBlock.timestamp * 1000),
-                                currency: "ETH00000-0000-0000-0000-000000000000"
+                                currency: 2
                             }];
                 }
             });

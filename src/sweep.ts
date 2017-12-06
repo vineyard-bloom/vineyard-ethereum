@@ -155,7 +155,7 @@ export class Broom {
     return this.needsGas(abi, address)
       .then(tokenBalance => {
         if(tokenBalance) {
-              const gasPrice = this.client.getWeb3().eth.gasPrice
+              const gasPrice = this.client.getWeb3().eth.gasPrice / 1000000000
               const value = parseFloat(gweiToWei(new BigNumber(gasPrice))) * 60000
               const transaction = {
                 from: this.config.hotWallet,

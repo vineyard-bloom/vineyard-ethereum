@@ -48,6 +48,20 @@ var Web3EthereumClient = /** @class */ (function () {
     Web3EthereumClient.prototype.getWeb3 = function () {
         return this.web3;
     };
+    Web3EthereumClient.prototype.getBlockIndex = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.web3.eth.getBlockNumber(function (err, blockNumber) {
+                if (err) {
+                    console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
+                    reject(new Error(err));
+                }
+                else {
+                    resolve(blockNumber);
+                }
+            });
+        });
+    };
     Web3EthereumClient.prototype.getLastBlock = function () {
         return __awaiter(this, void 0, void 0, function () {
             var lastBlock, _a;

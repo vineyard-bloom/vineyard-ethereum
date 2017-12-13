@@ -23,6 +23,20 @@ export class Web3EthereumClient implements EthereumClient {
     return this.web3
   }
 
+  getBlockIndex(): Promise<number> {
+    return new Promise((resolve:Resolve<number>, reject) => {
+      this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
+        if (err) {
+          console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
+          reject(new Error(err));
+        }
+        else {
+          resolve(blockNumber)
+        }
+      })
+    })
+  }
+
   async getLastBlock(): Promise<BaseBlock> {
       let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
         return {

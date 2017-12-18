@@ -107,6 +107,9 @@ var MockEthereumClient = /** @class */ (function () {
             return Promise.resolve(address);
         });
     };
+    MockEthereumClient.prototype.getBlockIndex = function () {
+        return Promise.resolve(this.blocks.length - 1);
+    };
     MockEthereumClient.prototype.getActiveBlock = function () {
         return this.blocks[this.blocks.length - 1];
     };

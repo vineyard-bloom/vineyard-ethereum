@@ -29,6 +29,7 @@ export declare class MockEthereumClient implements EthereumClient {
     private mockWeb3;
     constructor(addressSource: AddressSource, mockWeb3: MockWeb3);
     createAddress(): Promise<string>;
+    getBlockIndex(): Promise<number>;
     getActiveBlock(): Block;
     getLastBlock(): Promise<BlockInfo>;
     getTransaction(txid: string): any;

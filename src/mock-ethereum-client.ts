@@ -82,6 +82,10 @@ export class MockEthereumClient implements EthereumClient {
       })
   }
 
+  getBlockIndex(): Promise<number> {
+    return Promise.resolve(this.blocks.length - 1)
+  }
+
   getActiveBlock(): Block {
     return this.blocks[this.blocks.length - 1]
   }

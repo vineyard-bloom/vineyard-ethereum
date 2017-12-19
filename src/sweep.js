@@ -7,7 +7,7 @@ function gweiToWei(amount) {
     return amount.times("1000000000");
 }
 exports.gweiToWei = gweiToWei;
-var Broom = /** @class */ (function () {
+var Broom = (function () {
     function Broom(config, ethereumManager, ethereumClient) {
         this.config = config;
         this.manager = ethereumManager;

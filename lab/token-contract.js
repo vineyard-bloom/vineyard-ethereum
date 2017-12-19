@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var truffle_contract_1 = require("truffle-contract");
-var TokenContract = /** @class */ (function () {
+var TokenContract = (function () {
     function TokenContract(client) {
         this.client = client;
         this.web3 = client.getWeb3();

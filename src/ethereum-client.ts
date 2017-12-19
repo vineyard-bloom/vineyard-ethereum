@@ -47,9 +47,12 @@ export class Web3EthereumClient implements EthereumClient {
         }
   }
 
-  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock> {
-   const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
+  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
+   const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
    let nextBlock: Block = await this.getBlock(nextBlockIndex)
+   if (!nextBlock) {
+     return undefined
+   }
      return {
        hash: nextBlock.hash,
        index: nextBlock.number,
@@ -70,18 +73,18 @@ export class Web3EthereumClient implements EthereumClient {
           confirmations: blockHeight - block.index,
           block: t.block,
           status: t.status
-        })) 
+        }))
       return {
         hash: fullBlock.hash,
         index: fullBlock.number,
         timeMined: new Date(fullBlock.timestamp * 1000),
-        transactions: transactions 
+        transactions: transactions
       }
   }
 
   async getTransactionStatus(txid: string): Promise<TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
-      return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted 
+      return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted
   }
 
 

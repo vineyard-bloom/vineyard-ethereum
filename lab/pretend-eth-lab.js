@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var PretendEthLab = /** @class */ (function () {
+var PretendEthLab = (function () {
     function PretendEthLab(client) {
         this.client = client;
         client.importAddress('');

@@ -40,7 +40,7 @@ var bignumber_js_1 = require("bignumber.js");
 var vineyard_blockchain_1 = require("vineyard-blockchain");
 var util = require("util");
 var Web3 = require("web3");
-var Web3EthereumClient = /** @class */ (function () {
+var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
         this.web3 = web3 || new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
@@ -93,6 +93,9 @@ var Web3EthereumClient = /** @class */ (function () {
                         return [4 /*yield*/, this.getBlock(nextBlockIndex)];
                     case 1:
                         nextBlock = _a.sent();
+                        if (!nextBlock) {
+                            return [2 /*return*/, undefined];
+                        }
                         return [2 /*return*/, {
                                 hash: nextBlock.hash,
                                 index: nextBlock.number,

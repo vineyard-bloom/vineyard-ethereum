@@ -2,7 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-var BlockScanner = (function () {
+//more strongly typed eventually
+// export type TransactionFilter = (transaction) => Promise<boolean>
+// export type TransactionMap = (transaction) => Promise<EthereumTransaction>
+var BlockScanner = /** @class */ (function () {
     function BlockScanner(model, client, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 13; }
         this.minimumConfirmations = 13;
@@ -24,7 +27,9 @@ var BlockScanner = (function () {
                 return _this.manager.setStatus(transaction, 1)
                     .then(function () { return _this.manager.onConfirm(transaction); });
             }
-        }).catch(function (e) { console.error(e); });
+        }).catch(function (e) {
+            console.error(e);
+        });
     };
     BlockScanner.prototype.updatePending = function (newLastBlock) {
         var _this = this;
@@ -32,7 +37,9 @@ var BlockScanner = (function () {
             .then(function (transactions) {
             promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
         })
-            .catch(function (e) { console.error(e); });
+            .catch(function (e) {
+            console.error(e);
+        });
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;

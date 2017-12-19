@@ -8,9 +8,8 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
-var GethNode = (function () {
+var GethNode = /** @class */ (function () {
     function GethNode(config, port) {
-        this.childProcess = null;
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
         this.datadir = './temp/eth/geth' + this.index;
@@ -69,8 +68,9 @@ var GethNode = (function () {
             next();
         })
             .then(function () {
-            for (var i = 0; i < _this.config.enodes.length; ++i) {
-                _this.addPeer(_this.config.enodes[i]);
+            var enodes = _this.config.enodes || [];
+            for (var i = 0; i < enodes.length; ++i) {
+                _this.addPeer(enodes[i]);
             }
         });
     };

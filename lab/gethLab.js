@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gethServer_1 = require("./gethServer");
 var child_process = require('child_process');
 var fs = require('fs');
-var GethLab = (function () {
+var GethLab = /** @class */ (function () {
     function GethLab(config, client, server) {
         if (server === void 0) { server = new gethServer_1.GethServer(); }
         this.defaultAddress = "";
@@ -12,7 +12,8 @@ var GethLab = (function () {
         this.server = server;
     }
     GethLab.prototype.getSweepAddress = function () {
-        return this.config.ethereum.sweepAddress;
+        throw new Error("Not implemented.");
+        // return this.config.ethereum.sweepAddress
     };
     GethLab.prototype.start = function () {
         return this.server.start();
@@ -29,7 +30,7 @@ var GethLab = (function () {
     GethLab.prototype.send = function (address, amount) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.client.getClient().send('', address, amount)
+            _this.client.send('', address, amount)
                 .then(function (result) { return console.log(result); })
                 .catch(function (error) { return console.log(error); });
         });

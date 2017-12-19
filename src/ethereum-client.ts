@@ -1,7 +1,19 @@
 import {getTransactionsFromRange, checkAllBalances} from './utility'
 import BigNumber from 'bignumber.js';
-import {AddressManager, Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt} from "./types";
-import {SingleTransaction as Transaction ,ExternalSingleTransaction as ExternalTransaction, FullBlock, BlockInfo, BaseBlock, TransactionStatus, Resolve} from "vineyard-blockchain";
+import {
+  AddressManager, Block, EthereumClient, EthereumTransaction, GethTransaction,
+  Web3TransactionReceipt
+} from "./types";
+import {
+  SingleTransaction as Transaction,
+  ExternalSingleTransaction as ExternalTransaction,
+  FullBlock,
+  BlockInfo,
+  BaseBlock,
+  TransactionStatus,
+  Resolve
+} from "vineyard-blockchain";
+
 const util = require("util")
 const Web3 = require("web3")
 
@@ -9,6 +21,23 @@ const Web3 = require("web3")
 export interface Web3EthereumClientConfig {
   http: string
   sweepAddress?: string
+}
+
+
+function convertStatus(gethStatus: string): TransactionStatus {
+  switch (gethStatus) {
+    case 'pending':
+      return TransactionStatus.pending
+
+    case 'accepted':
+      return TransactionStatus.accepted
+
+    case 'rejected':
+      return TransactionStatus.rejected
+
+    default:
+      throw new Error('Invalid status')
+  }
 }
 
 export class Web3EthereumClient implements EthereumClient {
@@ -24,7 +53,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getBlockIndex(): Promise<number> {
-    return new Promise((resolve:Resolve<number>, reject) => {
+    return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
@@ -38,53 +67,53 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   async getLastBlock(): Promise<BaseBlock> {
-      let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
-        return {
-          hash: lastBlock.hash,
-          index: lastBlock.number,
-          timeMined: new Date(lastBlock.timestamp * 1000),
-          currency: 2
-        }
+    let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
+    return {
+      hash: lastBlock.hash,
+      index: lastBlock.number,
+      timeMined: new Date(lastBlock.timestamp * 1000),
+      currency: 2
+    }
   }
 
   async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
-   const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
-   let nextBlock: Block = await this.getBlock(nextBlockIndex)
-   if (!nextBlock) {
-     return undefined
-   }
-     return {
-       hash: nextBlock.hash,
-       index: nextBlock.number,
-       timeMined: new Date(nextBlock.timestamp * 1000),
-       currency: 2
-     }
+    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
+    let nextBlock: Block = await this.getBlock(nextBlockIndex)
+    if (!nextBlock) {
+      return undefined
+    }
+    return {
+      hash: nextBlock.hash,
+      index: nextBlock.number,
+      timeMined: new Date(nextBlock.timestamp * 1000),
+      currency: 2
+    }
   }
 
   async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
     let blockHeight = await this.getBlockNumber()
     const transactions = fullBlock.transactions.map(t => ({
-          txid: t.hash,
-          to: t.to,
-          from: t.from,
-          amount: t.value,
-          timeReceived: new Date(fullBlock.timestamp * 1000),
-          confirmations: blockHeight - block.index,
-          block: t.block,
-          status: t.status
-        }))
-      return {
-        hash: fullBlock.hash,
-        index: fullBlock.number,
-        timeMined: new Date(fullBlock.timestamp * 1000),
-        transactions: transactions
-      }
+      txid: t.hash,
+      to: t.to,
+      from: t.from,
+      amount: t.value,
+      timeReceived: new Date(fullBlock.timestamp * 1000),
+      confirmations: blockHeight - block.index,
+      block: t.block,
+      status: convertStatus(t.status)
+    }))
+    return {
+      hash: fullBlock.hash,
+      index: fullBlock.number,
+      timeMined: new Date(fullBlock.timestamp * 1000),
+      transactions: transactions
+    }
   }
 
   async getTransactionStatus(txid: string): Promise<TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
-      return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted
+    return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted
   }
 
 
@@ -98,7 +127,7 @@ export class Web3EthereumClient implements EthereumClient {
             resolve(result)
         })
       }
-      catch(error) {
+      catch (error) {
         reject(new Error("Error unlocking account: " + address + '.  ' + error.message))
       }
     })
@@ -252,7 +281,7 @@ export class Web3EthereumClient implements EthereumClient {
   }
 
   getBlockNumber(): Promise<number> {
-    return new Promise((resolve:Resolve<number>, reject) => {
+    return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)

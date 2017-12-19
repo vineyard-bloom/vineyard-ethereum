@@ -1,8 +1,6 @@
-import {GethNode, mine} from "./"
-import {GethNodeConfig} from "./geth-node";
+import {GethNode, GethNodeConfig} from "./geth-node";
 
-
-function fund(client) {
+function fund(client: any) {
     const web3 = client
     return new Promise<void>((resolve, reject) => {
      console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE")
@@ -11,7 +9,7 @@ function fund(client) {
         from: web3.eth.coinbase,
         to: web3.eth.accounts[1],
         value: web3.toWei(35)
-      }, function (err, tx) {resolve (tx)})
+      }, function (err:Error, tx: any) {resolve (tx)})
     })
 } 
 
@@ -25,7 +23,7 @@ function spend(node: GethNode) {
         from: web3.eth.accounts[1],
         to: web3.eth.accounts[2],
         value: web3.toWei(18)
-      }, function (err, tx) {
+      }, function (err: Error, tx: any) {
         if (err) {
           console.log(err)
           reject(err)
@@ -42,9 +40,9 @@ function spend(node: GethNode) {
   })
 }
 
-export function doubleSpend(config?: GethNodeConfig) {
-  const node1 = new GethNode(config)
-  const node2 = new GethNode(config)
-    node1.start(8546).then(() => spend(node1))
-      .then(() => mine(node2, 8547, 9000).then(() => node2.start(8546)).then(() => spend(node2))) 
-}
+// export function doubleSpend(config?: GethNodeConfig) {
+//   const node1 = new GethNode(config)
+//   const node2 = new GethNode(config)
+//     node1.start(8546).then(() => spend(node1))
+//       .then(() => mine(node2, 8547, 9000).then(() => node2.start(8546)).then(() => spend(node2)))
+// }

@@ -9,7 +9,7 @@ export class EthereumNetwork {
   private nextPort = 8546
   private mainNode: GethNode
   private coinbase: string = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba"
-  private enode: string = null
+  private enode?: string = undefined
   private enodes: string[] = []
   private nodes: GethNode [] = []
 
@@ -26,7 +26,7 @@ export class EthereumNetwork {
   createNode() {
     const config = Object.assign({
       // bootnodes: this.enode,
-      enodes: [].concat(this.enodes)
+      enodes: ([] as string[]).concat(this.enodes)
     }, this.config)
     const node = new GethNode(config, this.nextPort++)
     const GenesisPath = config.tempPath + '/genesis.json'
@@ -85,6 +85,6 @@ export class EthereumNetwork {
   }
 
   stop() {
-    return promiseEach(this.nodes, node => node.stop())
+    return promiseEach(this.nodes, (node: any) => node.stop())
   }
 }

@@ -7,16 +7,7 @@ export declare class EthereumTransactionMonitor<Transaction extends EthereumTran
     constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string, minimumConfirmations?: number);
     private resolveTransaction(transaction);
     private updatePending(newLastBlock);
-    processBlock(blockIndex: any): Promise<void>;
-    processBlocks(blockIndex: any, endBlockNumber: any): Promise<void>;
-    updateTransactions(): Promise<any>;
-}
-export declare class EthereumBalanceMonitor<EthereumTransaction> {
-    private ethereumClient;
-    private minimumConfirmations;
-    private sweepAddress;
-    private manager;
-    constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string);
-    private saveNewTransaction(address);
-    sweep(): Promise<void>;
+    processBlock(blockIndex: number): Promise<void>;
+    processBlocks(blockIndex: number, endBlockNumber: number): Promise<void>;
+    updateTransactions(): Promise<void>;
 }

@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import Bristle from './sweep.js';
-import { ReadClient, SingleTransaction as Transaction, ExternalSingleTransaction as ExternalTransaction } from "vineyard-blockchain";
+import { ReadClient, ExternalSingleTransaction as ExternalTransaction } from "vineyard-blockchain";
+import { Bristle } from "./sweep";
 export interface FakeBlock {
 }
 export interface EthereumTransaction {
@@ -24,8 +24,16 @@ export interface Web3TransactionReceipt {
     logs: {}[];
     status: string;
 }
+export interface GethTransaction {
+    hash: string;
+    to: string;
+    from: string;
+    value: BigNumber;
+    block: string;
+    status: string;
+}
 export interface Block {
-    transactions: Transaction[];
+    transactions: GethTransaction[];
     hash: string;
     number: number;
     timestamp: number;
@@ -50,9 +58,9 @@ export interface EthereumClient extends ReadClient<ExternalTransaction> {
 export interface AddressSource {
     generateAddress(): Promise<string>;
 }
-export declare const gasWei: any;
+export declare const gasWei: BigNumber;
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-    saveTransaction(transaction: EthereumTransaction, blockIndex: number): any;
+    saveTransaction(transaction: EthereumTransaction, blockIndex: number): Promise<any>;
     getLastBlock(): Promise<number>;
     setLastBlock(lastblock: number): Promise<void>;
     getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>;

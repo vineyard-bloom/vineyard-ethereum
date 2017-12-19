@@ -18,9 +18,9 @@ export declare class GethNode {
     private static instanceIndex;
     private datadir;
     private keydir;
-    private port;
+    private port?;
     private index;
-    constructor(config?: GethNodeConfig, port?: any);
+    constructor(config?: GethNodeConfig, port?: number);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
     getKeydir(): string;
@@ -39,5 +39,5 @@ export declare class GethNode {
     addPeer(enode: string): void;
     listPeers(): void;
     stop(): Promise<void> | Promise<{}>;
-    mine(milliseconds: number): any;
+    mine(milliseconds: number): Promise<any>;
 }

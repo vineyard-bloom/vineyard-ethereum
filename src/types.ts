@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
-import Bristle from './sweep.js'
-import {ReadClient, SingleTransaction as Transaction, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
+import {ReadClient, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
+import {Bristle} from "./sweep";
 
 export interface FakeBlock {
-  
+
 }
 
 export interface EthereumTransaction {
@@ -16,7 +16,7 @@ export interface EthereumTransaction {
 }
 
 export interface Web3TransactionReceipt {
-  blockHash: string 
+  blockHash: string
   blockNumber: number
   transactionHash: string
   transactionIndex: number
@@ -29,11 +29,19 @@ export interface Web3TransactionReceipt {
   status: string
 }
 
+export interface GethTransaction {
+  hash: string
+  to: string
+  from: string
+  value: BigNumber
+  block: string
+  status: string
+}
 
 export interface Block {
-  transactions: Transaction[]
+  transactions: GethTransaction[]
   hash: string
-  number: number 
+  number: number
   timestamp: number
 }
 
@@ -43,16 +51,27 @@ export interface AddressManager {
 
 export interface EthereumClient extends ReadClient<ExternalTransaction> {
   checkAllBalances(): Promise<any>
+
   createAddress(): Promise<string>
+
   getBalance(address: string): Promise<any>
+
   send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>
+
   importAddress(address: string): Promise<void>
+
   getAccounts(): Promise<string[]>
+
   generate(blockCount: number): Promise<void>
+
   getBlock(blockIndex: number): Promise<Block>
+
   getBlockNumber(): Promise<number>
+
   getCoinbase(): Promise<string>
+
   getTransaction(txid: string): Promise<ExternalTransaction>
+
   getGas(): Promise<BigNumber>
 }
 
@@ -63,16 +82,23 @@ export interface AddressSource {
 export const gasWei = new BigNumber('21000000000000')
 
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-  saveTransaction(transaction: EthereumTransaction, blockIndex: number)
+  saveTransaction(transaction: EthereumTransaction, blockIndex: number): Promise<any>
+
   getLastBlock(): Promise<number>
+
   setLastBlock(lastblock: number): Promise<void>
+
   getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>
+
   onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
+
   onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>
-  setStatus(transaction: EthereumTransaction, value): Promise<EthereumTransaction>
+
+  setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>
 }
 
 export interface SweepManager {
   saveSweepRecord(bristle: Bristle): Promise<any>
+
   getDustyAddresses(): Promise<string[]>
 }

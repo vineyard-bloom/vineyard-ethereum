@@ -8,7 +8,7 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
-var GethNode = /** @class */ (function () {
+var GethNode = (function () {
     function GethNode(config, port) {
         this.childProcess = null;
         this.config = config || {};

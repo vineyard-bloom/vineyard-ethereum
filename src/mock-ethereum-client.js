@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_js_1 = require("bignumber.js");
-var PredefinedAddressSource = /** @class */ (function () {
+var PredefinedAddressSource = (function () {
     function PredefinedAddressSource(addresses) {
         this.index = 0;
         this.addresses = addresses;
@@ -47,7 +47,7 @@ var PredefinedAddressSource = /** @class */ (function () {
     return PredefinedAddressSource;
 }());
 exports.PredefinedAddressSource = PredefinedAddressSource;
-var RandomAddressSource = /** @class */ (function () {
+var RandomAddressSource = (function () {
     function RandomAddressSource() {
     }
     RandomAddressSource.prototype.generateAddress = function () {
@@ -56,7 +56,7 @@ var RandomAddressSource = /** @class */ (function () {
     return RandomAddressSource;
 }());
 exports.RandomAddressSource = RandomAddressSource;
-var MockEth = /** @class */ (function () {
+var MockEth = (function () {
     function MockEth() {
         this.coinbase = "";
     }
@@ -77,14 +77,14 @@ var MockEth = /** @class */ (function () {
     return MockEth;
 }());
 exports.MockEth = MockEth;
-var MockWeb3 = /** @class */ (function () {
+var MockWeb3 = (function () {
     function MockWeb3(mockEth) {
         this.mockEth = mockEth;
     }
     return MockWeb3;
 }());
 exports.MockWeb3 = MockWeb3;
-var MockEthereumClient = /** @class */ (function () {
+var MockEthereumClient = (function () {
     function MockEthereumClient(addressSource, mockWeb3) {
         this.addresses = {};
         this.blocks = [];

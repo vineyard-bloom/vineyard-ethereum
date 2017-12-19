@@ -50,7 +50,7 @@ export interface EthereumClient extends ReadClient<ExternalTransaction> {
 export interface AddressSource {
     generateAddress(): Promise<string>;
 }
-export declare const gasWei: BigNumber;
+export declare const gasWei: any;
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
     saveTransaction(transaction: EthereumTransaction, blockIndex: number): any;
     getLastBlock(): Promise<number>;

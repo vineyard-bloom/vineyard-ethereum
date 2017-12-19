@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-var EthereumTransactionMonitor = /** @class */ (function () {
+var EthereumTransactionMonitor = (function () {
     function EthereumTransactionMonitor(model, ethereumClient, sweepAddress, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 12; }
         this.minimumConfirmations = 12;
@@ -81,7 +81,7 @@ var EthereumTransactionMonitor = /** @class */ (function () {
     return EthereumTransactionMonitor;
 }());
 exports.EthereumTransactionMonitor = EthereumTransactionMonitor;
-var EthereumBalanceMonitor = /** @class */ (function () {
+var EthereumBalanceMonitor = (function () {
     function EthereumBalanceMonitor(model, ethereumClient, sweepAddress) {
         this.minimumConfirmations = 2;
         this.manager = model;

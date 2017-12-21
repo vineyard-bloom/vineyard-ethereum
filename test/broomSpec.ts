@@ -3,7 +3,7 @@ import {Web3EthereumClient} from '../src/ethereum-client'
 import {EthereumTransaction} from '../src/types'
 
 export class PretendEthereumManager {
-  hasAddress
+  hasAddress:boolean
 
   constructor() {
     this.hasAddress = true
@@ -38,7 +38,7 @@ export class PretendEthereumManager {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 
-  setStatus(transaction: EthereumTransaction, value): Promise<EthereumTransaction> {
+  setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction> {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 
@@ -49,7 +49,7 @@ export class PretendEthereumManager {
 }
 
 
-const broom = new Broom(500,  new PretendEthereumManager(), new Web3EthereumClient({http: 'http://localhost:8545', sweepAddress: '0x3a72dc83b33786b7a836d70dbb2cc78df8116a4d'}))
+// const broom = new Broom(500,  new PretendEthereumManager(), new Web3EthereumClient({http: 'http://localhost:8545', sweepAddress: '0x3a72dc83b33786b7a836d70dbb2cc78df8116a4d'}))
 
 // broom.calculateSendAmount(2000000).then(amount => console.log(amount))
-broom.sweep().then(sweepResult => console.log(sweepResult))
+// broom.sweep().then(sweepResult => console.log(sweepResult))

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var _1 = require("./");
 function fund(client) {
     var web3 = client;
     return new Promise(function (resolve, reject) {
@@ -39,11 +38,10 @@ function spend(node) {
             .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
     });
 }
-function doubleSpend(config) {
-    var node1 = new _1.GethNode(config);
-    var node2 = new _1.GethNode(config);
-    node1.start(8546).then(function () { return spend(node1); })
-        .then(function () { return _1.mine(node2, 8547, 9000).then(function () { return node2.start(8546); }).then(function () { return spend(node2); }); });
-}
-exports.doubleSpend = doubleSpend;
+// export function doubleSpend(config?: GethNodeConfig) {
+//   const node1 = new GethNode(config)
+//   const node2 = new GethNode(config)
+//     node1.start(8546).then(() => spend(node1))
+//       .then(() => mine(node2, 8547, 9000).then(() => node2.start(8546)).then(() => spend(node2)))
+// }
 //# sourceMappingURL=double-spend.js.map

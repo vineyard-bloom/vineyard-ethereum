@@ -21,7 +21,8 @@ export class GethLab implements EthLab {
   }
 
   getSweepAddress(): string {
-    return this.config.ethereum.sweepAddress
+    throw new Error ("Not implemented.")
+    // return this.config.ethereum.sweepAddress
   }
 
   start(): Promise<void> {
@@ -39,9 +40,9 @@ export class GethLab implements EthLab {
     .then(() => this.start())
   }
 
-  send(address: string, amount) {
+  send(address: string, amount: any) {
     return new Promise<void>((resolve, reject) => {
-      this.client.getClient().send('', address, amount)
+      this.client.send('', address, amount)
         .then(result => console.log(result))
         .catch(error => console.log(error))
     })

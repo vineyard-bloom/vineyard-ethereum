@@ -4,7 +4,7 @@ export declare class EthereumNetwork {
     private nextPort;
     private mainNode;
     private coinbase;
-    private enode;
+    private enode?;
     private enodes;
     private nodes;
     constructor(config: GethNodeConfig);

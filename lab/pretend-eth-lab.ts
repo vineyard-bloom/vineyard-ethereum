@@ -1,7 +1,7 @@
 import {EthLab} from "./eth-lab";
-import {EthereumTransaction, MockEthereumClient} from "../src";
-
-export class PretendEthLab implements EthLab {
+import {EthereumTransaction} from "../src";
+/*
+export class PretendEthLab {
   client: MockEthereumClient
 
   constructor(client: MockEthereumClient) {
@@ -24,7 +24,7 @@ export class PretendEthLab implements EthLab {
     // .then(() => this.start())
   }
 
-  send(address: string, amount): Promise<EthereumTransaction> {
+  send(address: string, amount:any): Promise<EthereumTransaction> {
     return this.client.send('', address, amount)
   }
 
@@ -35,4 +35,4 @@ export class PretendEthLab implements EthLab {
   generate(blockCount: number): Promise<any> {
     return this.client.generate(blockCount)
   }
-}
+}*/

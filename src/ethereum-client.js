@@ -40,7 +40,19 @@ var bignumber_js_1 = require("bignumber.js");
 var vineyard_blockchain_1 = require("vineyard-blockchain");
 var util = require("util");
 var Web3 = require("web3");
-var Web3EthereumClient = (function () {
+function convertStatus(gethStatus) {
+    switch (gethStatus) {
+        case 'pending':
+            return vineyard_blockchain_1.TransactionStatus.pending;
+        case 'accepted':
+            return vineyard_blockchain_1.TransactionStatus.accepted;
+        case 'rejected':
+            return vineyard_blockchain_1.TransactionStatus.rejected;
+        default:
+            throw new Error('Invalid status');
+    }
+}
+var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
         this.web3 = web3 || new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
@@ -125,7 +137,7 @@ var Web3EthereumClient = (function () {
                             timeReceived: new Date(fullBlock.timestamp * 1000),
                             confirmations: blockHeight - block.index,
                             block: t.block,
-                            status: t.status
+                            status: convertStatus(t.status)
                         }); });
                         return [2 /*return*/, {
                                 hash: fullBlock.hash,

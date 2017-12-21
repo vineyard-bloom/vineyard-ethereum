@@ -5,3 +5,4 @@ export * from './types';
 export * from './mock-ethereum-client';
 export * from './sweep';
 export * from './block-scanner';
+export * from './token-client';

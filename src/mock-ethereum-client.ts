@@ -29,21 +29,21 @@ export class MockEth {
       this.coinbase = ""
     }
 
-    getBalance(address) {
+    getBalance(address:any) {
       return address.balance
     }
 
-    getBlock(blockNumber, blocks, cb) {
+    getBlock(blockNumber:number, blocks: any[], cb:any) {
       return blocks[blockNumber]
     }
 
-    blockNumber(blocks) {
+    blockNumber(blocks:any[]) {
       return new Promise((resolve:any, reject: any) => {
         resolve(blocks[blocks.length -1])
       })
     }
 
-    getTransaction(txid, transactions) {
+    getTransaction(txid:string, transactions: any) {
       return transactions[txid] 
     }
 }
@@ -54,7 +54,7 @@ export class MockWeb3 {
     this.mockEth = mockEth
   }
 }
-
+/*
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource
   private addresses: { key: string; value: number } = {}
@@ -211,3 +211,4 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(21000)
   }
 }
+*/

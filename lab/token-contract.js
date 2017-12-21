@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var truffle_contract_1 = require("truffle-contract");
-var TokenContract = (function () {
+var contract = require('truffle-contract');
+var TokenContract = /** @class */ (function () {
     function TokenContract(client) {
         this.client = client;
         this.web3 = client.getWeb3();
@@ -82,7 +82,7 @@ var TokenContract = (function () {
         for (var _i = 4; _i < arguments.length; _i++) {
             params[_i - 4] = arguments[_i];
         }
-        var newContract = truffle_contract_1.default(abi);
+        var newContract = contract(abi);
         newContract.setProvider(this.client);
         newContract.deployed()
             .then(function (instance) {

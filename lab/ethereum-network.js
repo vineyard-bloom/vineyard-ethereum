@@ -5,11 +5,11 @@ var child_process = require('child_process');
 var rimraf = require('rimraf');
 var promise_each2_1 = require("promise-each2");
 var fs = require('fs');
-var EthereumNetwork = (function () {
+var EthereumNetwork = /** @class */ (function () {
     function EthereumNetwork(config) {
         this.nextPort = 8546;
         this.coinbase = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba";
-        this.enode = null;
+        this.enode = undefined;
         this.enodes = [];
         this.nodes = [];
         this.config = config;

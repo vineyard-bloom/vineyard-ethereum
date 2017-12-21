@@ -1,4 +1,5 @@
 import {Web3EthereumClient} from "../src"
+
 const child_process = require('child_process')
 const rimraf = require('rimraf')
 
@@ -19,19 +20,19 @@ export interface GethNodeConfig {
 }
 
 export class GethNode {
-  private stdout
-  private stderr
-  private childProcess = null
+  private stdout: any
+  private stderr: any
+  private childProcess: any
   private client: Web3EthereumClient
   private config: GethNodeConfig
   private static instanceIndex: number = 0
   private datadir: string
   private keydir: string
-  private port
-  private index
+  private port?: number
+  private index: number
 
-  constructor(config?: GethNodeConfig, port?) {
-    this.config = config || {}
+  constructor(config?: GethNodeConfig, port?: number) {
+    this.config = config || {} as any
     this.index = GethNode.instanceIndex++
     this.datadir = './temp/eth/geth' + this.index
     this.keydir = './temp/eth/keystore' + this.index
@@ -56,17 +57,17 @@ export class GethNode {
     return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase)
   }
 
-  private launch(flags) {
+  private launch(flags: any) {
     const childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags)
-    childProcess.stdout.on('data', (data) => {
+    childProcess.stdout.on('data', (data: any) => {
       console.log(this.index, 'stdout:', `${data}`);
     })
 
-    childProcess.stderr.on('data', (data) => {
+    childProcess.stderr.on('data', (data: any) => {
       console.error(this.index, 'stderr:', `${data}`);
     })
 
-    this.childProcess.on('close', (code) => {
+    this.childProcess.on('close', (code: any) => {
       console.log(this.index, `child process exited with code ${code}`);
     })
 
@@ -84,7 +85,7 @@ export class GethNode {
         }
       }
       setTimeout(finished, 5500)
-      const next = () => {
+      const next = (): any => {
         return new Promise<void>(resolve => setTimeout(resolve, 50))
           .then(() => {
             if (is_finished)
@@ -100,8 +101,9 @@ export class GethNode {
       next()
     })
       .then(() => {
-        for (let i = 0; i < this.config.enodes.length; ++i) {
-          this.addPeer(this.config.enodes[i])
+        const enodes = this.config.enodes || []
+        for (let i = 0; i < enodes.length; ++i) {
+          this.addPeer(enodes[i])
         }
       })
   }
@@ -161,9 +163,9 @@ export class GethNode {
 
   mineBlocks(blockCount: number) {
     console.log('Mining', blockCount, 'blocks.')
-    let originalBlock, targetBlock
+    let originalBlock:any, targetBlock:any
 
-    const next = () => {
+    const next = ():any => {
       return new Promise<void>(resolve => setTimeout(resolve, 100))
         .then(() => this.getClient().getBlockNumber())
         .then(blockNumber => {
@@ -209,7 +211,7 @@ export class GethNode {
         }
       }
 
-      this.childProcess.on('close', (code) => {
+      this.childProcess.on('close', (code:any) => {
         onStop()
       })
 
@@ -221,14 +223,14 @@ export class GethNode {
 
   mine(milliseconds: number) {
     console.log('Mining for ' + milliseconds + ' milliseconds.')
-    let previousBlockNumber
+    let previousBlockNumber:any
     return this.startMining()
       .then(() => this.getClient().getBlockNumber())
       .then(blockNumber => previousBlockNumber = blockNumber)
       .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
       .then(() => this.getClient().getBlockNumber())
       .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
-      .then(() => this.stop())
+      .then(():any => this.stop())
   }
 }
 

@@ -1,6 +1,4 @@
 import { EthereumClient, EthereumTransaction } from './types';
-export declare type TransactionFilter = (transaction) => Promise<boolean>;
-export declare type TransactionMap = (transaction) => Promise<EthereumTransaction>;
 export declare class BlockScanner<Transaction extends EthereumTransaction> {
     private client;
     private minimumConfirmations;
@@ -10,9 +8,9 @@ export declare class BlockScanner<Transaction extends EthereumTransaction> {
     private updatePending(newLastBlock);
     gatherTransactions(block: any, transactions: any): Promise<any[]>;
     getTransactions(i: number): Promise<any[]>;
-    scanBlocks(i: any, endBlockNumber: any): Promise<any[]>;
-    getTransactionsFromRange(lastBlock: any, newLastBlock: any): Promise<any[]>;
-    processBlock(blockIndex: any): Promise<void>;
-    processBlocks(blockIndex: any, endBlockNumber: any): Promise<void>;
+    scanBlocks(i: number, endBlockNumber: number): Promise<any[]>;
+    getTransactionsFromRange(lastBlock: number, newLastBlock: number): Promise<any[]>;
+    processBlock(blockIndex: number): Promise<void>;
+    processBlocks(blockIndex: number, endBlockNumber: number): Promise<void>;
     updateTransactions(): any;
 }

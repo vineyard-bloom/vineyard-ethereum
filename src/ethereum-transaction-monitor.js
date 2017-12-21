@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-var EthereumTransactionMonitor = (function () {
+var EthereumTransactionMonitor = /** @class */ (function () {
     function EthereumTransactionMonitor(model, ethereumClient, sweepAddress, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 12; }
         this.minimumConfirmations = 12;
@@ -81,28 +81,30 @@ var EthereumTransactionMonitor = (function () {
     return EthereumTransactionMonitor;
 }());
 exports.EthereumTransactionMonitor = EthereumTransactionMonitor;
-var EthereumBalanceMonitor = (function () {
-    function EthereumBalanceMonitor(model, ethereumClient, sweepAddress) {
-        this.minimumConfirmations = 2;
-        this.manager = model;
-        this.ethereumClient = ethereumClient;
-        this.sweepAddress = sweepAddress;
-    }
-    EthereumBalanceMonitor.prototype.saveNewTransaction = function (address) {
-        var _this = this;
-        return this.ethereumClient.getBalance(address)
-            .then(function (balance) {
-            return _this.ethereumClient.send(address, _this.sweepAddress, balance)
-                .then(function (transaction) { return _this.manager.saveTransaction(transaction); });
-        });
-    };
-    EthereumBalanceMonitor.prototype.sweep = function () {
-        var _this = this;
-        throw new Error("getAddresses will need paging.");
-        return this.manager.getAddresses()
-            .then(function (addresses) { return promise_each2_1.each(addresses, function (address) { return _this.saveNewTransaction(address); }); });
-    };
-    return EthereumBalanceMonitor;
-}());
-exports.EthereumBalanceMonitor = EthereumBalanceMonitor;
+// export class EthereumBalanceMonitor<EthereumTransaction> {
+//   private ethereumClient:any
+//   private minimumConfirmations: number = 2;
+//   private sweepAddress: string
+//   private manager: GenericEthereumManager<EthereumTransaction>
+//
+//   constructor(model: GenericEthereumManager<EthereumTransaction>, ethereumClient: EthereumClient, sweepAddress: string) {
+//     this.manager = model
+//     this.ethereumClient = ethereumClient
+//     this.sweepAddress = sweepAddress
+//   }
+//
+//   private saveNewTransaction(address:string): Promise<void> {
+//     return this.ethereumClient.getBalance(address)
+//       .then((balance:any) => {
+//         return this.ethereumClient.send(address, this.sweepAddress, balance)
+//           .then((transaction:any) => this.manager.saveTransaction(transaction))
+//       })
+//   }
+//
+//   sweep(): Promise<void> {
+//     throw new Error("getAddresses will need paging.")
+//     return this.manager.getAddresses()
+//       .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address)))
+//   }
+// }
 //# sourceMappingURL=ethereum-transaction-monitor.js.map

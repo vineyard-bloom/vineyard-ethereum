@@ -3,7 +3,7 @@ import {
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
 import { Web3Client, Web3EthereumClientConfig } from './ethereum-client'
-import { Block, Web3TransactionReceipt } from './types'
+import {Block, GethTransaction, Web3TransactionReceipt} from './types'
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')
 
@@ -69,7 +69,8 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
     let blockHeight = await this.getBlockNumber()
-    const decodedTransactions = await this.decodeTransactions(fullBlock.transactions)
+    const filteredTransactions = this.filterTokenTransaction(fullBlock.transactions)
+    const decodedTransactions = await this.decodeTransactions(filteredTransactions)
     const transactions = decodedTransactions.map(t => ({
       txid: t.hash,
       to: t.to,
@@ -130,7 +131,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  filterTokenTransaction(transactions: ExternalTransaction[]) {
+  filterTokenTransaction(transactions: GethTransaction[]) {
     return transactions.filter(tx => {
       if(tx && tx.to) {
         return tx.to.toLowerCase() === this.tokenContractAddress.toLowerCase()

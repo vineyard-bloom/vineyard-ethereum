@@ -77,7 +77,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
       amount: t.value,
       timeReceived: new Date(fullBlock.timestamp * 1000),
       confirmations: blockHeight - block.index,
-      block: t.block,
+      block: t.blockNumber,
       status: t.status
     }))
     return {

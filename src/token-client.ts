@@ -166,7 +166,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
           transferTo = params[i].value
         }
         if (params[i].name === '_value') {
-          transferValue = params[i].value
+          transferValue = params[i].valu / 100000000
         }
       }
       return {

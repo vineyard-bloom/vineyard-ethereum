@@ -260,7 +260,7 @@ var TokenClient = (function () {
                     transferTo = params[i].value;
                 }
                 if (params[i].name === '_value') {
-                    transferValue = params[i].valu / 100000000;
+                    transferValue = params[i].value / 100000000;
                 }
             }
             return {

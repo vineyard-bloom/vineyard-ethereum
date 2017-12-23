@@ -124,7 +124,7 @@ var TokenClient = (function () {
     };
     TokenClient.prototype.getFullBlock = function (block) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullBlock, blockHeight, decodedTransactions, transactions;
+            var fullBlock, blockHeight, filteredTransactions, decodedTransactions, transactions;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getBlock(block.index)];
@@ -133,7 +133,8 @@ var TokenClient = (function () {
                         return [4 /*yield*/, this.getBlockNumber()];
                     case 2:
                         blockHeight = _a.sent();
-                        return [4 /*yield*/, this.decodeTransactions(fullBlock.transactions)];
+                        filteredTransactions = this.filterTokenTransaction(fullBlock.transactions);
+                        return [4 /*yield*/, this.decodeTransactions(filteredTransactions)];
                     case 3:
                         decodedTransactions = _a.sent();
                         transactions = decodedTransactions.map(function (t) { return ({
@@ -143,7 +144,7 @@ var TokenClient = (function () {
                             amount: t.value,
                             timeReceived: new Date(fullBlock.timestamp * 1000),
                             confirmations: blockHeight - block.index,
-                            block: t.block,
+                            block: t.blockNumber,
                             status: t.status
                         }); });
                         return [2 /*return*/, {

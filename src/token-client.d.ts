@@ -20,7 +20,7 @@ export declare class TokenClient implements ReadClient<ExternalTransaction> {
     decodeTransactions(transactions: any[]): Promise<any[]>;
     decodeTransaction(transaction: any): {
         to: any;
-        value: any;
+        value: number | undefined;
     };
     decodeMethod(data: any): {
         name: any;

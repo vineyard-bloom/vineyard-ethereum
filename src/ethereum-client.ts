@@ -100,8 +100,8 @@ export class Web3EthereumClient implements EthereumClient {
       amount: t.value,
       timeReceived: new Date(fullBlock.timestamp * 1000),
       confirmations: blockHeight - block.index,
-      block: t.block,
-      status: convertStatus(t.status)
+      block: t.blockNumber,
+      status: t.status
     }))
     return {
       hash: fullBlock.hash,

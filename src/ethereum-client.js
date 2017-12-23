@@ -52,7 +52,7 @@ function convertStatus(gethStatus) {
             throw new Error('Invalid status');
     }
 }
-var Web3EthereumClient = /** @class */ (function () {
+var Web3EthereumClient = (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
         this.web3 = web3 || new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
@@ -136,8 +136,8 @@ var Web3EthereumClient = /** @class */ (function () {
                             amount: t.value,
                             timeReceived: new Date(fullBlock.timestamp * 1000),
                             confirmations: blockHeight - block.index,
-                            block: t.block,
-                            status: convertStatus(t.status)
+                            block: t.blockNumber,
+                            status: t.status
                         }); });
                         return [2 /*return*/, {
                                 hash: fullBlock.hash,

@@ -13,6 +13,7 @@ export interface Bristle {
 
 export interface SweepConfig {
   sweepAddress: string,
+  tokenSweepAddress: string,
   enabled: boolean
   minSweepAmount: string
   gas: number
@@ -115,12 +116,12 @@ export class Broom {
           .then(balance => {
             if(new BigNumber(balance).toNumber() > 0) {
               console.log('Sweeping address', address)
-              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.toNumber())
+              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.tokenSweepAddress, balance.toNumber())
                 .then(tx => {
                   console.log('Sweeping address succeeded', tx.hash)
                   return this.saveSweepRecord({
                     from: address,
-                    to: this.config.sweepAddress,
+                    to: this.config.tokenSweepAddress,
                     status: 1,
                     txid: tx.hash,
                     amount: balance

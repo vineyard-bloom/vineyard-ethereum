@@ -89,12 +89,12 @@ var Broom = (function () {
             .then(function (balance) {
             if (new bignumber_js_1.default(balance).toNumber() > 0) {
                 console.log('Sweeping address', address);
-                return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.sweepAddress, balance.toNumber())
+                return _this.tokenContract.transfer(abi, _this.config.tokenContractAddress, address, _this.config.tokenSweepAddress, balance.toNumber())
                     .then(function (tx) {
                     console.log('Sweeping address succeeded', tx.hash);
                     return _this.saveSweepRecord({
                         from: address,
-                        to: _this.config.sweepAddress,
+                        to: _this.config.tokenSweepAddress,
                         status: 1,
                         txid: tx.hash,
                         amount: balance

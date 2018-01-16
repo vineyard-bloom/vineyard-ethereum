@@ -8,6 +8,7 @@ export interface Bristle {
 }
 export interface SweepConfig {
     sweepAddress: string;
+    tokenSweepAddress: string;
     enabled: boolean;
     minSweepAmount: string;
     gas: number;

@@ -52,7 +52,7 @@ function convertStatus(gethStatus) {
             throw new Error('Invalid status');
     }
 }
-var Web3EthereumClient = (function () {
+var Web3EthereumClient = /** @class */ (function () {
     function Web3EthereumClient(ethereumConfig, web3) {
         this.web3 = web3 || new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));

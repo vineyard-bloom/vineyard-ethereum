@@ -1,9 +1,9 @@
-import {getTransactionsFromRange, checkAllBalances} from './utility'
-import BigNumber from 'bignumber.js';
+import { getTransactionsFromRange, checkAllBalances } from './utility'
+import BigNumber from 'bignumber.js'
 import {
   AddressManager, Block, EthereumClient, EthereumTransaction, GethTransaction,
   Web3TransactionReceipt
-} from "./types";
+} from './types'
 import {
   SingleTransaction as Transaction,
   ExternalSingleTransaction as ExternalTransaction,
@@ -12,19 +12,17 @@ import {
   BaseBlock,
   TransactionStatus,
   Resolve
-} from "vineyard-blockchain";
+} from 'vineyard-blockchain'
 
-const util = require("util")
-const Web3 = require("web3")
-
+const util = require('util')
+const Web3 = require('web3')
 
 export interface Web3EthereumClientConfig {
   http: string
   sweepAddress?: string
 }
 
-
-function convertStatus(gethStatus: string): TransactionStatus {
+function convertStatus (gethStatus: string): TransactionStatus {
   switch (gethStatus) {
     case 'pending':
       return TransactionStatus.pending
@@ -43,30 +41,29 @@ function convertStatus(gethStatus: string): TransactionStatus {
 export class Web3EthereumClient implements EthereumClient {
   private web3: Web3Client
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
+  constructor (ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
     this.web3 = web3 || new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
   }
 
-  getWeb3() {
+  getWeb3 () {
     return this.web3
   }
 
-  getBlockIndex(): Promise<number> {
+  getBlockIndex (): Promise<number> {
     return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(blockNumber)
         }
       })
     })
   }
 
-  async getLastBlock(): Promise<BaseBlock> {
+  async getLastBlock (): Promise<BaseBlock> {
     let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
     return {
       hash: lastBlock.hash,
@@ -76,7 +73,7 @@ export class Web3EthereumClient implements EthereumClient {
     }
   }
 
-  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
+  async getNextBlockInfo (previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
     const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
@@ -90,7 +87,7 @@ export class Web3EthereumClient implements EthereumClient {
     }
   }
 
-  async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
+  async getFullBlock (block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
     let blockHeight = await this.getBlockNumber()
     const transactions = fullBlock.transactions.map(t => ({
@@ -111,41 +108,43 @@ export class Web3EthereumClient implements EthereumClient {
     }
   }
 
-  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+  async getTransactionStatus (txid: string): Promise<TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
-    return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted
+    return transactionReceipt.status.substring(2) === '0' ? TransactionStatus.rejected : TransactionStatus.accepted
   }
 
-
-  unlockAccount(address: string) {
+  unlockAccount (address: string) {
     return new Promise((resolve: Resolve<boolean>, reject) => {
       try {
         this.web3.personal.unlockAccount(address, (err: any, result: boolean) => {
-          if (err)
-            reject(new Error("Error unlocking account: " + err.message))
-          else
+          if (err) {
+            reject(new Error('Error unlocking account: ' + err.message))
+          } else {
             resolve(result)
+          }
         })
-      }
-      catch (error) {
-        reject(new Error("Error unlocking account: " + address + '.  ' + error.message))
+      } catch (error) {
+        reject(new Error('Error unlocking account: ' + address + '.  ' + error.message))
       }
     })
   }
 
-  send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction> {
+  send (from: string | object, to?: string, amount?: string): Promise<EthereumTransaction> {
     const transaction = from && typeof from === 'object'
       ? from as any
-      : {from: from, to: to, value: amount, gas: 21000}
+      : { from: from, to: to, value: amount, gas: 21000 }
 
-    if (!transaction.from)
-      throw Error("Ethereum transaction.from cannot be empty.")
+    if (!transaction.from) {
+      throw Error('Ethereum transaction.from cannot be empty.')
+    }
 
-    if (!transaction.to)
-      throw Error("Ethereum transaction.to cannot be empty.")
+    if (!transaction.to) {
+      throw Error('Ethereum transaction.to cannot be empty.')
+    }
 
-    if (transaction.from === '')
+    if (transaction.from === '') {
       transaction.from = this.web3.eth.coinbase
+    }
 
     const original = Object.assign({}, transaction)
     transaction.value = transaction.value.toString()
@@ -157,9 +156,8 @@ export class Web3EthereumClient implements EthereumClient {
           this.web3.eth.sendTransaction(transaction, (err: any, txid: string) => {
             if (err) {
               console.log('Error sending (original)', original)
-              reject('Error sending to ' + to + ": " + err)
-            }
-            else {
+              reject('Error sending to ' + to + ': ' + err)
+            } else {
               console.log('Sent Ethereum transaction', txid, this.web3.eth.getTransaction(txid))
               transaction.hash = txid
               resolve(transaction)
@@ -169,56 +167,54 @@ export class Web3EthereumClient implements EthereumClient {
       })
   }
 
-  getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt> {
+  getTransactionReceipt (txid: string): Promise<Web3TransactionReceipt> {
     return new Promise((resolve: Resolve<Web3TransactionReceipt>, reject) => {
       this.web3.eth.getTransactionReceipt(txid, (err: any, transaction: Web3TransactionReceipt) => {
         if (err) {
           console.error('Error querying transaction', txid, 'with message', err.message)
-          reject(err);
-        }
-        else {
+          reject(err)
+        } else {
           resolve(transaction)
         }
       })
     })
   }
 
-  getTransaction(txid: string): Promise<ExternalTransaction> {
+  getTransaction (txid: string): Promise<ExternalTransaction> {
     return new Promise((resolve: Resolve<ExternalTransaction>, reject) => {
       this.web3.eth.getTransaction(txid, (err: any, transaction: ExternalTransaction) => {
         if (err) {
           console.error('Error querying transaction', txid, 'with message', err.message)
-          reject(err);
-        }
-        else {
+          reject(err)
+        } else {
           resolve(transaction)
         }
       })
     })
   }
 
-  getCoinbase() {
+  getCoinbase () {
     return Promise.resolve(this.web3.eth.coinbase)
   }
 
-  toWei(amount: number) {
+  toWei (amount: number) {
     return this.web3.toWei(amount)
   }
 
-  fromWei(amount: number) {
-    return new BigNumber(amount).dividedBy(1000000000000000000).toString();
+  fromWei (amount: number) {
+    return new BigNumber(amount).dividedBy(1000000000000000000).toString()
   }
 
-  createAddress(): Promise<string> {
+  createAddress (): Promise<string> {
     return new Promise((resolve: Resolve<string>, reject) => {
       // if (!this.web3.isConnected()) {
       //   reject(new Error("Cannot create address, not connected to client."))
       // }
 
       this.web3.personal.newAccount((err: any, result: string) => {
-        if (err)
-          reject(new Error("Error creating address: " + err.message))
-        else {
+        if (err) {
+          reject(new Error('Error creating address: ' + err.message))
+        } else {
           console.log('Created new address', result)
           resolve(result)
         }
@@ -226,24 +222,26 @@ export class Web3EthereumClient implements EthereumClient {
     })
   }
 
-  getAccounts(): Promise<string[]> {
+  getAccounts (): Promise<string[]> {
     return new Promise((resolve: Resolve<string[]>, reject) => {
       this.web3.eth.getAccounts((err: any, result: string[]) => {
-        if (err)
-          reject(new Error("Error getting accounts: " + err.message))
-        else
+        if (err) {
+          reject(new Error('Error getting accounts: ' + err.message))
+        } else {
           resolve(result)
+        }
       })
     })
   }
 
-  getBalance(address: string): Promise<string> {
+  getBalance (address: string): Promise<string> {
     return new Promise((resolve: Resolve<string>, reject) => {
       this.web3.eth.getBalance(address, (err: any, result: string) => {
-        if (err)
-          reject(new Error("Error getting balance: " + err.message))
-        else
+        if (err) {
+          reject(new Error('Error getting balance: ' + err.message))
+        } else {
           resolve(result)
+        }
       })
     })
   }
@@ -252,55 +250,54 @@ export class Web3EthereumClient implements EthereumClient {
   //   return getTransactionsFromRange(this.web3.eth, lastBlock, addressManager)
   // }
 
-  importAddress(address: string): Promise<void> {
-    throw new Error("Not implemented")
+  importAddress (address: string): Promise<void> {
+    throw new Error('Not implemented')
   }
 
-  generate(blockCount: number): Promise<void> {
-    throw new Error("Not implemented.")
+  generate (blockCount: number): Promise<void> {
+    throw new Error('Not implemented.')
   }
 
-  checkAllBalances(): Promise<any> {
+  checkAllBalances (): Promise<any> {
     return new Promise((resolve, reject) => {
       resolve(checkAllBalances(this.web3))
     })
   }
 
-  getBlock(blockIndex: number): Promise<Block> {
+  getBlock (blockIndex: number): Promise<Block> {
     return new Promise((resolve: Resolve<Block>, reject) => {
       this.web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
         if (err) {
           console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(block)
         }
       })
     })
   }
 
-  getBlockNumber(): Promise<number> {
+  getBlockNumber (): Promise<number> {
     return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(blockNumber)
         }
       })
     })
   }
 
-  getGas(): Promise<BigNumber> {
+  getGas (): Promise<BigNumber> {
     return new Promise((resolve: Resolve<BigNumber>, reject) => {
       this.web3.eth.getGasPrice((err: any, result: BigNumber) => {
-        if (err)
+        if (err) {
           reject(err)
-        else
+        } else {
           resolve(result)
+        }
       })
     })
   }

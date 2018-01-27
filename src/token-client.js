@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var types_1 = require("vineyard-blockchain/src/types");
 var Web3 = require('web3');
 var SolidityCoder = require('web3/lib/solidity/coder.js');
-var TokenClient = (function () {
+var TokenClient = /** @class */ (function () {
     function TokenClient(ethereumConfig, currency, tokenContractAddress, abi) {
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));

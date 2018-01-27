@@ -1,41 +1,40 @@
-import {GethNode, GethNodeConfig} from "./geth-node";
+import { GethNode, GethNodeConfig } from './geth-node'
 
-function fund(client: any) {
-    const web3 = client
-    return new Promise<void>((resolve, reject) => {
-     console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE")
-      web3.personal.unlockAccount(web3.eth.coinbase)
-      web3.eth.sendTransaction({
-        from: web3.eth.coinbase,
-        to: web3.eth.accounts[1],
-        value: web3.toWei(35)
-      }, function (err:Error, tx: any) {resolve (tx)})
-    })
-} 
+function fund (client: any) {
+  const web3 = client
+  return new Promise<void>((resolve, reject) => {
+    console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'I AM THE COINBASE BALANCE')
+    web3.personal.unlockAccount(web3.eth.coinbase)
+    web3.eth.sendTransaction({
+      from: web3.eth.coinbase,
+      to: web3.eth.accounts[1],
+      value: web3.toWei(35)
+    }, function (err: Error, tx: any) { resolve(tx) })
+  })
+}
 
-function spend(node: GethNode) {
+function spend (node: GethNode) {
   const web3 = node.getWeb3()
   fund(web3).then(() => {
-  return new Promise<void>((resolve, reject) => {
-    const send = () => {
-      web3.personal.unlockAccount(web3.eth.accounts[1])
-      web3.eth.sendTransaction({
-        from: web3.eth.accounts[1],
-        to: web3.eth.accounts[2],
-        value: web3.toWei(18)
-      }, function (err: Error, tx: any) {
-        if (err) {
-          console.log(err)
-          reject(err)
-        }
-        else {
-          console.log(tx)
-          resolve(tx)
-        }
-      })
-    }
-    setTimeout(send, 10000)
-  })
+    return new Promise<void>((resolve, reject) => {
+      const send = () => {
+        web3.personal.unlockAccount(web3.eth.accounts[1])
+        web3.eth.sendTransaction({
+          from: web3.eth.accounts[1],
+          to: web3.eth.accounts[2],
+          value: web3.toWei(18)
+        }, function (err: Error, tx: any) {
+          if (err) {
+            console.log(err)
+            reject(err)
+          } else {
+            console.log(tx)
+            resolve(tx)
+          }
+        })
+      }
+      setTimeout(send, 10000)
+    })
     .then(result => console.log(web3.eth.getTransaction(result)))
   })
 }

@@ -1,29 +1,29 @@
-import {GethNode, GethNodeConfig} from "./geth-node";
+import { GethNode, GethNodeConfig } from './geth-node'
 const child_process = require('child_process')
 const rimraf = require('rimraf')
-import {each as promiseEach} from 'promise-each2'
+import { each as promiseEach } from 'promise-each2'
 const fs = require('fs')
 
 export class EthereumNetwork {
   private config: GethNodeConfig
   private nextPort = 8546
   private mainNode: GethNode
-  private coinbase: string = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba"
+  private coinbase: string = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba'
   private enode?: string = undefined
   private enodes: string[] = []
   private nodes: GethNode [] = []
 
-  constructor(config: GethNodeConfig) {
+  constructor (config: GethNodeConfig) {
     this.config = config
     this.config.tempPath = './temp/eth'
     this.config.coinbase = this.coinbase
   }
 
-  getCoinbase() {
+  getCoinbase () {
     return this.coinbase
   }
 
-  createNode() {
+  createNode () {
     const config = Object.assign({
       // bootnodes: this.enode,
       enodes: ([] as string[]).concat(this.enodes)
@@ -37,54 +37,54 @@ export class EthereumNetwork {
     return node
   }
 
-  getMainNode() {
+  getMainNode () {
     return this.mainNode
   }
 
-  private createGenesisFile(path: string) {
-    const content = {
-      "config": {
-        "chainId": 15,
-        "homesteadBlock": 0,
-        "eip155Block": 0,
-        "eip158Block": 0
-      },
-      "alloc": {
-        [this.coinbase]: {"balance": "111100113120000000000052"}
-      },
-      "coinbase": this.coinbase,
-      "difficulty": "0x20000",
-      "extraData": "",
-      "gasLimit": "0x2fefd8",
-      "nonce": "0x0000000000000042",// "0x" + Math.floor(Math.random() * 10000000000000000),
-      "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "timestamp": "0x00"
-    }
-
-    const fs = require('fs')
-    fs.writeFileSync(path, JSON.stringify(content), 'utf8')
-  }
-
-  resetTempDir() {
+  resetTempDir () {
     rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.
     if (!fs.existsSync(this.config.tempPath)) {
       fs.mkdirSync(this.config.tempPath)
     }
   }
 
-  initialize() {
+  initialize () {
     this.resetTempDir()
     const GenesisPath = this.config.tempPath + '/genesis.json'
     this.createGenesisFile(GenesisPath)
     this.mainNode = this.createNode()
   }
 
-  start() {
+  start () {
     return this.mainNode.start()
   }
 
-  stop() {
+  stop () {
     return promiseEach(this.nodes, (node: any) => node.stop())
+  }
+
+  private createGenesisFile (path: string) {
+    const content = {
+      'config': {
+        'chainId': 15,
+        'homesteadBlock': 0,
+        'eip155Block': 0,
+        'eip158Block': 0
+      },
+      'alloc': {
+        [this.coinbase]: { 'balance': '111100113120000000000052' }
+      },
+      'coinbase': this.coinbase,
+      'difficulty': '0x20000',
+      'extraData': '',
+      'gasLimit': '0x2fefd8',
+      'nonce': '0x0000000000000042',// "0x" + Math.floor(Math.random() * 10000000000000000),
+      'mixhash': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      'parentHash': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      'timestamp': '0x00'
+    }
+
+    const fs = require('fs')
+    fs.writeFileSync(path, JSON.stringify(content), 'utf8')
   }
 }

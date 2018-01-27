@@ -14,7 +14,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   private methodIDs: object
   private abi: object
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
+  constructor (ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
     this.web3 = new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
     this.tokenContractAddress = tokenContractAddress
@@ -24,13 +24,12 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   }
 
   async getBlockIndex (): Promise<number> {
-    return new Promise((resolve:Resolve<number>, reject) => {
+    return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(blockNumber)
         }
       })
@@ -47,12 +46,12 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+  async getTransactionStatus (txid: string): Promise<TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
-    return transactionReceipt.status.substring(2) == "0" ? TransactionStatus.rejected : TransactionStatus.accepted
+    return transactionReceipt.status.substring(2) === '0' ? TransactionStatus.rejected : TransactionStatus.accepted
   }
 
-  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
+  async getNextBlockInfo (previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
     const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
@@ -66,7 +65,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
+  async getFullBlock (block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
     let blockHeight = await this.getBlockNumber()
     const filteredTransactions = this.filterTokenTransaction(fullBlock.transactions)
@@ -89,49 +88,46 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getBlock(blockIndex: number): Promise<Block> {
+  async getBlock (blockIndex: number): Promise<Block> {
     return new Promise((resolve: Resolve<Block>, reject) => {
       this.web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
         if (err) {
           console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(block)
         }
       })
     })
   }
 
-  async getBlockNumber(): Promise<number> {
-    return new Promise((resolve:Resolve<number>, reject) => {
+  async getBlockNumber (): Promise<number> {
+    return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
           console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
-          reject(new Error(err));
-        }
-        else {
+          reject(new Error(err))
+        } else {
           resolve(blockNumber)
         }
       })
     })
   }
 
-  async getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt> {
+  async getTransactionReceipt (txid: string): Promise<Web3TransactionReceipt> {
     return new Promise((resolve: Resolve<Web3TransactionReceipt>, reject) => {
       this.web3.eth.getTransactionReceipt(txid, (err: any, transaction: Web3TransactionReceipt) => {
         if (err) {
           console.error('Error querying transaction', txid, 'with message', err.message)
-          reject(err);
-        }
-        else {
+          reject(err)
+        } else {
           resolve(transaction)
         }
       })
     })
   }
 
-  filterTokenTransaction(transactions: GethTransaction[]) {
+  filterTokenTransaction (transactions: GethTransaction[]) {
     return transactions.filter(tx => {
       if(tx && tx.to) {
         return tx.to.toLowerCase() === this.tokenContractAddress.toLowerCase()
@@ -139,7 +135,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  async decodeTransactions(transactions: any[]) {
+  async decodeTransactions (transactions: any[]) {
     let decodedTransactions = []
     for (let t of transactions) {
       const transaction = await this.web3.eth.getTransactionReceipt(t.hash)
@@ -153,12 +149,12 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     return decodedTransactions
   }
 
-  decodeTransaction(transaction: any) {
+  decodeTransaction (transaction: any) {
     let transferTo
     let transferValue
 
     const decodedData = this.decodeMethod(transaction.input)
-    if(decodedData) {
+    if (decodedData) {
       const params = decodedData.params
 
       for (let i = 0; i < params.length; ++i) {
@@ -181,24 +177,24 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  decodeMethod(data: any) {
-    const methodID = data.slice(2, 10);
-    const abiItem = this.methodIDs[methodID];
+  decodeMethod (data: any) {
+    const methodID = data.slice(2, 10)
+    const abiItem = this.methodIDs[methodID]
     if (abiItem) {
-      const params = abiItem.inputs.map(item => item.type);
-      let decoded = SolidityCoder.decodeParams(params, data.slice(10));
+      const params = abiItem.inputs.map(item => item.type)
+      let decoded = SolidityCoder.decodeParams(params, data.slice(10))
       return {
         name: abiItem.name,
         params: decoded.map((param, index) => {
-          let parsedParam = param;
-          if (abiItem.inputs[index].type.indexOf("uint") !== -1) {
-            parsedParam = new Web3().toBigNumber(param).toString();
+          let parsedParam = param
+          if (abiItem.inputs[index].type.indexOf('uint') !== -1) {
+            parsedParam = new Web3().toBigNumber(param).toString()
           }
           return {
             name: abiItem.inputs[index].name,
             value: parsedParam,
             type: abiItem.inputs[index].type
-          };
+          }
         })
       }
     }
@@ -207,20 +203,18 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   addAbi (abiArray) {
     if (Array.isArray(abiArray)) {
       abiArray.map((abi) => {
-        if(abi.name){
-          const signature = new Web3().sha3(abi.name + "(" + abi.inputs.map(function(input) {return input.type;}).join(",") + ")");
-          if(abi.type == "event"){
-            this.methodIDs[signature.slice(2)] = abi;
-          }
-          else{
-            this.methodIDs[signature.slice(2, 10)] = abi;
+        if (abi.name) {
+          const signature = new Web3().sha3(abi.name + '(' + abi.inputs.map(function (input) {return input.type}).join(',') + ')')
+          if (abi.type === 'event') {
+            this.methodIDs[signature.slice(2)] = abi
+          } else {
+            this.methodIDs[signature.slice(2, 10)] = abi
           }
         }
-      });
+      })
       return abiArray
-    }
-    else {
-      throw new Error("Expected ABI array, got " + typeof abiArray);
+    } else {
+      throw new Error('Expected ABI array, got ' + typeof abiArray)
     }
   }
 }

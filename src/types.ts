@@ -49,7 +49,7 @@ export interface AddressManager {
   hasAddress (address: string): Promise<boolean>
 }
 
-export interface EthereumClient extends ReadClient<ExternalTransaction> {
+export interface EthereumClient {
   checkAllBalances (): Promise<any>
 
   createAddress (): Promise<string>

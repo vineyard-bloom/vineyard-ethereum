@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { ExternalSingleTransaction as ExternalTransaction, ReadClient } from 'vineyard-blockchain';
+import { ExternalSingleTransaction as ExternalTransaction } from 'vineyard-blockchain';
 import { Bristle } from './sweep';
 export interface FakeBlock {
 }
@@ -41,7 +41,7 @@ export interface Block {
 export interface AddressManager {
     hasAddress(address: string): Promise<boolean>;
 }
-export interface EthereumClient extends ReadClient<ExternalTransaction> {
+export interface EthereumClient {
     checkAllBalances(): Promise<any>;
     createAddress(): Promise<string>;
     getBalance(address: string): Promise<any>;

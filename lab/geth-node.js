@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var src_1 = require("../src");
-var child_process = require('child_process');
+var ChildProcess = require('child_process');
 var rimraf = require('rimraf');
 var Status;
 (function (Status) {
@@ -57,7 +57,7 @@ var GethNode = /** @class */ (function () {
     GethNode.prototype.execSync = function (suffix) {
         var command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
         console.log(command);
-        var result = child_process.execSync(command);
+        var result = ChildProcess.execSync(command);
         return result.toString();
     };
     GethNode.prototype.initialize = function (genesisPath) {
@@ -77,7 +77,8 @@ var GethNode = /** @class */ (function () {
     GethNode.prototype.mineBlocks = function (blockCount) {
         var _this = this;
         console.log('Mining', blockCount, 'blocks.');
-        var originalBlock, targetBlock;
+        var originalBlock;
+        var targetBlock;
         var next = function () {
             return new Promise(function (resolve) { return setTimeout(resolve, 100); })
                 .then(function () { return _this.getClient().getBlockNumber(); })
@@ -141,7 +142,7 @@ var GethNode = /** @class */ (function () {
     };
     GethNode.prototype.launch = function (flags) {
         var _this = this;
-        var childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags);
+        var childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
         childProcess.stdout.on('data', function (data) {
             console.log(_this.index, 'stdout:', "" + data);
         });

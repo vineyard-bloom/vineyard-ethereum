@@ -2,21 +2,21 @@ import BigNumber from 'bignumber.js'
 import { each as promiseEach } from 'promise-each2'
 import { AddressManager, EthereumClient } from './types'
 
-export function ethToWei (amount: BigNumber) {
+export function ethToWei(amount: BigNumber) {
   return amount.times(new BigNumber('1000000000000000000'))
 }
 
-export function weiToEth (amount: BigNumber) {
+export function weiToEth(amount: BigNumber) {
   return amount.dividedBy(new BigNumber('1000000000000000000'))
 }
 
-export function checkAllBalances (web3: any) {
+export function checkAllBalances(web3: any) {
   let totalBal = 0
   let sortableBalances = []
   for (let acctNum in web3.eth.accounts) {
     let acct = web3.eth.accounts[acctNum]
     let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether')
-    sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal })
+    sortableBalances.push({'id': acctNum, 'acct': acct, 'acctBal': acctBal})
     totalBal += parseFloat(acctBal)
   }
   let sortedBalances = sortableBalances.sort(function (a, b) {
@@ -35,7 +35,7 @@ export function checkAllBalances (web3: any) {
   console.log('  Total balance: ' + totalBal + ' ether')
 }
 
-function createTransaction (e: any, block: any) {
+function createTransaction(e: any, block: any) {
   return {
     hash: e.hash,
     nonce: e.nonce,
@@ -52,7 +52,7 @@ function createTransaction (e: any, block: any) {
   }
 }
 
-function gatherTransactions (block: any, transactions: any, addressManager: AddressManager): Promise<any[]> {
+function gatherTransactions(block: any, transactions: any, addressManager: AddressManager): Promise<any[]> {
   let result: any[] = []
   return promiseEach(transactions
     .filter((e: any) => e.to)
@@ -75,7 +75,7 @@ function gatherTransactions (block: any, transactions: any, addressManager: Addr
 //   }
 // }
 
-export function getTransactions (client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
+export function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]> {
   return client.getBlock(i)
     .then(block => {
       if (!block || !block.transactions) {
@@ -86,7 +86,7 @@ export function getTransactions (client: EthereumClient, addressManager: Address
     })
 }
 
-export function isTransactionValid (client: EthereumClient, txid: string): Promise<Boolean | void> {
+export function isTransactionValid(client: EthereumClient, txid: string): Promise<Boolean | void> {
   return Promise.resolve((client as any).web3.eth.getTransactionReceipt(txid))
     .then(transaction => {
       // '0x0' == failed tx, might still be mined in block, though
@@ -102,7 +102,7 @@ export function isTransactionValid (client: EthereumClient, txid: string): Promi
     })
 }
 
-function scanBlocks (client: EthereumClient, addressManager: AddressManager, i: number, endBlockNumber: number): Promise<any[]> {
+function scanBlocks(client: EthereumClient, addressManager: AddressManager, i: number, endBlockNumber: number): Promise<any[]> {
   if (i > endBlockNumber) {
     return Promise.resolve([])
   }
@@ -112,6 +112,6 @@ function scanBlocks (client: EthereumClient, addressManager: AddressManager, i: 
       .then(second => first.concat(second)))
 }
 
-export function getTransactionsFromRange (client: EthereumClient, addressManager: AddressManager, lastBlock: any, newLastBlock: any) {
+export function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock: any, newLastBlock: any) {
   return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock)
 }

@@ -1,4 +1,4 @@
-import { GethNode, GethNodeConfig } from "./geth-node";
+import { GethNode, GethNodeConfig } from './geth-node';
 export declare class EthereumNetwork {
     private config;
     private nextPort;
@@ -11,9 +11,9 @@ export declare class EthereumNetwork {
     getCoinbase(): string;
     createNode(): GethNode;
     getMainNode(): GethNode;
-    private createGenesisFile(path);
     resetTempDir(): void;
     initialize(): void;
     start(): Promise<void>;
     stop(): any;
+    private createGenesisFile(path);
 }

@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var geth_node_1 = require("./geth-node");
+var promise_each2_1 = require("promise-each2");
 var child_process = require('child_process');
 var rimraf = require('rimraf');
-var promise_each2_1 = require("promise-each2");
 var fs = require('fs');
 var EthereumNetwork = /** @class */ (function () {
     function EthereumNetwork(config) {
         this.nextPort = 8546;
-        this.coinbase = "0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba";
+        this.coinbase = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba';
         this.enode = undefined;
         this.enodes = [];
         this.nodes = [];
@@ -35,30 +35,6 @@ var EthereumNetwork = /** @class */ (function () {
     EthereumNetwork.prototype.getMainNode = function () {
         return this.mainNode;
     };
-    EthereumNetwork.prototype.createGenesisFile = function (path) {
-        var content = {
-            "config": {
-                "chainId": 15,
-                "homesteadBlock": 0,
-                "eip155Block": 0,
-                "eip158Block": 0
-            },
-            "alloc": (_a = {},
-                _a[this.coinbase] = { "balance": "111100113120000000000052" },
-                _a),
-            "coinbase": this.coinbase,
-            "difficulty": "0x20000",
-            "extraData": "",
-            "gasLimit": "0x2fefd8",
-            "nonce": "0x0000000000000042",
-            "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "timestamp": "0x00"
-        };
-        var fs = require('fs');
-        fs.writeFileSync(path, JSON.stringify(content), 'utf8');
-        var _a;
-    };
     EthereumNetwork.prototype.resetTempDir = function () {
         rimraf.sync('./temp/eth'); // Right now still hard-coded because I don't trust rm -rf.
         if (!fs.existsSync(this.config.tempPath)) {
@@ -76,6 +52,30 @@ var EthereumNetwork = /** @class */ (function () {
     };
     EthereumNetwork.prototype.stop = function () {
         return promise_each2_1.each(this.nodes, function (node) { return node.stop(); });
+    };
+    EthereumNetwork.prototype.createGenesisFile = function (path) {
+        var content = {
+            'config': {
+                'chainId': 15,
+                'homesteadBlock': 0,
+                'eip155Block': 0,
+                'eip158Block': 0
+            },
+            'alloc': (_a = {},
+                _a[this.coinbase] = { 'balance': '111100113120000000000052' },
+                _a),
+            'coinbase': this.coinbase,
+            'difficulty': '0x20000',
+            'extraData': '',
+            'gasLimit': '0x2fefd8',
+            'nonce': '0x0000000000000042',
+            'mixhash': '0x0000000000000000000000000000000000000000000000000000000000000000',
+            'parentHash': '0x0000000000000000000000000000000000000000000000000000000000000000',
+            'timestamp': '0x00'
+        };
+        var fs = require('fs');
+        fs.writeFileSync(path, JSON.stringify(content), 'utf8');
+        var _a;
     };
     return EthereumNetwork;
 }());

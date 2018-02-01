@@ -1,4 +1,4 @@
-import { Web3EthereumClient } from "../src";
+import { Web3EthereumClient } from '../src';
 export interface GethNodeConfig {
     gethPath?: string;
     verbosity?: number;
@@ -10,12 +10,12 @@ export interface GethNodeConfig {
     enodes?: string[];
 }
 export declare class GethNode {
+    private static instanceIndex;
     private stdout;
     private stderr;
     private childProcess;
     private client;
     private config;
-    private static instanceIndex;
     private datadir;
     private keydir;
     private port?;
@@ -25,7 +25,6 @@ export declare class GethNode {
     getClient(): Web3EthereumClient;
     getKeydir(): string;
     startMining(): Promise<void>;
-    private launch(flags);
     getBootNodeFlags(): string;
     getCommonFlags(): string;
     getRPCFlags(): string;
@@ -40,4 +39,5 @@ export declare class GethNode {
     listPeers(): void;
     stop(): Promise<void> | Promise<{}>;
     mine(milliseconds: number): Promise<any>;
+    private launch(flags);
 }

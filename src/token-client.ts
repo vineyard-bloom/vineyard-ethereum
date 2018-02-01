@@ -3,27 +3,33 @@ import {
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
 import { Web3Client, Web3EthereumClientConfig } from './ethereum-client'
-import {Block, GethTransaction, Web3TransactionReceipt} from './types'
+import { Block, GethTransaction, Web3TransactionReceipt } from './types'
+
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')
+
+export interface AbiObject {
+  name: string
+  type: string
+  inputs: AbiObject[]
+}
 
 export class TokenClient implements ReadClient<ExternalTransaction> {
   private web3: Web3Client
   private tokenContractAddress: string
   private currency: number
-  private methodIDs: object
-  private abi: object
+  private methodIDs: { [key: string]: AbiObject } = {}
+  private abi: AbiObject[]
 
-  constructor (ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
+  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
     this.web3 = new Web3()
     this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
     this.tokenContractAddress = tokenContractAddress
     this.currency = currency
-    this.methodIDs = {}
     this.abi = this.addAbi(abi)
   }
 
-  async getBlockIndex (): Promise<number> {
+  async getBlockIndex(): Promise<number> {
     return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
@@ -36,7 +42,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  async getLastBlock (): Promise<BaseBlock> {
+  async getLastBlock(): Promise<BaseBlock> {
     let lastBlock: Block = await this.getBlock(await this.getBlockNumber())
     return {
       hash: lastBlock.hash,
@@ -46,12 +52,12 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getTransactionStatus (txid: string): Promise<TransactionStatus> {
+  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
     return transactionReceipt.status.substring(2) === '0' ? TransactionStatus.rejected : TransactionStatus.accepted
   }
 
-  async getNextBlockInfo (previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
+  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
     const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
@@ -65,7 +71,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getFullBlock (block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
+  async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
     let blockHeight = await this.getBlockNumber()
     const filteredTransactions = this.filterTokenTransaction(fullBlock.transactions)
@@ -88,7 +94,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getBlock (blockIndex: number): Promise<Block> {
+  async getBlock(blockIndex: number): Promise<Block> {
     return new Promise((resolve: Resolve<Block>, reject) => {
       this.web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
         if (err) {
@@ -101,7 +107,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  async getBlockNumber (): Promise<number> {
+  async getBlockNumber(): Promise<number> {
     return new Promise((resolve: Resolve<number>, reject) => {
       this.web3.eth.getBlockNumber((err: any, blockNumber: number) => {
         if (err) {
@@ -114,7 +120,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  async getTransactionReceipt (txid: string): Promise<Web3TransactionReceipt> {
+  async getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt> {
     return new Promise((resolve: Resolve<Web3TransactionReceipt>, reject) => {
       this.web3.eth.getTransactionReceipt(txid, (err: any, transaction: Web3TransactionReceipt) => {
         if (err) {
@@ -127,15 +133,15 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  filterTokenTransaction (transactions: GethTransaction[]) {
+  filterTokenTransaction(transactions: GethTransaction[]) {
     return transactions.filter(tx => {
-      if(tx && tx.to) {
+      if (tx && tx.to) {
         return tx.to.toLowerCase() === this.tokenContractAddress.toLowerCase()
       }
     })
   }
 
-  async decodeTransactions (transactions: any[]) {
+  async decodeTransactions(transactions: any[]) {
     let decodedTransactions = []
     for (let t of transactions) {
       const transaction = await this.web3.eth.getTransactionReceipt(t.hash)
@@ -149,7 +155,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     return decodedTransactions
   }
 
-  decodeTransaction (transaction: any) {
+  decodeTransaction(transaction: any) {
     let transferTo
     let transferValue
 
@@ -177,15 +183,15 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  decodeMethod (data: any) {
+  decodeMethod(data: any) {
     const methodID = data.slice(2, 10)
     const abiItem = this.methodIDs[methodID]
     if (abiItem) {
-      const params = abiItem.inputs.map(item => item.type)
+      const params = abiItem.inputs.map((item: any) => item.type)
       let decoded = SolidityCoder.decodeParams(params, data.slice(10))
       return {
         name: abiItem.name,
-        params: decoded.map((param, index) => {
+        params: decoded.map((param: any, index: number) => {
           let parsedParam = param
           if (abiItem.inputs[index].type.indexOf('uint') !== -1) {
             parsedParam = new Web3().toBigNumber(param).toString()
@@ -200,11 +206,13 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  addAbi (abiArray) {
+  addAbi(abiArray: any) {
     if (Array.isArray(abiArray)) {
       abiArray.map((abi) => {
         if (abi.name) {
-          const signature = new Web3().sha3(abi.name + '(' + abi.inputs.map(function (input) {return input.type}).join(',') + ')')
+          const signature = new Web3().sha3(abi.name + '(' + abi.inputs.map(function (input: any) {
+            return input.type
+          }).join(',') + ')')
           if (abi.type === 'event') {
             this.methodIDs[signature.slice(2)] = abi
           } else {

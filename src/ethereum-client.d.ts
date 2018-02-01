@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt } from "./types";
-import { ExternalSingleTransaction as ExternalTransaction, FullBlock, BlockInfo, BaseBlock, TransactionStatus } from "vineyard-blockchain";
+import { Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt } from './types';
+import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, TransactionStatus } from 'vineyard-blockchain';
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;

@@ -6,13 +6,13 @@ var fs = require('fs');
 var GethLab = /** @class */ (function () {
     function GethLab(config, client, server) {
         if (server === void 0) { server = new gethServer_1.GethServer(); }
-        this.defaultAddress = "";
+        this.defaultAddress = '';
         this.config = config;
         this.client = client;
         this.server = server;
     }
     GethLab.prototype.getSweepAddress = function () {
-        throw new Error("Not implemented.");
+        throw new Error('Not implemented.');
         // return this.config.ethereum.sweepAddress
     };
     GethLab.prototype.start = function () {

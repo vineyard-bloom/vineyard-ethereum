@@ -20,7 +20,6 @@ export declare class Broom {
     private config;
     private tokenContract;
     constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
-    private singleSweep(address);
     calculateSendAmount(amount: any): any;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
@@ -29,4 +28,5 @@ export declare class Broom {
     needsGas(abi: any, address: string): Promise<boolean>;
     gasTransaction(abi: any, address: any): Promise<any>;
     provideGas(abi: any): Promise<void>;
+    private singleSweep(address);
 }

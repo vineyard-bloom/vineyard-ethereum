@@ -5,7 +5,7 @@ enum Status {
   active
 }
 
-function waitUntilRunning () {
+function waitUntilRunning() {
   return new Promise<void>((resolve, reject) => {
     const poll = () => {
       console.log('Geth is now running')
@@ -21,7 +21,7 @@ export class GethServer {
   private stderr: any
   private childProcess: any
 
-  start () {
+  start() {
     console.log('Starting Geth')
     // const childProcess = this.childProcess = child_process.exec('geth --datadir=~/myBlockchain/node1 --networkid 100 --identity node1 --rpc --rpcport 8545 --rpcapi=\"db,eth,net,web3,personal,web3\" --keystore ./keystores console')
     const childProcess = this.childProcess = child_process.exec('node scripts/all')
@@ -41,7 +41,7 @@ export class GethServer {
     return waitUntilRunning()
   }
 
-  stop () {
+  stop() {
     if (!this.childProcess) {
       return Promise.resolve()
     }

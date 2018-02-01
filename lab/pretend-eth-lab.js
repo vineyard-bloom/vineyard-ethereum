@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /*
 export class PretendEthLab {
   client: MockEthereumClient
@@ -35,5 +34,5 @@ export class PretendEthLab {
   generate(blockCount: number): Promise<any> {
     return this.client.generate(blockCount)
   }
-}*/ 
+}*/
 //# sourceMappingURL=pretend-eth-lab.js.map

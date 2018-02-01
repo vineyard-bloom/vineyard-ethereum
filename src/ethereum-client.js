@@ -38,8 +38,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utility_1 = require("./utility");
 var bignumber_js_1 = require("bignumber.js");
 var vineyard_blockchain_1 = require("vineyard-blockchain");
-var util = require("util");
-var Web3 = require("web3");
+var util = require('util');
+var Web3 = require('web3');
 function convertStatus(gethStatus) {
     switch (gethStatus) {
         case 'pending':
@@ -136,8 +136,8 @@ var Web3EthereumClient = /** @class */ (function () {
                             amount: t.value,
                             timeReceived: new Date(fullBlock.timestamp * 1000),
                             confirmations: blockHeight - block.index,
-                            block: t.blockNumber,
-                            status: t.status
+                            block: block.id,
+                            status: convertStatus(t.status)
                         }); });
                         return [2 /*return*/, {
                                 hash: fullBlock.hash,
@@ -157,7 +157,7 @@ var Web3EthereumClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.getTransactionReceipt(txid)];
                     case 1:
                         transactionReceipt = _a.sent();
-                        return [2 /*return*/, transactionReceipt.status.substring(2) == "0" ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted];
+                        return [2 /*return*/, transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted];
                 }
             });
         });
@@ -167,14 +167,16 @@ var Web3EthereumClient = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             try {
                 _this.web3.personal.unlockAccount(address, function (err, result) {
-                    if (err)
-                        reject(new Error("Error unlocking account: " + err.message));
-                    else
+                    if (err) {
+                        reject(new Error('Error unlocking account: ' + err.message));
+                    }
+                    else {
                         resolve(result);
+                    }
                 });
             }
             catch (error) {
-                reject(new Error("Error unlocking account: " + address + '.  ' + error.message));
+                reject(new Error('Error unlocking account: ' + address + '.  ' + error.message));
             }
         });
     };
@@ -183,12 +185,15 @@ var Web3EthereumClient = /** @class */ (function () {
         var transaction = from && typeof from === 'object'
             ? from
             : { from: from, to: to, value: amount, gas: 21000 };
-        if (!transaction.from)
-            throw Error("Ethereum transaction.from cannot be empty.");
-        if (!transaction.to)
-            throw Error("Ethereum transaction.to cannot be empty.");
-        if (transaction.from === '')
+        if (!transaction.from) {
+            throw Error('Ethereum transaction.from cannot be empty.');
+        }
+        if (!transaction.to) {
+            throw Error('Ethereum transaction.to cannot be empty.');
+        }
+        if (transaction.from === '') {
             transaction.from = this.web3.eth.coinbase;
+        }
         var original = Object.assign({}, transaction);
         transaction.value = transaction.value.toString();
         transaction.gasPrice = this.web3.toWei(transaction.gasPrice, 'gwei');
@@ -199,7 +204,7 @@ var Web3EthereumClient = /** @class */ (function () {
                 _this.web3.eth.sendTransaction(transaction, function (err, txid) {
                     if (err) {
                         console.log('Error sending (original)', original);
-                        reject('Error sending to ' + to + ": " + err);
+                        reject('Error sending to ' + to + ': ' + err);
                     }
                     else {
                         console.log('Sent Ethereum transaction', txid, _this.web3.eth.getTransaction(txid));
@@ -254,8 +259,9 @@ var Web3EthereumClient = /** @class */ (function () {
             //   reject(new Error("Cannot create address, not connected to client."))
             // }
             _this.web3.personal.newAccount(function (err, result) {
-                if (err)
-                    reject(new Error("Error creating address: " + err.message));
+                if (err) {
+                    reject(new Error('Error creating address: ' + err.message));
+                }
                 else {
                     console.log('Created new address', result);
                     resolve(result);
@@ -267,10 +273,12 @@ var Web3EthereumClient = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getAccounts(function (err, result) {
-                if (err)
-                    reject(new Error("Error getting accounts: " + err.message));
-                else
+                if (err) {
+                    reject(new Error('Error getting accounts: ' + err.message));
+                }
+                else {
                     resolve(result);
+                }
             });
         });
     };
@@ -278,10 +286,12 @@ var Web3EthereumClient = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getBalance(address, function (err, result) {
-                if (err)
-                    reject(new Error("Error getting balance: " + err.message));
-                else
+                if (err) {
+                    reject(new Error('Error getting balance: ' + err.message));
+                }
+                else {
                     resolve(result);
+                }
             });
         });
     };
@@ -289,10 +299,10 @@ var Web3EthereumClient = /** @class */ (function () {
     //   return getTransactionsFromRange(this.web3.eth, lastBlock, addressManager)
     // }
     Web3EthereumClient.prototype.importAddress = function (address) {
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
     };
     Web3EthereumClient.prototype.generate = function (blockCount) {
-        throw new Error("Not implemented.");
+        throw new Error('Not implemented.');
     };
     Web3EthereumClient.prototype.checkAllBalances = function () {
         var _this = this;
@@ -332,10 +342,12 @@ var Web3EthereumClient = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.web3.eth.getGasPrice(function (err, result) {
-                if (err)
+                if (err) {
                     reject(err);
-                else
+                }
+                else {
                     resolve(result);
+                }
             });
         });
     };

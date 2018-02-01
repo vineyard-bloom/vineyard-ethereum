@@ -1,7 +1,8 @@
 import { GethNode, GethNodeConfig } from './geth-node'
+import { each as promiseEach } from 'promise-each2'
+
 const child_process = require('child_process')
 const rimraf = require('rimraf')
-import { each as promiseEach } from 'promise-each2'
 const fs = require('fs')
 
 export class EthereumNetwork {
@@ -13,17 +14,17 @@ export class EthereumNetwork {
   private enodes: string[] = []
   private nodes: GethNode [] = []
 
-  constructor (config: GethNodeConfig) {
+  constructor(config: GethNodeConfig) {
     this.config = config
     this.config.tempPath = './temp/eth'
     this.config.coinbase = this.coinbase
   }
 
-  getCoinbase () {
+  getCoinbase() {
     return this.coinbase
   }
 
-  createNode () {
+  createNode() {
     const config = Object.assign({
       // bootnodes: this.enode,
       enodes: ([] as string[]).concat(this.enodes)
@@ -37,33 +38,33 @@ export class EthereumNetwork {
     return node
   }
 
-  getMainNode () {
+  getMainNode() {
     return this.mainNode
   }
 
-  resetTempDir () {
+  resetTempDir() {
     rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.
     if (!fs.existsSync(this.config.tempPath)) {
       fs.mkdirSync(this.config.tempPath)
     }
   }
 
-  initialize () {
+  initialize() {
     this.resetTempDir()
     const GenesisPath = this.config.tempPath + '/genesis.json'
     this.createGenesisFile(GenesisPath)
     this.mainNode = this.createNode()
   }
 
-  start () {
+  start() {
     return this.mainNode.start()
   }
 
-  stop () {
+  stop() {
     return promiseEach(this.nodes, (node: any) => node.stop())
   }
 
-  private createGenesisFile (path: string) {
+  private createGenesisFile(path: string) {
     const content = {
       'config': {
         'chainId': 15,
@@ -72,7 +73,7 @@ export class EthereumNetwork {
         'eip158Block': 0
       },
       'alloc': {
-        [this.coinbase]: { 'balance': '111100113120000000000052' }
+        [this.coinbase]: {'balance': '111100113120000000000052'}
       },
       'coinbase': this.coinbase,
       'difficulty': '0x20000',

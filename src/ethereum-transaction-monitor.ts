@@ -1,6 +1,6 @@
 import { each as promiseEach } from 'promise-each2'
-import { gasWei, EthereumClient, GenericEthereumManager, EthereumTransaction } from './types'
-import { getTransactions, getTransactionsFromRange } from './utility'
+import { EthereumClient, EthereumTransaction, GenericEthereumManager } from './types'
+import { getTransactions } from './utility'
 
 export class EthereumTransactionMonitor<Transaction extends EthereumTransaction> {
   private ethereumClient: EthereumClient
@@ -8,7 +8,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
   private sweepAddress: string
   private manager: GenericEthereumManager<Transaction>
 
-  constructor (model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string,
+  constructor(model: GenericEthereumManager<Transaction>, ethereumClient: EthereumClient, sweepAddress: string,
               minimumConfirmations: number = 12) {
     this.manager = model
     this.ethereumClient = ethereumClient
@@ -16,7 +16,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
     this.minimumConfirmations = minimumConfirmations
   }
 
-  processBlock (blockIndex: number): Promise<void> {
+  processBlock(blockIndex: number): Promise<void> {
     return getTransactions(this.ethereumClient, this.manager, blockIndex)
       .then(transactions => {
         console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
@@ -29,7 +29,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
       })
   }
 
-  processBlocks (blockIndex: number, endBlockNumber: number): Promise<void> {
+  processBlocks(blockIndex: number, endBlockNumber: number): Promise<void> {
     const secondPassOffset = 5
 
     if (blockIndex > endBlockNumber) {
@@ -53,7 +53,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
       )
   }
 
-  updateTransactions () {
+  updateTransactions() {
     return this.manager.getLastBlock()
       .then(lastBlock => this.ethereumClient.getBlockNumber()
         .then(newLastBlock => {
@@ -68,7 +68,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
       )
   }
 
-  private resolveTransaction (transaction: Transaction): Promise<any> {
+  private resolveTransaction(transaction: Transaction): Promise<any> {
     return this.ethereumClient.getTransaction((transaction as any).txid)
       .then((result: any) => {
         if (!result || !result.blockNumber) {
@@ -83,7 +83,7 @@ export class EthereumTransactionMonitor<Transaction extends EthereumTransaction>
       })
   }
 
-  private updatePending (newLastBlock: number): Promise<void> {
+  private updatePending(newLastBlock: number): Promise<void> {
     return this.manager.getResolvedTransactions(newLastBlock)
       .then(transactions => promiseEach(transactions, (transaction: any) => this.resolveTransaction(transaction)))
   }

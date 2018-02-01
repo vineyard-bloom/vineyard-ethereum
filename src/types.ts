@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { ReadClient, ExternalSingleTransaction as ExternalTransaction } from 'vineyard-blockchain'
+import { ExternalSingleTransaction as ExternalTransaction, ReadClient } from 'vineyard-blockchain'
 import { Bristle } from './sweep'
 
 export interface FakeBlock {

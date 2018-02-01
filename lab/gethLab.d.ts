@@ -1,6 +1,6 @@
-import { GethServer } from "./gethServer";
-import { EthereumClient } from "../src/";
-import { EthLab } from "./eth-lab";
+import { GethServer } from './gethServer';
+import { EthereumClient } from '../src/';
+import { EthLab } from './eth-lab';
 export interface GethLabConfig {
     address: string;
 }

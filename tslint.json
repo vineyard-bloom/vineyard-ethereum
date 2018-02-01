@@ -4,10 +4,7 @@
   ],
   "rules": {
     "no-unused-variable": true,
-    "curly": [
-      true,
-      "ignore-same-line"
-    ]
+    "space-before-function-paren": false
   },
   "exclude": ["node_modules"]
 }

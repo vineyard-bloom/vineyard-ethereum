@@ -1,6 +1,11 @@
 import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, TransactionStatus } from 'vineyard-blockchain/src/types';
 import { Web3EthereumClientConfig } from './ethereum-client';
 import { Block, GethTransaction, Web3TransactionReceipt } from './types';
+export interface AbiObject {
+    name: string;
+    type: string;
+    inputs: AbiObject[];
+}
 export declare class TokenClient implements ReadClient<ExternalTransaction> {
     private web3;
     private tokenContractAddress;
@@ -23,7 +28,7 @@ export declare class TokenClient implements ReadClient<ExternalTransaction> {
         value: number | undefined;
     };
     decodeMethod(data: any): {
-        name: any;
+        name: string;
         params: any;
     } | undefined;
     addAbi(abiArray: any): any[];

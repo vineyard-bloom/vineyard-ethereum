@@ -1,22 +1,20 @@
-import BigNumber from 'bignumber.js'
-import { AddressSource, Block, EthereumClient, EthereumTransaction } from './types'
-import { BlockInfo, FullBlock, ExternalSingleTransaction as ExternalTransaction } from 'vineyard-blockchain'
+import { AddressSource } from './types'
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
   private index: number = 0
 
-  constructor (addresses: string[]) {
+  constructor(addresses: string[]) {
     this.addresses = addresses
   }
 
-  generateAddress (): Promise<string> {
+  generateAddress(): Promise<string> {
     return Promise.resolve(this.addresses[this.index++])
   }
 }
 
 export class RandomAddressSource implements AddressSource {
-  generateAddress (): Promise<string> {
+  generateAddress(): Promise<string> {
     return Promise.resolve('fake-eth-address-' + Math.floor((Math.random() * 100000) + 1))
   }
 }
@@ -25,35 +23,37 @@ export class MockEth {
 
   coinbase: string
 
-  constructor () {
+  constructor() {
     this.coinbase = ''
   }
 
-  getBalance (address: any) {
+  getBalance(address: any) {
     return address.balance
   }
 
-  getBlock (blockNumber: number, blocks: any[], cb: any) {
+  getBlock(blockNumber: number, blocks: any[], cb: any) {
     return blocks[blockNumber]
   }
 
-  blockNumber (blocks: any[]) {
+  blockNumber(blocks: any[]) {
     return new Promise((resolve: any, reject: any) => {
       resolve(blocks[blocks.length - 1])
     })
   }
 
-  getTransaction (txid: string, transactions: any) {
+  getTransaction(txid: string, transactions: any) {
     return transactions[txid]
   }
 }
 
 export class MockWeb3 {
   mockEth: MockEth
-  constructor (mockEth: MockEth) {
+
+  constructor(mockEth: MockEth) {
     this.mockEth = mockEth
   }
 }
+
 /*
 export class MockEthereumClient implements EthereumClient {
   private addressSource: AddressSource

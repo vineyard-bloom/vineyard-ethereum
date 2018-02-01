@@ -3,13 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function fund(client) {
     var web3 = client;
     return new Promise(function (resolve, reject) {
-        console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), "I AM THE COINBASE BALANCE");
+        console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'I AM THE COINBASE BALANCE');
         web3.personal.unlockAccount(web3.eth.coinbase);
         web3.eth.sendTransaction({
             from: web3.eth.coinbase,
             to: web3.eth.accounts[1],
             value: web3.toWei(35)
-        }, function (err, tx) { resolve(tx); });
+        }, function (err, tx) {
+            resolve(tx);
+        });
     });
 }
 function spend(node) {

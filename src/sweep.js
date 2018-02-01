@@ -4,7 +4,7 @@ var promise_each2_1 = require("promise-each2");
 var bignumber_js_1 = require("bignumber.js");
 var token_contract_1 = require("../lab/token-contract");
 function gweiToWei(amount) {
-    return amount.times("1000000000");
+    return amount.times('1000000000');
 }
 exports.gweiToWei = gweiToWei;
 var Broom = /** @class */ (function () {
@@ -14,34 +14,6 @@ var Broom = /** @class */ (function () {
         this.client = ethereumClient;
         this.tokenContract = new token_contract_1.TokenContract(this.client);
     }
-    Broom.prototype.singleSweep = function (address) {
-        var _this = this;
-        return this.client.getBalance(address)
-            .then(function (balance) {
-            if (balance.greaterThan(_this.config.minSweepAmount)) {
-                var sendAmount_1 = _this.calculateSendAmount(balance);
-                var transaction = {
-                    from: address,
-                    to: _this.config.sweepAddress,
-                    value: sendAmount_1,
-                    gas: _this.config.gas,
-                    gasPrice: _this.config.gasPrice,
-                };
-                console.log('Sweeping address', transaction);
-                return _this.client.send(transaction)
-                    .then(function (tx) {
-                    console.log('Sweeping address succeeded', tx.hash);
-                    return _this.saveSweepRecord({
-                        from: address,
-                        to: _this.config.sweepAddress,
-                        status: 0,
-                        txid: tx.hash,
-                        amount: sendAmount_1
-                    });
-                });
-            }
-        });
-    };
     Broom.prototype.calculateSendAmount = function (amount) {
         var gasPrice = gweiToWei(new bignumber_js_1.default(this.config.gasPrice));
         var gasTotal = new bignumber_js_1.default(this.config.gas).times(gasPrice);
@@ -112,6 +84,34 @@ var Broom = /** @class */ (function () {
             return promise_each2_1.each(addresses, function (address) { return _this.gasTransaction(abi, address); });
         })
             .then(function () { return console.log('Finished Salt Gas Provider job'); });
+    };
+    Broom.prototype.singleSweep = function (address) {
+        var _this = this;
+        return this.client.getBalance(address)
+            .then(function (balance) {
+            if (balance.greaterThan(_this.config.minSweepAmount)) {
+                var sendAmount_1 = _this.calculateSendAmount(balance);
+                var transaction = {
+                    from: address,
+                    to: _this.config.sweepAddress,
+                    value: sendAmount_1,
+                    gas: _this.config.gas,
+                    gasPrice: _this.config.gasPrice
+                };
+                console.log('Sweeping address', transaction);
+                return _this.client.send(transaction)
+                    .then(function (tx) {
+                    console.log('Sweeping address succeeded', tx.hash);
+                    return _this.saveSweepRecord({
+                        from: address,
+                        to: _this.config.sweepAddress,
+                        status: 0,
+                        txid: tx.hash,
+                        amount: sendAmount_1
+                    });
+                });
+            }
+        });
     };
     return Broom;
 }());

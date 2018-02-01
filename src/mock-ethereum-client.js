@@ -22,7 +22,7 @@ var RandomAddressSource = /** @class */ (function () {
 exports.RandomAddressSource = RandomAddressSource;
 var MockEth = /** @class */ (function () {
     function MockEth() {
-        this.coinbase = "";
+        this.coinbase = '';
     }
     MockEth.prototype.getBalance = function (address) {
         return address.balance;
@@ -172,7 +172,7 @@ export class MockEthereumClient implements EthereumClient {
     }
 
     this.getActiveBlock().transactions.push(transaction)
-    
+
     return Promise.resolve(transaction)
   }
 
@@ -205,5 +205,5 @@ export class MockEthereumClient implements EthereumClient {
     return Promise.resolve(21000)
   }
 }
-*/ 
+*/
 //# sourceMappingURL=mock-ethereum-client.js.map

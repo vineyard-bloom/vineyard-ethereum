@@ -1,5 +1,6 @@
-import { TokenContract, GethNode } from '../lab'
+import { TokenContract } from '../lab'
 import { Web3EthereumClient } from '../src/ethereum-client'
+
 const config = require('./config/general-secret.json')
 
 const TestRPC = require('ethereumjs-testrpc')
@@ -13,7 +14,7 @@ const saltContractAddress = '0x6b9f85527043d105326453d664a687025354c443'
 // testrpc salt contract address
 const address = '0x3cf8390712ab180df3ebfb3cd6e43f96712c2917'
 
-const ethClient = new Web3EthereumClient({ http: ethConfig, sweepAddress: '' })
+const ethClient = new Web3EthereumClient({http: ethConfig, sweepAddress: ''})
 // const node = new GethNode()
 const tokenContract = new TokenContract(ethClient)
 
@@ -23,20 +24,20 @@ tokenContract.transfer(abi, address, ethClient.getWeb3().eth.accounts[0], ethCli
     tokenContract.getTransactionReceipt(hash).then(result => {
       console.log(result)
       tokenContract.getTotalSupply(abi, address)
-      .then(total => console.log(total))
+        .then(total => console.log(total))
 
       tokenContract.getBalanceOf(abi, address, ethClient.getWeb3().eth.accounts[0])
-      .then(result => console.log(result, ethClient.getWeb3().eth.accounts[0]))
+        .then(result => console.log(result, ethClient.getWeb3().eth.accounts[0]))
 
       tokenContract.getBalanceOf(abi, address, ethClient.getWeb3().eth.accounts[1])
-      .then(result => console.log(result, ethClient.getWeb3().eth.accounts[1]))
+        .then(result => console.log(result, ethClient.getWeb3().eth.accounts[1]))
 
       tokenContract.getBalanceOf(abi, address, ethClient.getWeb3().eth.accounts[2])
         .then(result => console.log(result, ethClient.getWeb3().eth.accounts[2]))
     })
   }).catch(e => {
-    console.error(e)
-  })
+  console.error(e)
+})
 
 // NOTE watcher flow
 // node.start().then(() => {

@@ -40,11 +40,11 @@ var Web3 = require('web3');
 var SolidityCoder = require('web3/lib/solidity/coder.js');
 var TokenClient = /** @class */ (function () {
     function TokenClient(ethereumConfig, currency, tokenContractAddress, abi) {
+        this.methodIDs = {};
         this.web3 = new Web3();
         this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
         this.tokenContractAddress = tokenContractAddress;
         this.currency = currency;
-        this.methodIDs = {};
         this.abi = this.addAbi(abi);
     }
     TokenClient.prototype.getBlockIndex = function () {
@@ -94,7 +94,7 @@ var TokenClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.getTransactionReceipt(txid)];
                     case 1:
                         transactionReceipt = _a.sent();
-                        return [2 /*return*/, transactionReceipt.status.substring(2) == "0" ? types_1.TransactionStatus.rejected : types_1.TransactionStatus.accepted];
+                        return [2 /*return*/, transactionReceipt.status.substring(2) === '0' ? types_1.TransactionStatus.rejected : types_1.TransactionStatus.accepted];
                 }
             });
         });
@@ -285,7 +285,7 @@ var TokenClient = /** @class */ (function () {
                 name: abiItem.name,
                 params: decoded.map(function (param, index) {
                     var parsedParam = param;
-                    if (abiItem.inputs[index].type.indexOf("uint") !== -1) {
+                    if (abiItem.inputs[index].type.indexOf('uint') !== -1) {
                         parsedParam = new Web3().toBigNumber(param).toString();
                     }
                     return {
@@ -302,8 +302,10 @@ var TokenClient = /** @class */ (function () {
         if (Array.isArray(abiArray)) {
             abiArray.map(function (abi) {
                 if (abi.name) {
-                    var signature = new Web3().sha3(abi.name + "(" + abi.inputs.map(function (input) { return input.type; }).join(",") + ")");
-                    if (abi.type == "event") {
+                    var signature = new Web3().sha3(abi.name + '(' + abi.inputs.map(function (input) {
+                        return input.type;
+                    }).join(',') + ')');
+                    if (abi.type === 'event') {
                         _this.methodIDs[signature.slice(2)] = abi;
                     }
                     else {
@@ -314,7 +316,7 @@ var TokenClient = /** @class */ (function () {
             return abiArray;
         }
         else {
-            throw new Error("Expected ABI array, got " + typeof abiArray);
+            throw new Error('Expected ABI array, got ' + typeof abiArray);
         }
     };
     return TokenClient;

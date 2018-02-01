@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-//more strongly typed eventually
+// more strongly typed eventually
 // export type TransactionFilter = (transaction) => Promise<boolean>
 // export type TransactionMap = (transaction) => Promise<EthereumTransaction>
 var BlockScanner = /** @class */ (function () {
@@ -13,6 +13,79 @@ var BlockScanner = /** @class */ (function () {
         this.manager = model;
         this.minimumConfirmations = minimumConfirmations;
     }
+    BlockScanner.prototype.gatherTransactions = function (block, transactions) {
+        var _this = this;
+        return this.manager.filterSaltTransactions(transactions)
+            .then(function (saltTransactions) { return _this.manager.filterAccountAddresses(saltTransactions); })
+            .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); });
+    };
+    BlockScanner.prototype.getTransactions = function (i) {
+        var _this = this;
+        return this.client.getBlock(i)
+            .then(function (block) {
+            if (!block || !block.transactions) {
+                return Promise.resolve([]);
+            }
+            return _this.gatherTransactions(block, block.transactions);
+        });
+    };
+    BlockScanner.prototype.scanBlocks = function (i, endBlockNumber) {
+        var _this = this;
+        if (i > endBlockNumber) {
+            return Promise.resolve([]);
+        }
+        return this.getTransactions(i)
+            .then(function (first) { return _this.scanBlocks(i + 1, endBlockNumber)
+            .then(function (second) { return first.concat(second); }); });
+    };
+    BlockScanner.prototype.getTransactionsFromRange = function (lastBlock, newLastBlock) {
+        return this.scanBlocks(lastBlock + 1, newLastBlock);
+    };
+    BlockScanner.prototype.processBlock = function (blockIndex) {
+        var _this = this;
+        return this.getTransactions(blockIndex)
+            .then(function (transactions) {
+            console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
+            return transactions.length === 0
+                ? Promise.resolve()
+                : promise_each2_1.each(transactions, function (tx) { return _this.manager.saveTransaction(tx, blockIndex); });
+        });
+    };
+    BlockScanner.prototype.processBlocks = function (blockIndex, endBlockNumber) {
+        var _this = this;
+        var secondPassOffset = 5;
+        if (blockIndex > endBlockNumber) {
+            return Promise.resolve();
+        }
+        return this.processBlock(blockIndex)
+            .then(function () {
+            console.log('Finished block', blockIndex);
+            return _this.manager.setLastBlock(blockIndex);
+        })
+            .then(function () {
+            if (blockIndex > secondPassOffset) {
+                return _this.processBlock(blockIndex - secondPassOffset)
+                    .then(function () {
+                    console.log('Second scan: Finished block', blockIndex - secondPassOffset);
+                    return _this.manager.setLastBlock(blockIndex);
+                });
+            }
+        })
+            .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
+    };
+    BlockScanner.prototype.updateTransactions = function () {
+        var _this = this;
+        return this.manager.getLastBlock()
+            .then(function (lastBlock) { return _this.client.getBlockNumber()
+            .then(function (newLastBlock) {
+            console.log('Updating blocks (last - current)', lastBlock, newLastBlock);
+            if (newLastBlock === lastBlock) {
+                return Promise.resolve();
+            }
+            return _this.processBlocks(lastBlock + 1, newLastBlock)
+                .then(function () { return _this.updatePending(newLastBlock - _this.minimumConfirmations); });
+        }); });
+    };
     BlockScanner.prototype.resolveTransaction = function (transaction) {
         var _this = this;
         return utility_1.isTransactionValid(this.client, transaction.txid)
@@ -41,76 +114,7 @@ var BlockScanner = /** @class */ (function () {
             console.error(e);
         });
     };
-    BlockScanner.prototype.gatherTransactions = function (block, transactions) {
-        var _this = this;
-        return this.manager.filterSaltTransactions(transactions)
-            .then(function (saltTransactions) { return _this.manager.filterAccountAddresses(saltTransactions); })
-            .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); });
-    };
-    BlockScanner.prototype.getTransactions = function (i) {
-        var _this = this;
-        return this.client.getBlock(i)
-            .then(function (block) {
-            if (!block || !block.transactions)
-                return Promise.resolve([]);
-            return _this.gatherTransactions(block, block.transactions);
-        });
-    };
-    BlockScanner.prototype.scanBlocks = function (i, endBlockNumber) {
-        var _this = this;
-        if (i > endBlockNumber)
-            return Promise.resolve([]);
-        return this.getTransactions(i)
-            .then(function (first) { return _this.scanBlocks(i + 1, endBlockNumber)
-            .then(function (second) { return first.concat(second); }); });
-    };
-    BlockScanner.prototype.getTransactionsFromRange = function (lastBlock, newLastBlock) {
-        return this.scanBlocks(lastBlock + 1, newLastBlock);
-    };
-    BlockScanner.prototype.processBlock = function (blockIndex) {
-        var _this = this;
-        return this.getTransactions(blockIndex)
-            .then(function (transactions) {
-            console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
-            return transactions.length == 0
-                ? Promise.resolve()
-                : promise_each2_1.each(transactions, function (tx) { return _this.manager.saveTransaction(tx, blockIndex); });
-        });
-    };
-    BlockScanner.prototype.processBlocks = function (blockIndex, endBlockNumber) {
-        var _this = this;
-        var secondPassOffset = 5;
-        if (blockIndex > endBlockNumber)
-            return Promise.resolve();
-        return this.processBlock(blockIndex)
-            .then(function () {
-            console.log('Finished block', blockIndex);
-            return _this.manager.setLastBlock(blockIndex);
-        })
-            .then(function () {
-            if (blockIndex > secondPassOffset) {
-                return _this.processBlock(blockIndex - secondPassOffset)
-                    .then(function () {
-                    console.log('Second scan: Finished block', blockIndex - secondPassOffset);
-                    return _this.manager.setLastBlock(blockIndex);
-                });
-            }
-        })
-            .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
-    };
-    BlockScanner.prototype.updateTransactions = function () {
-        var _this = this;
-        return this.manager.getLastBlock()
-            .then(function (lastBlock) { return _this.client.getBlockNumber()
-            .then(function (newLastBlock) {
-            console.log('Updating blocks (last - current)', lastBlock, newLastBlock);
-            if (newLastBlock == lastBlock)
-                return Promise.resolve();
-            return _this.processBlocks(lastBlock + 1, newLastBlock)
-                .then(function () { return _this.updatePending(newLastBlock - _this.minimumConfirmations); });
-        }); });
-    };
     return BlockScanner;
-}()); //end BlockScanner class
+}()); // end BlockScanner class
 exports.BlockScanner = BlockScanner;
 //# sourceMappingURL=block-scanner.js.map

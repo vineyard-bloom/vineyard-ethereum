@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_js_1 = require("bignumber.js");
 var promise_each2_1 = require("promise-each2");
 function ethToWei(amount) {
-    return amount.times(new bignumber_js_1.default("1000000000000000000"));
+    return amount.times(new bignumber_js_1.default('1000000000000000000'));
 }
 exports.ethToWei = ethToWei;
 function weiToEth(amount) {
-    return amount.dividedBy(new bignumber_js_1.default("1000000000000000000"));
+    return amount.dividedBy(new bignumber_js_1.default('1000000000000000000'));
 }
 exports.weiToEth = weiToEth;
 function checkAllBalances(web3) {
@@ -15,8 +15,8 @@ function checkAllBalances(web3) {
     var sortableBalances = [];
     for (var acctNum in web3.eth.accounts) {
         var acct = web3.eth.accounts[acctNum];
-        var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
-        sortableBalances.push({ "id": acctNum, "acct": acct, "acctBal": acctBal });
+        var acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
+        sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal });
         totalBal += parseFloat(acctBal);
     }
     var sortedBalances = sortableBalances.sort(function (a, b) {
@@ -30,12 +30,11 @@ function checkAllBalances(web3) {
     });
     for (var acctNum in sortedBalances) {
         var acct = web3.eth.accounts[acctNum];
-        console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + sortedBalances[acctNum].acctBal + " ether");
+        console.log('  eth.accounts[' + acctNum + ']: \t' + acct + ' \tbalance: ' + sortedBalances[acctNum].acctBal + ' ether');
     }
-    console.log("  Total balance: " + totalBal + " ether");
+    console.log('  Total balance: ' + totalBal + ' ether');
 }
 exports.checkAllBalances = checkAllBalances;
-;
 function createTransaction(e, block) {
     return {
         hash: e.hash,
@@ -74,8 +73,9 @@ function gatherTransactions(block, transactions, addressManager) {
 function getTransactions(client, addressManager, i) {
     return client.getBlock(i)
         .then(function (block) {
-        if (!block || !block.transactions)
+        if (!block || !block.transactions) {
             return Promise.resolve([]);
+        }
         return gatherTransactions(block, block.transactions, addressManager);
     });
 }
@@ -83,8 +83,8 @@ exports.getTransactions = getTransactions;
 function isTransactionValid(client, txid) {
     return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
         .then(function (transaction) {
-        //'0x0' == failed tx, might still be mined in block, though
-        //'0x1' == successful
+        // '0x0' == failed tx, might still be mined in block, though
+        // '0x1' == successful
         if (transaction && transaction.blockNumber && transaction.status === '0x1') {
             return Promise.resolve(true);
         }
@@ -98,8 +98,9 @@ function isTransactionValid(client, txid) {
 }
 exports.isTransactionValid = isTransactionValid;
 function scanBlocks(client, addressManager, i, endBlockNumber) {
-    if (i > endBlockNumber)
+    if (i > endBlockNumber) {
         return Promise.resolve([]);
+    }
     return getTransactions(client, addressManager, i)
         .then(function (first) { return scanBlocks(client, addressManager, i + 1, endBlockNumber)
         .then(function (second) { return first.concat(second); }); });

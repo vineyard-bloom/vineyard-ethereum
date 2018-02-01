@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { AddressManager, EthereumClient } from "./types";
+import { AddressManager, EthereumClient } from './types';
 export declare function ethToWei(amount: BigNumber): BigNumber;
 export declare function weiToEth(amount: BigNumber): BigNumber;
 export declare function checkAllBalances(web3: any): void;

@@ -31,7 +31,7 @@ export class GethNode {
   private port?: number
   private index: number
 
-  constructor (config?: GethNodeConfig, port?: number) {
+  constructor(config?: GethNodeConfig, port?: number) {
     this.config = config || {} as any
     this.index = GethNode.instanceIndex++
     this.datadir = './temp/eth/geth' + this.index
@@ -40,31 +40,31 @@ export class GethNode {
     this.config.gethPath = this.config.gethPath || 'geth'
   }
 
-  getWeb3 () {
+  getWeb3() {
     return this.client.getWeb3()
   }
 
-  getClient () {
+  getClient() {
     return this.client
   }
 
-  getKeydir () {
+  getKeydir() {
     return this.keydir
   }
 
-  startMining () {
+  startMining() {
     console.log('*** mining')
     return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase)
   }
 
-  getBootNodeFlags () {
+  getBootNodeFlags() {
     return ''
     // return this.config.bootnodes
     //   ? ' --bootnodes ' + this.config.bootnodes + ' '
     //   : ''
   }
 
-  getCommonFlags () {
+  getCommonFlags() {
     const verbosity = this.config.verbosity || 0
 
     return ' --ipcdisable --nodiscover --keystore ' + this.keydir
@@ -73,44 +73,44 @@ export class GethNode {
       + ' --networkid 101 --port=' + (30303 + this.index)
   }
 
-  getRPCFlags () {
+  getRPCFlags() {
     return ' --rpc --rpcport ' + this.port
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" '
   }
 
-  start (flags = ''): Promise<void> {
+  start(flags = ''): Promise<void> {
     console.log('Starting Geth')
     const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
     console.log('geth ' + command)
     return this.launch(command)
   }
 
-  execSync (suffix: string) {
+  execSync(suffix: string) {
     const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix
     console.log(command)
     const result = child_process.execSync(command)
     return result.toString()
   }
 
-  initialize (genesisPath: string): Promise<void> {
+  initialize(genesisPath: string): Promise<void> {
     return this.execSync('init ' + genesisPath)
   }
 
-  getNodeUrl (): string {
+  getNodeUrl(): string {
     return this.execSync('--exec admin.nodeInfo.enode console')
       .replace(/\r|\n/g, '')
       .replace('[::]', '127.0.0.1')
   }
 
-  isRunning () {
+  isRunning() {
     return this.childProcess != null
   }
 
-  isConnected () {
+  isConnected() {
     return this.client.getWeb3().isConnected()
   }
 
-  mineBlocks (blockCount: number) {
+  mineBlocks(blockCount: number) {
     console.log('Mining', blockCount, 'blocks.')
     let originalBlock: any, targetBlock: any
 
@@ -134,16 +134,16 @@ export class GethNode {
       .then(next)
   }
 
-  addPeer (enode: string) {
+  addPeer(enode: string) {
     console.log(this.index, 'admin.addPeer(' + enode + ')')
     this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
   }
 
-  listPeers () {
+  listPeers() {
     this.childProcess.stdin.write('admin.peers\n')
   }
 
-  stop () {
+  stop() {
     if (!this.childProcess) {
       return Promise.resolve()
     }
@@ -172,7 +172,7 @@ export class GethNode {
     })
   }
 
-  mine (milliseconds: number) {
+  mine(milliseconds: number) {
     console.log('Mining for ' + milliseconds + ' milliseconds.')
     let previousBlockNumber: any
     return this.startMining()
@@ -183,7 +183,8 @@ export class GethNode {
       .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + ' blocks.'))
       .then((): any => this.stop())
   }
-  private launch (flags: any) {
+
+  private launch(flags: any) {
     const childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags)
     childProcess.stdout.on('data', (data: any) => {
       console.log(this.index, 'stdout:', `${data}`)

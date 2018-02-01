@@ -36,8 +36,9 @@ var GethServer = /** @class */ (function () {
     };
     GethServer.prototype.stop = function () {
         var _this = this;
-        if (!this.childProcess)
+        if (!this.childProcess) {
             return Promise.resolve();
+        }
         return new Promise(function (resolve, reject) {
             _this.childProcess.kill();
             _this.childProcess.on('close', function (code) {

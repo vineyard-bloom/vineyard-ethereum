@@ -11,33 +11,12 @@ var EthereumTransactionMonitor = /** @class */ (function () {
         this.sweepAddress = sweepAddress;
         this.minimumConfirmations = minimumConfirmations;
     }
-    EthereumTransactionMonitor.prototype.resolveTransaction = function (transaction) {
-        var _this = this;
-        return this.ethereumClient.getTransaction(transaction.txid)
-            .then(function (result) {
-            if (!result || !result.blockNumber) {
-                console.log('Denying transaction', result.txid);
-                return _this.manager.setStatus(transaction, 2)
-                    .then(function () { return _this.manager.onDenial(transaction); });
-            }
-            else {
-                console.log('Confirming transaction', result.txid);
-                return _this.manager.setStatus(transaction, 1)
-                    .then(function () { return _this.manager.onConfirm(transaction); });
-            }
-        });
-    };
-    EthereumTransactionMonitor.prototype.updatePending = function (newLastBlock) {
-        var _this = this;
-        return this.manager.getResolvedTransactions(newLastBlock)
-            .then(function (transactions) { return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); }); });
-    };
     EthereumTransactionMonitor.prototype.processBlock = function (blockIndex) {
         var _this = this;
         return utility_1.getTransactions(this.ethereumClient, this.manager, blockIndex)
             .then(function (transactions) {
             console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
-            return transactions.length == 0
+            return transactions.length === 0
                 ? Promise.resolve()
                 : promise_each2_1.each(transactions, function (tx) {
                     console.log('Saving transaction', tx.hash);
@@ -48,8 +27,9 @@ var EthereumTransactionMonitor = /** @class */ (function () {
     EthereumTransactionMonitor.prototype.processBlocks = function (blockIndex, endBlockNumber) {
         var _this = this;
         var secondPassOffset = 5;
-        if (blockIndex > endBlockNumber)
+        if (blockIndex > endBlockNumber) {
             return Promise.resolve();
+        }
         return this.processBlock(blockIndex)
             .then(function () {
             console.log('Finished block', blockIndex);
@@ -72,11 +52,33 @@ var EthereumTransactionMonitor = /** @class */ (function () {
             .then(function (lastBlock) { return _this.ethereumClient.getBlockNumber()
             .then(function (newLastBlock) {
             console.log('Updating blocks (last - current)', lastBlock, newLastBlock);
-            if (newLastBlock == lastBlock)
+            if (newLastBlock === lastBlock) {
                 return Promise.resolve();
+            }
             return _this.processBlocks(lastBlock + 1, newLastBlock)
                 .then(function () { return _this.updatePending(newLastBlock - _this.minimumConfirmations); });
         }); });
+    };
+    EthereumTransactionMonitor.prototype.resolveTransaction = function (transaction) {
+        var _this = this;
+        return this.ethereumClient.getTransaction(transaction.txid)
+            .then(function (result) {
+            if (!result || !result.blockNumber) {
+                console.log('Denying transaction', result.txid);
+                return _this.manager.setStatus(transaction, 2)
+                    .then(function () { return _this.manager.onDenial(transaction); });
+            }
+            else {
+                console.log('Confirming transaction', result.txid);
+                return _this.manager.setStatus(transaction, 1)
+                    .then(function () { return _this.manager.onConfirm(transaction); });
+            }
+        });
+    };
+    EthereumTransactionMonitor.prototype.updatePending = function (newLastBlock) {
+        var _this = this;
+        return this.manager.getResolvedTransactions(newLastBlock)
+            .then(function (transactions) { return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); }); });
     };
     return EthereumTransactionMonitor;
 }());

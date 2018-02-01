@@ -1,4 +1,4 @@
-import { AddressSource } from "./types";
+import { AddressSource } from './types';
 export declare class PredefinedAddressSource implements AddressSource {
     private addresses;
     private index;

@@ -4,8 +4,6 @@ export declare class BlockScanner<Transaction extends EthereumTransaction> {
     private minimumConfirmations;
     private manager;
     constructor(model: any, client: EthereumClient, minimumConfirmations?: number);
-    private resolveTransaction(transaction);
-    private updatePending(newLastBlock);
     gatherTransactions(block: any, transactions: any): Promise<any[]>;
     getTransactions(i: number): Promise<any[]>;
     scanBlocks(i: number, endBlockNumber: number): Promise<any[]>;
@@ -13,4 +11,6 @@ export declare class BlockScanner<Transaction extends EthereumTransaction> {
     processBlock(blockIndex: number): Promise<void>;
     processBlocks(blockIndex: number, endBlockNumber: number): Promise<void>;
     updateTransactions(): any;
+    private resolveTransaction(transaction);
+    private updatePending(newLastBlock);
 }

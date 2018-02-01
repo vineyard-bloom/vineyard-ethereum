@@ -1,5 +1,5 @@
-import {EthLab} from "./eth-lab";
-import {EthereumTransaction} from "../src";
+import { EthLab } from './eth-lab'
+import { EthereumTransaction } from '../src'
 /*
 export class PretendEthLab {
   client: MockEthereumClient

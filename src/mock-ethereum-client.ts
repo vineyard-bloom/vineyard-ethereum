@@ -1,56 +1,56 @@
-import BigNumber from 'bignumber.js';
-import {AddressSource, Block, EthereumClient, EthereumTransaction} from "./types";
-import {BlockInfo, FullBlock, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
+import BigNumber from 'bignumber.js'
+import { AddressSource, Block, EthereumClient, EthereumTransaction } from './types'
+import { BlockInfo, FullBlock, ExternalSingleTransaction as ExternalTransaction } from 'vineyard-blockchain'
 
 export class PredefinedAddressSource implements AddressSource {
   private addresses: string[]
   private index: number = 0
 
-  constructor(addresses: string[]) {
+  constructor (addresses: string[]) {
     this.addresses = addresses
   }
 
-  generateAddress(): Promise<string> {
+  generateAddress (): Promise<string> {
     return Promise.resolve(this.addresses[this.index++])
   }
 }
 
 export class RandomAddressSource implements AddressSource {
-  generateAddress(): Promise<string> {
+  generateAddress (): Promise<string> {
     return Promise.resolve('fake-eth-address-' + Math.floor((Math.random() * 100000) + 1))
   }
 }
 
 export class MockEth {
 
-    coinbase: string
+  coinbase: string
 
-    constructor() {
-      this.coinbase = ""
-    }
+  constructor () {
+    this.coinbase = ''
+  }
 
-    getBalance(address:any) {
-      return address.balance
-    }
+  getBalance (address: any) {
+    return address.balance
+  }
 
-    getBlock(blockNumber:number, blocks: any[], cb:any) {
-      return blocks[blockNumber]
-    }
+  getBlock (blockNumber: number, blocks: any[], cb: any) {
+    return blocks[blockNumber]
+  }
 
-    blockNumber(blocks:any[]) {
-      return new Promise((resolve:any, reject: any) => {
-        resolve(blocks[blocks.length -1])
-      })
-    }
+  blockNumber (blocks: any[]) {
+    return new Promise((resolve: any, reject: any) => {
+      resolve(blocks[blocks.length - 1])
+    })
+  }
 
-    getTransaction(txid:string, transactions: any) {
-      return transactions[txid] 
-    }
+  getTransaction (txid: string, transactions: any) {
+    return transactions[txid]
+  }
 }
 
 export class MockWeb3 {
   mockEth: MockEth
-  constructor(mockEth: MockEth) {
+  constructor (mockEth: MockEth) {
     this.mockEth = mockEth
   }
 }
@@ -99,17 +99,17 @@ export class MockEthereumClient implements EthereumClient {
           index: lastBlock.number,
           timeMined: new Date(lastBlock.timestamp)
         }
-      }) 
+      })
     }
 
   getTransaction(txid: string) {
     for (var block in this.blocks) {
-      return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions) 
+      return this.mockWeb3.mockEth.getTransaction(txid, this.blocks[block].transactions)
     }
   }
 
   getNextBlockInfo(previousBlock: BlockInfo): Promise<BlockInfo> {
-    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0  
+    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
     return this.mockWeb3.mockEth.getBlock(nextBlockIndex, this.blocks, (err: any, nextBlock: Block) => {
       return {
         hash: nextBlock.hash,
@@ -178,7 +178,7 @@ export class MockEthereumClient implements EthereumClient {
     }
 
     this.getActiveBlock().transactions.push(transaction)
-    
+
     return Promise.resolve(transaction)
   }
 

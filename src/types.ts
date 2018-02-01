@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
-import {ReadClient, ExternalSingleTransaction as ExternalTransaction} from "vineyard-blockchain"
-import {Bristle} from "./sweep";
+import { ReadClient, ExternalSingleTransaction as ExternalTransaction } from 'vineyard-blockchain'
+import { Bristle } from './sweep'
 
 export interface FakeBlock {
 
@@ -46,59 +46,59 @@ export interface Block {
 }
 
 export interface AddressManager {
-  hasAddress(address: string): Promise<boolean>
+  hasAddress (address: string): Promise<boolean>
 }
 
 export interface EthereumClient extends ReadClient<ExternalTransaction> {
-  checkAllBalances(): Promise<any>
+  checkAllBalances (): Promise<any>
 
-  createAddress(): Promise<string>
+  createAddress (): Promise<string>
 
-  getBalance(address: string): Promise<any>
+  getBalance (address: string): Promise<any>
 
-  send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>
+  send (fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>
 
-  importAddress(address: string): Promise<void>
+  importAddress (address: string): Promise<void>
 
-  getAccounts(): Promise<string[]>
+  getAccounts (): Promise<string[]>
 
-  generate(blockCount: number): Promise<void>
+  generate (blockCount: number): Promise<void>
 
-  getBlock(blockIndex: number): Promise<Block>
+  getBlock (blockIndex: number): Promise<Block>
 
-  getBlockNumber(): Promise<number>
+  getBlockNumber (): Promise<number>
 
-  getCoinbase(): Promise<string>
+  getCoinbase (): Promise<string>
 
-  getTransaction(txid: string): Promise<ExternalTransaction>
+  getTransaction (txid: string): Promise<ExternalTransaction>
 
-  getGas(): Promise<BigNumber>
+  getGas (): Promise<BigNumber>
 }
 
 export interface AddressSource {
-  generateAddress(): Promise<string>
+  generateAddress (): Promise<string>
 }
 
 export const gasWei = new BigNumber('21000000000000')
 
 export interface GenericEthereumManager<EthereumTransaction> extends AddressManager {
-  saveTransaction(transaction: EthereumTransaction, blockIndex: number): Promise<any>
+  saveTransaction (transaction: EthereumTransaction, blockIndex: number): Promise<any>
 
-  getLastBlock(): Promise<number>
+  getLastBlock (): Promise<number>
 
-  setLastBlock(lastblock: number): Promise<void>
+  setLastBlock (lastblock: number): Promise<void>
 
-  getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]>
+  getResolvedTransactions (confirmedBlockNumber: number): Promise<EthereumTransaction[]>
 
-  onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction>
+  onConfirm (transaction: EthereumTransaction): Promise<EthereumTransaction>
 
-  onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction>
+  onDenial (transaction: EthereumTransaction): Promise<EthereumTransaction>
 
-  setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>
+  setStatus (transaction: EthereumTransaction, value: any): Promise<EthereumTransaction>
 }
 
 export interface SweepManager {
-  saveSweepRecord(bristle: Bristle): Promise<any>
+  saveSweepRecord (bristle: Bristle): Promise<any>
 
-  getDustyAddresses(): Promise<string[]>
+  getDustyAddresses (): Promise<string[]>
 }

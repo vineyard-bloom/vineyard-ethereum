@@ -5,9 +5,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./gethLab"));
 __export(require("./gethServer"));
-__export(require("./pretend-eth-lab"));
 __export(require("./geth-node"));
-__export(require("./double-spend"));
 __export(require("./ethereum-network"));
 __export(require("./token-contract"));
 //# sourceMappingURL=index.js.map

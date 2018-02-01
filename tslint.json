@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "tslint-config-standard"
+  ],
+  "rules": {
+    "no-unused-variable": true,
+    "curly": [
+      true,
+      "ignore-same-line"
+    ]
+  },
+  "exclude": ["node_modules"]
+}

@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { Block, EthereumClient, EthereumTransaction, Web3TransactionReceipt } from './types';
-import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, TransactionStatus } from 'vineyard-blockchain';
+import { Block, EthereumTransaction, Web3TransactionReceipt } from './types';
+import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, TransactionStatus } from 'vineyard-blockchain';
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;
 }
-export declare class Web3EthereumClient implements EthereumClient {
+export declare class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     private web3;
     constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client);
     getWeb3(): any;

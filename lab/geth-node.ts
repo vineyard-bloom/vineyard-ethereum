@@ -1,6 +1,6 @@
 import { Web3EthereumClient } from '../src'
 
-const child_process = require('child_process')
+const ChildProcess = require('child_process')
 const rimraf = require('rimraf')
 
 enum Status {
@@ -88,7 +88,7 @@ export class GethNode {
   execSync(suffix: string) {
     const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix
     console.log(command)
-    const result = child_process.execSync(command)
+    const result = ChildProcess.execSync(command)
     return result.toString()
   }
 
@@ -112,7 +112,8 @@ export class GethNode {
 
   mineBlocks(blockCount: number) {
     console.log('Mining', blockCount, 'blocks.')
-    let originalBlock: any, targetBlock: any
+    let originalBlock: any
+    let targetBlock: any
 
     const next = (): any => {
       return new Promise<void>(resolve => setTimeout(resolve, 100))
@@ -185,7 +186,7 @@ export class GethNode {
   }
 
   private launch(flags: any) {
-    const childProcess = this.childProcess = child_process.exec(this.config.gethPath + flags)
+    const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags)
     childProcess.stdout.on('data', (data: any) => {
       console.log(this.index, 'stdout:', `${data}`)
     })

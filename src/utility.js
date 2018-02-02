@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var bignumber_js_1 = require("bignumber.js");
-var promise_each2_1 = require("promise-each2");
+const bignumber_js_1 = require("bignumber.js");
+const promise_each2_1 = require("promise-each2");
 function ethToWei(amount) {
     return amount.times(new bignumber_js_1.default('1000000000000000000'));
 }
@@ -11,15 +11,15 @@ function weiToEth(amount) {
 }
 exports.weiToEth = weiToEth;
 function checkAllBalances(web3) {
-    var totalBal = 0;
-    var sortableBalances = [];
-    for (var acctNum in web3.eth.accounts) {
-        var acct = web3.eth.accounts[acctNum];
-        var acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
+    let totalBal = 0;
+    let sortableBalances = [];
+    for (let acctNum in web3.eth.accounts) {
+        let acct = web3.eth.accounts[acctNum];
+        let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
         sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal });
         totalBal += parseFloat(acctBal);
     }
-    var sortedBalances = sortableBalances.sort(function (a, b) {
+    let sortedBalances = sortableBalances.sort(function (a, b) {
         if (a.acctBal > b.acctBal) {
             return -1;
         }
@@ -28,8 +28,8 @@ function checkAllBalances(web3) {
         }
         return 0;
     });
-    for (var acctNum in sortedBalances) {
-        var acct = web3.eth.accounts[acctNum];
+    for (let acctNum in sortedBalances) {
+        let acct = web3.eth.accounts[acctNum];
         console.log('  eth.accounts[' + acctNum + ']: \t' + acct + ' \tbalance: ' + sortedBalances[acctNum].acctBal + ' ether');
     }
     console.log('  Total balance: ' + totalBal + ' ether');
@@ -52,16 +52,16 @@ function createTransaction(e, block) {
     };
 }
 function gatherTransactions(block, transactions, addressManager) {
-    var result = [];
+    let result = [];
     return promise_each2_1.each(transactions
-        .filter(function (e) { return e.to; })
-        .map(function (e) { return function () { return addressManager.hasAddress(e.to)
-        .then(function (success) {
+        .filter((e) => e.to)
+        .map((e) => () => addressManager.hasAddress(e.to)
+        .then(success => {
         if (success) {
             result.push(createTransaction(e, block));
         }
-    }); }; }))
-        .then(function () { return result; });
+    })))
+        .then(() => result);
 }
 // const bundleSize = 20
 // function getTransactionsFromBlock(block, addressManager: AddressManager): Promise<any[]> {
@@ -72,7 +72,7 @@ function gatherTransactions(block, transactions, addressManager) {
 // }
 function getTransactions(client, addressManager, i) {
     return client.getBlock(i)
-        .then(function (block) {
+        .then(block => {
         if (!block || !block.transactions) {
             return Promise.resolve([]);
         }
@@ -82,7 +82,7 @@ function getTransactions(client, addressManager, i) {
 exports.getTransactions = getTransactions;
 function isTransactionValid(client, txid) {
     return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
-        .then(function (transaction) {
+        .then(transaction => {
         // '0x0' == failed tx, might still be mined in block, though
         // '0x1' == successful
         if (transaction && transaction.blockNumber && transaction.status === '0x1') {
@@ -91,7 +91,7 @@ function isTransactionValid(client, txid) {
         else {
             return Promise.resolve(false);
         }
-    }).catch(function (e) {
+    }).catch(e => {
         console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);
         return Promise.resolve();
     });
@@ -102,8 +102,8 @@ function scanBlocks(client, addressManager, i, endBlockNumber) {
         return Promise.resolve([]);
     }
     return getTransactions(client, addressManager, i)
-        .then(function (first) { return scanBlocks(client, addressManager, i + 1, endBlockNumber)
-        .then(function (second) { return first.concat(second); }); });
+        .then(first => scanBlocks(client, addressManager, i + 1, endBlockNumber)
+        .then(second => first.concat(second)));
 }
 function getTransactionsFromRange(client, addressManager, lastBlock, newLastBlock) {
     return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);

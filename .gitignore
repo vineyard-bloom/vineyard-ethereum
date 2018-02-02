@@ -1,14 +1,12 @@
 .idea
 node_modules
 npm-*
-test/temp
 test/**/*.js
 test/**/*.d.ts
 config.json
 yarn.lock
 yarn-*
 init
-config/geth
-config/genesis.json
 .vscode
 package-lock.json
+/temp

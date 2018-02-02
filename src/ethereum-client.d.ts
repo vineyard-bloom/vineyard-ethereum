@@ -31,4 +31,5 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     getBlockNumber(): Promise<number>;
     getGas(): Promise<BigNumber>;
 }
+export declare function cloneClient(client: Web3EthereumClient): Web3EthereumClient;
 export declare type Web3Client = any;

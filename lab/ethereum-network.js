@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var geth_node_1 = require("./geth-node");
-var promise_each2_1 = require("promise-each2");
-var child_process = require('child_process');
-var rimraf = require('rimraf');
-var fs = require('fs');
-var EthereumNetwork = /** @class */ (function () {
-    function EthereumNetwork(config) {
+const geth_node_1 = require("./geth-node");
+const child_process = require('child_process');
+const rimraf = require('rimraf');
+const promise_each2_1 = require("promise-each2");
+const fs = require('fs');
+class EthereumNetwork {
+    constructor(config) {
         this.nextPort = 8546;
         this.coinbase = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba';
         this.enode = undefined;
@@ -16,54 +16,54 @@ var EthereumNetwork = /** @class */ (function () {
         this.config.tempPath = './temp/eth';
         this.config.coinbase = this.coinbase;
     }
-    EthereumNetwork.prototype.getCoinbase = function () {
+    getCoinbase() {
         return this.coinbase;
-    };
-    EthereumNetwork.prototype.createNode = function () {
-        var config = Object.assign({
+    }
+    createNode() {
+        const config = Object.assign({
             // bootnodes: this.enode,
             enodes: [].concat(this.enodes)
         }, this.config);
-        var node = new geth_node_1.GethNode(config, this.nextPort++);
-        var GenesisPath = config.tempPath + '/genesis.json';
+        const node = new geth_node_1.GethNode(config, this.nextPort++);
+        const GenesisPath = config.tempPath + '/genesis.json';
         node.initialize(GenesisPath);
         fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}');
         this.nodes.push(node);
         this.enodes.push(node.getNodeUrl());
         return node;
-    };
-    EthereumNetwork.prototype.getMainNode = function () {
+    }
+    getMainNode() {
         return this.mainNode;
-    };
-    EthereumNetwork.prototype.resetTempDir = function () {
+    }
+    resetTempDir() {
         rimraf.sync('./temp/eth'); // Right now still hard-coded because I don't trust rm -rf.
         if (!fs.existsSync(this.config.tempPath)) {
             fs.mkdirSync(this.config.tempPath);
         }
-    };
-    EthereumNetwork.prototype.initialize = function () {
+    }
+    initialize() {
         this.resetTempDir();
-        var GenesisPath = this.config.tempPath + '/genesis.json';
+        const GenesisPath = this.config.tempPath + '/genesis.json';
         this.createGenesisFile(GenesisPath);
         this.mainNode = this.createNode();
-    };
-    EthereumNetwork.prototype.start = function () {
+    }
+    start() {
         return this.mainNode.start();
-    };
-    EthereumNetwork.prototype.stop = function () {
-        return promise_each2_1.each(this.nodes, function (node) { return node.stop(); });
-    };
-    EthereumNetwork.prototype.createGenesisFile = function (path) {
-        var content = {
+    }
+    stop() {
+        return promise_each2_1.each(this.nodes, (node) => node.stop());
+    }
+    createGenesisFile(path) {
+        const content = {
             'config': {
                 'chainId': 15,
                 'homesteadBlock': 0,
                 'eip155Block': 0,
                 'eip158Block': 0
             },
-            'alloc': (_a = {},
-                _a[this.coinbase] = { 'balance': '111100113120000000000052' },
-                _a),
+            'alloc': {
+                [this.coinbase]: { 'balance': '111100113120000000000052' }
+            },
             'coinbase': this.coinbase,
             'difficulty': '0x20000',
             'extraData': '',
@@ -73,11 +73,9 @@ var EthereumNetwork = /** @class */ (function () {
             'parentHash': '0x0000000000000000000000000000000000000000000000000000000000000000',
             'timestamp': '0x00'
         };
-        var fs = require('fs');
+        const fs = require('fs');
         fs.writeFileSync(path, JSON.stringify(content), 'utf8');
-        var _a;
-    };
-    return EthereumNetwork;
-}());
+    }
+}
 exports.EthereumNetwork = EthereumNetwork;
 //# sourceMappingURL=ethereum-network.js.map

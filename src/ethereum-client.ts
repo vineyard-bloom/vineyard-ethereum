@@ -299,4 +299,8 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
   }
 }
 
+export function cloneClient(client: Web3EthereumClient): Web3EthereumClient {
+  return new Web3EthereumClient(client.getWeb3())
+}
+
 export type Web3Client = any

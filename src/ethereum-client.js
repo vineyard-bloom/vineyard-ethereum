@@ -7,39 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var utility_1 = require("./utility");
-var bignumber_js_1 = require("bignumber.js");
-var vineyard_blockchain_1 = require("vineyard-blockchain");
-var util = require('util');
-var Web3 = require('web3');
+const utility_1 = require("./utility");
+const bignumber_js_1 = require("bignumber.js");
+const vineyard_blockchain_1 = require("vineyard-blockchain");
+const util = require('util');
+const Web3 = require('web3');
 function convertStatus(gethStatus) {
     switch (gethStatus) {
         case 'pending':
@@ -52,8 +25,8 @@ function convertStatus(gethStatus) {
             throw new Error('Invalid status');
     }
 }
-var Web3EthereumClient = /** @class */ (function () {
-    function Web3EthereumClient(ethereumConfig, web3) {
+class Web3EthereumClient {
+    constructor(ethereumConfig, web3) {
         if (web3) {
             this.web3 = web3;
         }
@@ -62,13 +35,12 @@ var Web3EthereumClient = /** @class */ (function () {
             this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
         }
     }
-    Web3EthereumClient.prototype.getWeb3 = function () {
+    getWeb3() {
         return this.web3;
-    };
-    Web3EthereumClient.prototype.getBlockIndex = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getBlockNumber(function (err, blockNumber) {
+    }
+    getBlockIndex() {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getBlockNumber((err, blockNumber) => {
                 if (err) {
                     console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
                     reject(new Error(err));
@@ -78,100 +50,65 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getLastBlock = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var lastBlock, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = this.getBlock;
-                        return [4 /*yield*/, this.getBlockNumber()];
-                    case 1: return [4 /*yield*/, _a.apply(this, [_b.sent()])];
-                    case 2:
-                        lastBlock = _b.sent();
-                        return [2 /*return*/, {
-                                hash: lastBlock.hash,
-                                index: lastBlock.number,
-                                timeMined: new Date(lastBlock.timestamp * 1000),
-                                currency: 2
-                            }];
-                }
-            });
+    }
+    getLastBlock() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let lastBlock = yield this.getBlock(yield this.getBlockNumber());
+            return {
+                hash: lastBlock.hash,
+                index: lastBlock.number,
+                timeMined: new Date(lastBlock.timestamp * 1000),
+                currency: 2
+            };
         });
-    };
-    Web3EthereumClient.prototype.getNextBlockInfo = function (previousBlock) {
-        return __awaiter(this, void 0, void 0, function () {
-            var nextBlockIndex, nextBlock;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
-                        return [4 /*yield*/, this.getBlock(nextBlockIndex)];
-                    case 1:
-                        nextBlock = _a.sent();
-                        if (!nextBlock) {
-                            return [2 /*return*/, undefined];
-                        }
-                        return [2 /*return*/, {
-                                hash: nextBlock.hash,
-                                index: nextBlock.number,
-                                timeMined: new Date(nextBlock.timestamp * 1000),
-                                currency: 2
-                            }];
-                }
-            });
+    }
+    getNextBlockInfo(previousBlock) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
+            let nextBlock = yield this.getBlock(nextBlockIndex);
+            if (!nextBlock) {
+                return undefined;
+            }
+            return {
+                hash: nextBlock.hash,
+                index: nextBlock.number,
+                timeMined: new Date(nextBlock.timestamp * 1000),
+                currency: 2
+            };
         });
-    };
-    Web3EthereumClient.prototype.getFullBlock = function (block) {
-        return __awaiter(this, void 0, void 0, function () {
-            var fullBlock, blockHeight, transactions;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.getBlock(block.index)];
-                    case 1:
-                        fullBlock = _a.sent();
-                        return [4 /*yield*/, this.getBlockNumber()];
-                    case 2:
-                        blockHeight = _a.sent();
-                        transactions = fullBlock.transactions.map(function (t) { return ({
-                            txid: t.hash,
-                            to: t.to,
-                            from: t.from,
-                            amount: t.value,
-                            timeReceived: new Date(fullBlock.timestamp * 1000),
-                            confirmations: blockHeight - block.index,
-                            block: block.id,
-                            status: convertStatus(t.status)
-                        }); });
-                        return [2 /*return*/, {
-                                hash: fullBlock.hash,
-                                index: fullBlock.number,
-                                timeMined: new Date(fullBlock.timestamp * 1000),
-                                transactions: transactions
-                            }];
-                }
-            });
+    }
+    getFullBlock(block) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let fullBlock = yield this.getBlock(block.index);
+            let blockHeight = yield this.getBlockNumber();
+            const transactions = fullBlock.transactions.map(t => ({
+                txid: t.hash,
+                to: t.to,
+                from: t.from,
+                amount: t.value,
+                timeReceived: new Date(fullBlock.timestamp * 1000),
+                confirmations: blockHeight - block.index,
+                block: block.id,
+                status: convertStatus(t.status)
+            }));
+            return {
+                hash: fullBlock.hash,
+                index: fullBlock.number,
+                timeMined: new Date(fullBlock.timestamp * 1000),
+                transactions: transactions
+            };
         });
-    };
-    Web3EthereumClient.prototype.getTransactionStatus = function (txid) {
-        return __awaiter(this, void 0, void 0, function () {
-            var transactionReceipt;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.getTransactionReceipt(txid)];
-                    case 1:
-                        transactionReceipt = _a.sent();
-                        return [2 /*return*/, transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted];
-                }
-            });
+    }
+    getTransactionStatus(txid) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transactionReceipt = yield this.getTransactionReceipt(txid);
+            return transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted;
         });
-    };
-    Web3EthereumClient.prototype.unlockAccount = function (address) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
+    }
+    unlockAccount(address) {
+        return new Promise((resolve, reject) => {
             try {
-                _this.web3.personal.unlockAccount(address, function (err, result) {
+                this.web3.personal.unlockAccount(address, (err, result) => {
                     if (err) {
                         reject(new Error('Error unlocking account: ' + err.message));
                     }
@@ -184,10 +121,9 @@ var Web3EthereumClient = /** @class */ (function () {
                 reject(new Error('Error unlocking account: ' + address + '.  ' + error.message));
             }
         });
-    };
-    Web3EthereumClient.prototype.send = function (from, to, amount) {
-        var _this = this;
-        var transaction = from && typeof from === 'object'
+    }
+    send(from, to, amount) {
+        const transaction = from && typeof from === 'object'
             ? from
             : { from: from, to: to, value: amount, gas: 21000 };
         if (!transaction.from) {
@@ -199,31 +135,30 @@ var Web3EthereumClient = /** @class */ (function () {
         if (transaction.from === '') {
             transaction.from = this.web3.eth.coinbase;
         }
-        var original = Object.assign({}, transaction);
+        const original = Object.assign({}, transaction);
         transaction.value = transaction.value.toString();
         transaction.gasPrice = this.web3.toWei(transaction.gasPrice, 'gwei');
         return this.unlockAccount(transaction.from)
-            .then(function () {
+            .then(() => {
             // const hexAmount = this.web3.toHex(amount)
-            return new Promise(function (resolve, reject) {
-                _this.web3.eth.sendTransaction(transaction, function (err, txid) {
+            return new Promise((resolve, reject) => {
+                this.web3.eth.sendTransaction(transaction, (err, txid) => {
                     if (err) {
                         console.log('Error sending (original)', original);
                         reject('Error sending to ' + to + ': ' + err);
                     }
                     else {
-                        console.log('Sent Ethereum transaction', txid, _this.web3.eth.getTransaction(txid));
+                        console.log('Sent Ethereum transaction', txid, this.web3.eth.getTransaction(txid));
                         transaction.hash = txid;
                         resolve(transaction);
                     }
                 });
             });
         });
-    };
-    Web3EthereumClient.prototype.getTransactionReceipt = function (txid) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getTransactionReceipt(txid, function (err, transaction) {
+    }
+    getTransactionReceipt(txid) {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getTransactionReceipt(txid, (err, transaction) => {
                 if (err) {
                     console.error('Error querying transaction', txid, 'with message', err.message);
                     reject(err);
@@ -233,11 +168,10 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getTransaction = function (txid) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getTransaction(txid, function (err, transaction) {
+    }
+    getTransaction(txid) {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getTransaction(txid, (err, transaction) => {
                 if (err) {
                     console.error('Error querying transaction', txid, 'with message', err.message);
                     reject(err);
@@ -247,23 +181,22 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getCoinbase = function () {
+    }
+    getCoinbase() {
         return Promise.resolve(this.web3.eth.coinbase);
-    };
-    Web3EthereumClient.prototype.toWei = function (amount) {
+    }
+    toWei(amount) {
         return this.web3.toWei(amount);
-    };
-    Web3EthereumClient.prototype.fromWei = function (amount) {
+    }
+    fromWei(amount) {
         return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
-    };
-    Web3EthereumClient.prototype.createAddress = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
+    }
+    createAddress() {
+        return new Promise((resolve, reject) => {
             // if (!this.web3.isConnected()) {
             //   reject(new Error("Cannot create address, not connected to client."))
             // }
-            _this.web3.personal.newAccount(function (err, result) {
+            this.web3.personal.newAccount((err, result) => {
                 if (err) {
                     reject(new Error('Error creating address: ' + err.message));
                 }
@@ -273,11 +206,10 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getAccounts = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getAccounts(function (err, result) {
+    }
+    getAccounts() {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getAccounts((err, result) => {
                 if (err) {
                     reject(new Error('Error getting accounts: ' + err.message));
                 }
@@ -286,11 +218,10 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getBalance = function (address) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getBalance(address, function (err, result) {
+    }
+    getBalance(address) {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getBalance(address, (err, result) => {
                 if (err) {
                     reject(new Error('Error getting balance: ' + err.message));
                 }
@@ -299,26 +230,24 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
+    }
     // listAllTransactions(addressManager: AddressManager, lastBlock: number): Promise<EthereumTransaction[]> {
     //   return getTransactionsFromRange(this.web3.eth, lastBlock, addressManager)
     // }
-    Web3EthereumClient.prototype.importAddress = function (address) {
+    importAddress(address) {
         throw new Error('Not implemented');
-    };
-    Web3EthereumClient.prototype.generate = function (blockCount) {
+    }
+    generate(blockCount) {
         throw new Error('Not implemented.');
-    };
-    Web3EthereumClient.prototype.checkAllBalances = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            resolve(utility_1.checkAllBalances(_this.web3));
+    }
+    checkAllBalances() {
+        return new Promise((resolve, reject) => {
+            resolve(utility_1.checkAllBalances(this.web3));
         });
-    };
-    Web3EthereumClient.prototype.getBlock = function (blockIndex) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getBlock(blockIndex, true, function (err, block) {
+    }
+    getBlock(blockIndex) {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getBlock(blockIndex, true, (err, block) => {
                 if (err) {
                     console.error('Error processing ethereum block', blockIndex, 'with message', err.message);
                     reject(new Error(err));
@@ -328,11 +257,10 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getBlockNumber = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getBlockNumber(function (err, blockNumber) {
+    }
+    getBlockNumber() {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getBlockNumber((err, blockNumber) => {
                 if (err) {
                     console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
                     reject(new Error(err));
@@ -342,11 +270,10 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    Web3EthereumClient.prototype.getGas = function () {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.web3.eth.getGasPrice(function (err, result) {
+    }
+    getGas() {
+        return new Promise((resolve, reject) => {
+            this.web3.eth.getGasPrice((err, result) => {
                 if (err) {
                     reject(err);
                 }
@@ -355,8 +282,11 @@ var Web3EthereumClient = /** @class */ (function () {
                 }
             });
         });
-    };
-    return Web3EthereumClient;
-}());
+    }
+}
 exports.Web3EthereumClient = Web3EthereumClient;
+function cloneClient(client) {
+    return new Web3EthereumClient(client.getWeb3());
+}
+exports.cloneClient = cloneClient;
 //# sourceMappingURL=ethereum-client.js.map

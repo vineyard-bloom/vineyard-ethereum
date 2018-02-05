@@ -10,10 +10,14 @@ export declare class EthereumNetwork {
     constructor(config: GethNodeConfig);
     getCoinbase(): string;
     createNode(): GethNode;
+    createMiner(): Promise<GethNode>;
+    createControlNode(): Promise<GethNode>;
+    createMiners(count: number): Promise<GethNode[]>;
     getMainNode(): GethNode;
     resetTempDir(): void;
     initialize(): void;
-    start(): Promise<void>;
+    start(): void;
     stop(): any;
     private createGenesisFile(path);
 }
+export declare function createNetwork(config: GethNodeConfig): EthereumNetwork;

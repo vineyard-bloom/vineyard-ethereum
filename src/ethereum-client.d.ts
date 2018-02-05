@@ -1,9 +1,17 @@
 import BigNumber from 'bignumber.js';
-import { Block, EthereumTransaction, Web3TransactionReceipt } from './types';
+import { Block, EthereumTransaction, EthereumTransactionOld, Web3TransactionReceipt } from './types';
 import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, TransactionStatus } from 'vineyard-blockchain';
+export declare type Resolve2<T> = (value: T) => void;
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;
+}
+export interface SendTransaction {
+    from: string;
+    to: string;
+    value: BigNumber;
+    gas?: number;
+    gasPrice?: BigNumber;
 }
 export declare class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     private web3;
@@ -15,7 +23,7 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>>;
     getTransactionStatus(txid: string): Promise<TransactionStatus>;
     unlockAccount(address: string): Promise<boolean>;
-    send(from: string | object, to?: string, amount?: string): Promise<EthereumTransaction>;
+    send(from: string | object, to?: string, amount?: string): Promise<EthereumTransactionOld>;
     getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt>;
     getTransaction(txid: string): Promise<ExternalTransaction>;
     getCoinbase(): Promise<any>;
@@ -29,6 +37,7 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     checkAllBalances(): Promise<any>;
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
+    sendTransaction(transaction: SendTransaction): Promise<EthereumTransaction>;
     getGas(): Promise<BigNumber>;
 }
 export declare function cloneClient(client: Web3EthereumClient): Web3EthereumClient;

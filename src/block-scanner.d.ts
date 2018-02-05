@@ -1,5 +1,5 @@
-import { EthereumClient, EthereumTransaction } from './types';
-export declare class BlockScanner<Transaction extends EthereumTransaction> {
+import { EthereumClient, EthereumTransactionOld } from './types';
+export declare class BlockScanner<Transaction extends EthereumTransactionOld> {
     private client;
     private minimumConfirmations;
     private manager;

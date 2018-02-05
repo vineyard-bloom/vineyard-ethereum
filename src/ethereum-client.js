@@ -13,6 +13,52 @@ const bignumber_js_1 = require("bignumber.js");
 const vineyard_blockchain_1 = require("vineyard-blockchain");
 const util = require('util');
 const Web3 = require('web3');
+function unlockWeb3Account(web3, address) {
+    return new Promise((resolve, reject) => {
+        try {
+            web3.personal.unlockAccount(address, (err, result) => {
+                if (err) {
+                    reject(new Error('Error unlocking account: ' + err.message));
+                }
+                else {
+                    resolve(result);
+                }
+            });
+        }
+        catch (error) {
+            reject(new Error('Error unlocking account: ' + address + '.  ' + error.message));
+        }
+    });
+}
+function sendWeb3Transaction(web3, transaction) {
+    if (!transaction.from) {
+        throw Error('Ethereum transaction.from cannot be empty.');
+    }
+    if (!transaction.to) {
+        throw Error('Ethereum transaction.to cannot be empty.');
+    }
+    return unlockWeb3Account(web3, transaction.from)
+        .then(() => {
+        return new Promise((resolve, reject) => {
+            web3.eth.sendTransaction(transaction, (err, txid) => {
+                if (err) {
+                    console.log('Error sending (original)', transaction);
+                    reject('Error sending to ' + transaction.to + ': ' + err);
+                }
+                else {
+                    const txInfo = web3.eth.getTransaction(txid);
+                    console.log('Sent Ethereum transaction', txid, txInfo);
+                    const transactionResult = Object.assign({}, transaction, {
+                        hash: txid,
+                        gasPrice: txInfo.gasPrice,
+                        gas: txInfo.gas
+                    });
+                    resolve(transactionResult);
+                }
+            });
+        });
+    });
+}
 function convertStatus(gethStatus) {
     switch (gethStatus) {
         case 'pending':
@@ -270,6 +316,9 @@ class Web3EthereumClient {
                 }
             });
         });
+    }
+    sendTransaction(transaction) {
+        return sendWeb3Transaction(this.web3, transaction);
     }
     getGas() {
         return new Promise((resolve, reject) => {

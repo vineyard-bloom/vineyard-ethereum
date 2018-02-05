@@ -1,8 +1,8 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransaction, GenericEthereumManager } from './types'
+import { EthereumClient, EthereumTransactionOld, GenericEthereumManager } from './types'
 import { getTransactions } from './utility'
 
-export class EthereumTransactionMonitor<Transaction extends EthereumTransaction> {
+export class EthereumTransactionMonitor<Transaction extends EthereumTransactionOld> {
   private ethereumClient: EthereumClient
   private minimumConfirmations: number = 12
   private sweepAddress: string

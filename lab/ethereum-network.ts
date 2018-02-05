@@ -1,7 +1,8 @@
 import { GethNode, GethNodeConfig } from './geth-node'
+import { each as promiseEach } from 'promise-each2'
+
 const child_process = require('child_process')
 const rimraf = require('rimraf')
-import { each as promiseEach } from 'promise-each2'
 const fs = require('fs')
 
 export class EthereumNetwork {
@@ -13,17 +14,17 @@ export class EthereumNetwork {
   private enodes: string[] = []
   private nodes: GethNode [] = []
 
-  constructor (config: GethNodeConfig) {
+  constructor(config: GethNodeConfig) {
     this.config = config
     this.config.tempPath = './temp/eth'
     this.config.coinbase = this.coinbase
   }
 
-  getCoinbase () {
+  getCoinbase() {
     return this.coinbase
   }
 
-  createNode () {
+  createNode() {
     const config = Object.assign({
       // bootnodes: this.enode,
       enodes: ([] as string[]).concat(this.enodes)
@@ -37,33 +38,53 @@ export class EthereumNetwork {
     return node
   }
 
-  getMainNode () {
+  async createMiner(): Promise<GethNode> {
+    const node = await this.createNode()
+    node.startMining()
+    return node
+  }
+
+  async createControlNode(): Promise<GethNode> {
+    const node = await this.createNode()
+    await node.start()
+    return node
+  }
+
+  async createMiners(count: number): Promise<GethNode[]> {
+    const result = []
+    for (let i = 0; i < count; ++i) {
+      result.push(await this.createMiner())
+    }
+    return result
+  }
+
+  getMainNode() {
     return this.mainNode
   }
 
-  resetTempDir () {
+  resetTempDir() {
     rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.
     if (!fs.existsSync(this.config.tempPath)) {
       fs.mkdirSync(this.config.tempPath)
     }
   }
 
-  initialize () {
+  initialize() {
     this.resetTempDir()
     const GenesisPath = this.config.tempPath + '/genesis.json'
     this.createGenesisFile(GenesisPath)
-    this.mainNode = this.createNode()
+    // this.mainNode = this.createNode()
   }
 
-  start () {
-    return this.mainNode.start()
+  start() {
+    // return this.mainNode.start()
   }
 
-  stop () {
+  stop() {
     return promiseEach(this.nodes, (node: any) => node.stop())
   }
 
-  private createGenesisFile (path: string) {
+  private createGenesisFile(path: string) {
     const content = {
       'config': {
         'chainId': 15,
@@ -87,4 +108,10 @@ export class EthereumNetwork {
     const fs = require('fs')
     fs.writeFileSync(path, JSON.stringify(content), 'utf8')
   }
+}
+
+export function createNetwork(config: GethNodeConfig): EthereumNetwork {
+  const network = new EthereumNetwork(config)
+  network.initialize()
+  return network
 }

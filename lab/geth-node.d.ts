@@ -24,11 +24,12 @@ export declare class GethNode {
     getWeb3(): any;
     getClient(): Web3EthereumClient;
     getKeydir(): string;
-    startMining(): Promise<void>;
     getBootNodeFlags(): string;
     getCommonFlags(): string;
     getRPCFlags(): string;
+    getEtherbaseFlags(): string;
     start(flags?: string): Promise<void>;
+    startMining(): Promise<void>;
     execSync(suffix: string): any;
     initialize(genesisPath: string): Promise<void>;
     getNodeUrl(): string;
@@ -37,7 +38,6 @@ export declare class GethNode {
     mineBlocks(blockCount: number): Promise<any>;
     addPeer(enode: string): void;
     listPeers(): void;
-    stop(): Promise<{}> | Promise<void>;
-    mine(milliseconds: number): Promise<any>;
+    stop(): Promise<void> | Promise<{}>;
     private launch(flags);
 }

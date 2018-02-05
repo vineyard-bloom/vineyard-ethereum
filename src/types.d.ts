@@ -3,13 +3,21 @@ import { ExternalSingleTransaction as ExternalTransaction } from 'vineyard-block
 import { Bristle } from './sweep';
 export interface FakeBlock {
 }
-export interface EthereumTransaction {
+export interface EthereumTransactionOld {
     to: string;
     from: string;
     value: any;
     gas: number;
     hash: number;
     contractAddress?: string;
+}
+export interface EthereumTransaction {
+    to: string;
+    from: string;
+    value: any;
+    gas: number;
+    gasPrice: BigNumber;
+    hash: string;
 }
 export interface Web3TransactionReceipt {
     blockHash: string;
@@ -45,7 +53,7 @@ export interface EthereumClient {
     checkAllBalances(): Promise<any>;
     createAddress(): Promise<string>;
     getBalance(address: string): Promise<any>;
-    send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransaction>;
+    send(fromAddress: string, toAddress: string, value: string, gasPrice?: string): Promise<EthereumTransactionOld>;
     importAddress(address: string): Promise<void>;
     getAccounts(): Promise<string[]>;
     generate(blockCount: number): Promise<void>;

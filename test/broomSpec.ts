@@ -1,5 +1,5 @@
 import { Bristle } from '../src/sweep'
-import { EthereumTransaction } from '../src/types'
+import { EthereumTransactionOld } from '../src/types'
 
 export class PretendEthereumManager {
   hasAddress: boolean
@@ -8,7 +8,7 @@ export class PretendEthereumManager {
     this.hasAddress = true
   }
 
-  saveTransaction(transaction: EthereumTransaction, blockIndex: number) {
+  saveTransaction(transaction: EthereumTransactionOld, blockIndex: number) {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 
@@ -31,7 +31,7 @@ export class PretendEthereumManager {
     return Promise.resolve()
   }
 
-  getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransaction[]> {
+  getResolvedTransactions(confirmedBlockNumber: number): Promise<EthereumTransactionOld[]> {
     return Promise.resolve([{to: '', from: '', value: '', gas: 1, hash: 1}, {
       to: '',
       from: '',
@@ -41,15 +41,15 @@ export class PretendEthereumManager {
     }])
   }
 
-  onConfirm(transaction: EthereumTransaction): Promise<EthereumTransaction> {
+  onConfirm(transaction: EthereumTransactionOld): Promise<EthereumTransactionOld> {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 
-  onDenial(transaction: EthereumTransaction): Promise<EthereumTransaction> {
+  onDenial(transaction: EthereumTransactionOld): Promise<EthereumTransactionOld> {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 
-  setStatus(transaction: EthereumTransaction, value: any): Promise<EthereumTransaction> {
+  setStatus(transaction: EthereumTransactionOld, value: any): Promise<EthereumTransactionOld> {
     return Promise.resolve({to: '', from: '', value: '', gas: 1, hash: 1})
   }
 

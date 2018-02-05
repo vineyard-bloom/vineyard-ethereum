@@ -1,17 +1,10 @@
 import BigNumber from 'bignumber.js';
 import { Block, EthereumTransaction, EthereumTransactionOld, Web3TransactionReceipt } from './types';
 import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, TransactionStatus } from 'vineyard-blockchain';
-export declare type Resolve2<T> = (value: T) => void;
+import { SendTransaction, Web3Client } from './client-functions';
 export interface Web3EthereumClientConfig {
     http: string;
     sweepAddress?: string;
-}
-export interface SendTransaction {
-    from: string;
-    to: string;
-    value: BigNumber;
-    gas?: number;
-    gasPrice?: BigNumber;
 }
 export declare class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     private web3;
@@ -41,4 +34,3 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     getGas(): Promise<BigNumber>;
 }
 export declare function cloneClient(client: Web3EthereumClient): Web3EthereumClient;
-export declare type Web3Client = any;

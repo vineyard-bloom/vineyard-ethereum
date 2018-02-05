@@ -52,11 +52,6 @@ export class GethNode {
     return this.keydir
   }
 
-  startMining() {
-    console.log('*** mining')
-    return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase)
-  }
-
   getBootNodeFlags() {
     return ''
     // return this.config.bootnodes
@@ -71,6 +66,7 @@ export class GethNode {
       + ' --datadir ' + this.datadir
       + ' --verbosity ' + verbosity
       + ' --networkid 101 --port=' + (30303 + this.index)
+      + ' ' + this.getEtherbaseFlags()
   }
 
   getRPCFlags() {
@@ -78,11 +74,19 @@ export class GethNode {
       + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" '
   }
 
+  getEtherbaseFlags() {
+    return '--etherbase=' + this.config.coinbase
+  }
+
   start(flags = ''): Promise<void> {
     console.log('Starting Geth')
     const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
     console.log('geth ' + command)
     return this.launch(command)
+  }
+
+  startMining() {
+    return this.start('--mine --minerthreads=4')
   }
 
   execSync(suffix: string) {
@@ -111,19 +115,19 @@ export class GethNode {
   }
 
   mineBlocks(blockCount: number) {
-    console.log('Mining', blockCount, 'blocks.')
+    console.log('Mining', blockCount, 'blocks')
     let originalBlock: any
     let targetBlock: any
 
     const next = (): any => {
-      return new Promise<void>(resolve => setTimeout(resolve, 100))
+      return new Promise<void>(resolve => setTimeout(resolve, 50))
         .then(() => this.getClient().getBlockNumber())
         .then(blockNumber => {
           if (blockNumber < targetBlock) {
             return next()
           }
 
-          console.log('Mined ' + (blockNumber - originalBlock) + ' blocks.')
+          console.log('Mined ' + (blockNumber - originalBlock) + ' blocks')
         })
     }
 
@@ -171,18 +175,6 @@ export class GethNode {
         onStop()
       }, 500)
     })
-  }
-
-  mine(milliseconds: number) {
-    console.log('Mining for ' + milliseconds + ' milliseconds.')
-    let previousBlockNumber: any
-    return this.startMining()
-      .then(() => this.getClient().getBlockNumber())
-      .then(blockNumber => previousBlockNumber = blockNumber)
-      .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
-      .then(() => this.getClient().getBlockNumber())
-      .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + ' blocks.'))
-      .then((): any => this.stop())
   }
 
   private launch(flags: any) {

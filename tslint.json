@@ -3,6 +3,8 @@
     "tslint-config-standard"
   ],
   "rules": {
+    "curly": false,
+    "eofline": false,
     "no-unused-variable": true,
     "space-before-function-paren": false
   },

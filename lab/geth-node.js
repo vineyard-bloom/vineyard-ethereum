@@ -26,10 +26,6 @@ class GethNode {
     getKeydir() {
         return this.keydir;
     }
-    startMining() {
-        console.log('*** mining');
-        return this.start('--mine --minerthreads=4 --etherbase=' + this.config.coinbase);
-    }
     getBootNodeFlags() {
         return '';
         // return this.config.bootnodes
@@ -41,17 +37,24 @@ class GethNode {
         return ' --ipcdisable --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --verbosity ' + verbosity
-            + ' --networkid 101 --port=' + (30303 + this.index);
+            + ' --networkid 101 --port=' + (30303 + this.index)
+            + ' ' + this.getEtherbaseFlags();
     }
     getRPCFlags() {
         return ' --rpc --rpcport ' + this.port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
+    }
+    getEtherbaseFlags() {
+        return '--etherbase=' + this.config.coinbase;
     }
     start(flags = '') {
         console.log('Starting Geth');
         const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
         console.log('geth ' + command);
         return this.launch(command);
+    }
+    startMining() {
+        return this.start('--mine --minerthreads=4');
     }
     execSync(suffix) {
         const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
@@ -74,17 +77,17 @@ class GethNode {
         return this.client.getWeb3().isConnected();
     }
     mineBlocks(blockCount) {
-        console.log('Mining', blockCount, 'blocks.');
+        console.log('Mining', blockCount, 'blocks');
         let originalBlock;
         let targetBlock;
         const next = () => {
-            return new Promise(resolve => setTimeout(resolve, 100))
+            return new Promise(resolve => setTimeout(resolve, 50))
                 .then(() => this.getClient().getBlockNumber())
                 .then(blockNumber => {
                 if (blockNumber < targetBlock) {
                     return next();
                 }
-                console.log('Mined ' + (blockNumber - originalBlock) + ' blocks.');
+                console.log('Mined ' + (blockNumber - originalBlock) + ' blocks');
             });
         };
         return this.getClient().getBlockNumber()
@@ -124,17 +127,6 @@ class GethNode {
                 onStop();
             }, 500);
         });
-    }
-    mine(milliseconds) {
-        console.log('Mining for ' + milliseconds + ' milliseconds.');
-        let previousBlockNumber;
-        return this.startMining()
-            .then(() => this.getClient().getBlockNumber())
-            .then(blockNumber => previousBlockNumber = blockNumber)
-            .then(() => new Promise(resolve => setTimeout(resolve, milliseconds)))
-            .then(() => this.getClient().getBlockNumber())
-            .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + ' blocks.'))
-            .then(() => this.stop());
     }
     launch(flags) {
         const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);

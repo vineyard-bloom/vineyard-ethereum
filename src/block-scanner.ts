@@ -1,12 +1,12 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransaction } from './types'
+import { EthereumClient, EthereumTransactionOld } from './types'
 import { isTransactionValid } from './utility'
 
 // more strongly typed eventually
 // export type TransactionFilter = (transaction) => Promise<boolean>
 // export type TransactionMap = (transaction) => Promise<EthereumTransaction>
 
-export class BlockScanner<Transaction extends EthereumTransaction> {
+export class BlockScanner<Transaction extends EthereumTransactionOld> {
   private client: EthereumClient
   private minimumConfirmations: number = 13
   private manager: any

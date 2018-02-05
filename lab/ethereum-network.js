@@ -1,9 +1,17 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const geth_node_1 = require("./geth-node");
+const promise_each2_1 = require("promise-each2");
 const child_process = require('child_process');
 const rimraf = require('rimraf');
-const promise_each2_1 = require("promise-each2");
 const fs = require('fs');
 class EthereumNetwork {
     constructor(config) {
@@ -32,6 +40,29 @@ class EthereumNetwork {
         this.enodes.push(node.getNodeUrl());
         return node;
     }
+    createMiner() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const node = yield this.createNode();
+            node.startMining();
+            return node;
+        });
+    }
+    createControlNode() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const node = yield this.createNode();
+            yield node.start();
+            return node;
+        });
+    }
+    createMiners(count) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = [];
+            for (let i = 0; i < count; ++i) {
+                result.push(yield this.createMiner());
+            }
+            return result;
+        });
+    }
     getMainNode() {
         return this.mainNode;
     }
@@ -45,10 +76,10 @@ class EthereumNetwork {
         this.resetTempDir();
         const GenesisPath = this.config.tempPath + '/genesis.json';
         this.createGenesisFile(GenesisPath);
-        this.mainNode = this.createNode();
+        // this.mainNode = this.createNode()
     }
     start() {
-        return this.mainNode.start();
+        // return this.mainNode.start()
     }
     stop() {
         return promise_each2_1.each(this.nodes, (node) => node.stop());
@@ -78,4 +109,10 @@ class EthereumNetwork {
     }
 }
 exports.EthereumNetwork = EthereumNetwork;
+function createNetwork(config) {
+    const network = new EthereumNetwork(config);
+    network.initialize();
+    return network;
+}
+exports.createNetwork = createNetwork;
 //# sourceMappingURL=ethereum-network.js.map

@@ -2,8 +2,9 @@ import {
   BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve,
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
-import { Web3Client, Web3EthereumClientConfig } from './ethereum-client'
+import { Web3EthereumClientConfig } from './ethereum-client'
 import { Block, GethTransaction, Web3TransactionReceipt } from './types'
+import { Web3Client } from './client-functions'
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')

@@ -11,66 +11,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utility_1 = require("./utility");
 const bignumber_js_1 = require("bignumber.js");
 const vineyard_blockchain_1 = require("vineyard-blockchain");
+const client_functions_1 = require("./client-functions");
 const util = require('util');
 const Web3 = require('web3');
-function unlockWeb3Account(web3, address) {
-    return new Promise((resolve, reject) => {
-        try {
-            web3.personal.unlockAccount(address, (err, result) => {
-                if (err) {
-                    reject(new Error('Error unlocking account: ' + err.message));
-                }
-                else {
-                    resolve(result);
-                }
-            });
-        }
-        catch (error) {
-            reject(new Error('Error unlocking account: ' + address + '.  ' + error.message));
-        }
-    });
-}
-function sendWeb3Transaction(web3, transaction) {
-    if (!transaction.from) {
-        throw Error('Ethereum transaction.from cannot be empty.');
-    }
-    if (!transaction.to) {
-        throw Error('Ethereum transaction.to cannot be empty.');
-    }
-    return unlockWeb3Account(web3, transaction.from)
-        .then(() => {
-        return new Promise((resolve, reject) => {
-            web3.eth.sendTransaction(transaction, (err, txid) => {
-                if (err) {
-                    console.log('Error sending (original)', transaction);
-                    reject('Error sending to ' + transaction.to + ': ' + err);
-                }
-                else {
-                    const txInfo = web3.eth.getTransaction(txid);
-                    console.log('Sent Ethereum transaction', txid, txInfo);
-                    const transactionResult = Object.assign({}, transaction, {
-                        hash: txid,
-                        gasPrice: txInfo.gasPrice,
-                        gas: txInfo.gas
-                    });
-                    resolve(transactionResult);
-                }
-            });
-        });
-    });
-}
-function convertStatus(gethStatus) {
-    switch (gethStatus) {
-        case 'pending':
-            return vineyard_blockchain_1.TransactionStatus.pending;
-        case 'accepted':
-            return vineyard_blockchain_1.TransactionStatus.accepted;
-        case 'rejected':
-            return vineyard_blockchain_1.TransactionStatus.rejected;
-        default:
-            throw new Error('Invalid status');
-    }
-}
 class Web3EthereumClient {
     constructor(ethereumConfig, web3) {
         if (web3) {
@@ -135,7 +78,7 @@ class Web3EthereumClient {
                 timeReceived: new Date(fullBlock.timestamp * 1000),
                 confirmations: blockHeight - block.index,
                 block: block.id,
-                status: convertStatus(t.status)
+                status: client_functions_1.convertStatus(t.status)
             }));
             return {
                 hash: fullBlock.hash,
@@ -152,21 +95,7 @@ class Web3EthereumClient {
         });
     }
     unlockAccount(address) {
-        return new Promise((resolve, reject) => {
-            try {
-                this.web3.personal.unlockAccount(address, (err, result) => {
-                    if (err) {
-                        reject(new Error('Error unlocking account: ' + err.message));
-                    }
-                    else {
-                        resolve(result);
-                    }
-                });
-            }
-            catch (error) {
-                reject(new Error('Error unlocking account: ' + address + '.  ' + error.message));
-            }
-        });
+        return client_functions_1.unlockWeb3Account(this.web3, address);
     }
     send(from, to, amount) {
         const transaction = from && typeof from === 'object'
@@ -318,7 +247,7 @@ class Web3EthereumClient {
         });
     }
     sendTransaction(transaction) {
-        return sendWeb3Transaction(this.web3, transaction);
+        return client_functions_1.sendWeb3Transaction(this.web3, transaction);
     }
     getGas() {
         return new Promise((resolve, reject) => {

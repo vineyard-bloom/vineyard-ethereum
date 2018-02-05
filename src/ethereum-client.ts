@@ -5,8 +5,7 @@ import {
   BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve,
   TransactionStatus
 } from 'vineyard-blockchain'
-
-export type Resolve2<T> = (value: T) => void
+import { convertStatus, SendTransaction, sendWeb3Transaction, unlockWeb3Account, Web3Client } from './client-functions'
 
 const util = require('util')
 const Web3 = require('web3')
@@ -14,77 +13,6 @@ const Web3 = require('web3')
 export interface Web3EthereumClientConfig {
   http: string
   sweepAddress?: string
-}
-
-export interface SendTransaction {
-  from: string
-  to: string
-  value: BigNumber
-  gas?: number
-  gasPrice?: BigNumber
-}
-
-function unlockWeb3Account(web3: any, address: string) {
-  return new Promise((resolve: Resolve<boolean>, reject) => {
-    try {
-      web3.personal.unlockAccount(address, (err: any, result: boolean) => {
-        if (err) {
-          reject(new Error('Error unlocking account: ' + err.message))
-        } else {
-          resolve(result)
-        }
-      })
-    } catch (error) {
-      reject(new Error('Error unlocking account: ' + address + '.  ' + error.message))
-    }
-  })
-}
-
-function sendWeb3Transaction(web3: any, transaction: SendTransaction): Promise<EthereumTransaction> {
-  if (!transaction.from) {
-    throw Error('Ethereum transaction.from cannot be empty.')
-  }
-
-  if (!transaction.to) {
-    throw Error('Ethereum transaction.to cannot be empty.')
-  }
-
-  return unlockWeb3Account(web3, transaction.from)
-    .then(() => {
-      return new Promise((resolve: Resolve2<EthereumTransaction>, reject) => {
-        web3.eth.sendTransaction(transaction, (err: any, txid: string) => {
-          if (err) {
-            console.log('Error sending (original)', transaction)
-            reject('Error sending to ' + transaction.to + ': ' + err)
-          } else {
-            const txInfo = web3.eth.getTransaction(txid)
-            console.log('Sent Ethereum transaction', txid, txInfo)
-            const transactionResult = Object.assign({}, transaction, {
-              hash: txid,
-              gasPrice: txInfo.gasPrice,
-              gas: txInfo.gas
-            })
-            resolve(transactionResult)
-          }
-        })
-      })
-    })
-}
-
-function convertStatus(gethStatus: string): TransactionStatus {
-  switch (gethStatus) {
-    case 'pending':
-      return TransactionStatus.pending
-
-    case 'accepted':
-      return TransactionStatus.accepted
-
-    case 'rejected':
-      return TransactionStatus.rejected
-
-    default:
-      throw new Error('Invalid status')
-  }
 }
 
 export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
@@ -167,19 +95,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
   }
 
   unlockAccount(address: string) {
-    return new Promise((resolve: Resolve<boolean>, reject) => {
-      try {
-        this.web3.personal.unlockAccount(address, (err: any, result: boolean) => {
-          if (err) {
-            reject(new Error('Error unlocking account: ' + err.message))
-          } else {
-            resolve(result)
-          }
-        })
-      } catch (error) {
-        reject(new Error('Error unlocking account: ' + address + '.  ' + error.message))
-      }
-    })
+    return unlockWeb3Account(this.web3, address)
   }
 
   send(from: string | object, to?: string, amount?: string): Promise<EthereumTransactionOld> {
@@ -363,5 +279,3 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
 export function cloneClient(client: Web3EthereumClient): Web3EthereumClient {
   return new Web3EthereumClient(client.getWeb3())
 }
-
-export type Web3Client = any

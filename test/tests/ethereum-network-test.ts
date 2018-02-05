@@ -5,8 +5,6 @@ import BigNumber from 'bignumber.js'
 
 require('source-map-support').install()
 
-const sleep = (s: number) => new Promise(resolve => setTimeout(resolve, s * 1000))
-
 const minute = 60 * 1000
 
 describe('a local ethereum network', function () {

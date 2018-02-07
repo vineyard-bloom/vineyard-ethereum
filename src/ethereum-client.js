@@ -15,14 +15,8 @@ const client_functions_1 = require("./client-functions");
 const util = require('util');
 const Web3 = require('web3');
 class Web3EthereumClient {
-    constructor(ethereumConfig, web3) {
-        if (web3) {
-            this.web3 = web3;
-        }
-        else {
-            this.web3 = new Web3();
-            this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
-        }
+    constructor(config, web3) {
+        this.web3 = utility_1.initializeWeb3(config, web3);
     }
     getWeb3() {
         return this.web3;

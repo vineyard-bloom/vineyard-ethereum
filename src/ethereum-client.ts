@@ -1,4 +1,4 @@
-import { checkAllBalances } from './utility'
+import { checkAllBalances, initializeWeb3 } from './utility'
 import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, EthereumTransactionOld, Web3TransactionReceipt } from './types'
 import {
@@ -18,13 +18,8 @@ export interface Web3EthereumClientConfig {
 export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
   private web3: Web3Client
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
-    if (web3) {
-      this.web3 = web3
-    } else {
-      this.web3 = new Web3()
-      this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
-    }
+  constructor(config: Web3EthereumClientConfig, web3?: Web3Client) {
+    this.web3 = initializeWeb3(config, web3)
   }
 
   getWeb3() {

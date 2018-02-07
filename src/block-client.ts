@@ -1,5 +1,7 @@
 import { blockchain } from 'vineyard-blockchain'
 import { getBlock, getBlockIndex, getBlockTransactions, Web3Client } from './client-functions'
+import { initializeWeb3 } from './utility'
+import { Web3EthereumClientConfig } from './ethereum-client'
 
 export class EthereumBlockClient implements blockchain.BlockClient<blockchain.SingleTransaction> {
   private web3: Web3Client
@@ -27,4 +29,7 @@ export class EthereumBlockClient implements blockchain.BlockClient<blockchain.Si
     return getBlockTransactions(this.web3, block)
   }
 
+  static createFromConfig(config: Web3EthereumClientConfig) {
+    return new EthereumBlockClient(initializeWeb3(config))
+  }
 }

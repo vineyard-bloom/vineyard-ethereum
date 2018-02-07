@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bignumber_js_1 = require("bignumber.js");
 const promise_each2_1 = require("promise-each2");
+const Web3 = require('web3');
 function ethToWei(amount) {
     return amount.times(new bignumber_js_1.default('1000000000000000000'));
 }
@@ -109,4 +110,12 @@ function getTransactionsFromRange(client, addressManager, lastBlock, newLastBloc
     return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);
 }
 exports.getTransactionsFromRange = getTransactionsFromRange;
+function initializeWeb3(ethereumConfig, web3) {
+    if (!web3) {
+        web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
+    }
+    return web3;
+}
+exports.initializeWeb3 = initializeWeb3;
 //# sourceMappingURL=utility.js.map

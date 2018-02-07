@@ -8,7 +8,7 @@ export interface Web3EthereumClientConfig {
 }
 export declare class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     private web3;
-    constructor(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client);
+    constructor(config: Web3EthereumClientConfig, web3?: Web3Client);
     getWeb3(): any;
     getBlockIndex(): Promise<number>;
     getLastBlock(): Promise<BaseBlock>;

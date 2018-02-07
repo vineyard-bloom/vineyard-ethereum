@@ -11,4 +11,5 @@ __export(require("./mock-ethereum-client"));
 __export(require("./sweep"));
 __export(require("./block-scanner"));
 __export(require("./token-client"));
+__export(require("./block-client"));
 //# sourceMappingURL=index.js.map

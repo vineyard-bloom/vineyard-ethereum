@@ -28,18 +28,19 @@ export class Broom {
   private client: any
   private config: SweepConfig
   private tokenContract: TokenContract
+  private gasTotal: any
 
   constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any) {
     this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
     this.tokenContract = new TokenContract(this.client)
+    this.gasTotal = this.getTotalGas()
   }
 
-  calculateSendAmount(amount: any) {
-    const gasPrice = gweiToWei(new BigNumber(this.config.gasPrice))
-    const gasTotal = new BigNumber(this.config.gas).times(gasPrice)
-    return amount.minus(gasTotal)
+  getTotalGas() {
+    const totalGwei = (new BigNumber(this.config.gas)).times(new BigNumber(this.config.gasPrice))
+    return totalGwei
   }
 
   saveSweepRecord(bristle: Bristle) {
@@ -112,9 +113,9 @@ export class Broom {
 
   private singleSweep(address: any): Promise<Bristle> {
     return this.client.getBalance(address)
-      .then((balance: any) => {
-        if (balance.greaterThan(this.config.minSweepAmount)) {
-          const sendAmount = this.calculateSendAmount(balance)
+      .then((balance: any) => { // balance is a bigNumber
+        const sendAmount = balance.minus(this.gasTotal)
+        if (sendAmount.greaterThan(this.gasTotal)) {
           const transaction = {
             from: address,
             to: this.config.sweepAddress,
@@ -123,7 +124,7 @@ export class Broom {
             gasPrice: this.config.gasPrice
           }
           console.log('Sweeping address', transaction)
-          return this.client.send(transaction)
+          return this.client.sendTransaction(transaction)
             .then((tx: any) => {
               console.log('Sweeping address succeeded', tx.hash)
               return this.saveSweepRecord({
@@ -135,6 +136,7 @@ export class Broom {
               })
             })
         }
+        return Promise.resolve()
       })
   }
 }

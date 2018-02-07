@@ -141,7 +141,7 @@ export function convertStatus(gethStatus: string): TransactionStatus {
       return TransactionStatus.rejected
 
     default:
-      throw new Error('Invalid status')
+      return TransactionStatus.unknown
   }
 }
 
@@ -155,7 +155,8 @@ export async function getBlockTransactions(web3: Web3Client, block: blockchain.B
     amount: t.value,
     timeReceived: new Date(fullBlock.timestamp * 1000),
     confirmations: blockHeight - block.index,
-    status: convertStatus(t.status)
+    status: convertStatus(t.status),
+    blockIndex: block.index
   }))
   return transactions
 }

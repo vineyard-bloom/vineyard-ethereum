@@ -143,7 +143,7 @@ function convertStatus(gethStatus) {
         case 'rejected':
             return vineyard_blockchain_1.TransactionStatus.rejected;
         default:
-            throw new Error('Invalid status');
+            return vineyard_blockchain_1.TransactionStatus.unknown;
     }
 }
 exports.convertStatus = convertStatus;
@@ -158,7 +158,8 @@ function getBlockTransactions(web3, block) {
             amount: t.value,
             timeReceived: new Date(fullBlock.timestamp * 1000),
             confirmations: blockHeight - block.index,
-            status: convertStatus(t.status)
+            status: convertStatus(t.status),
+            blockIndex: block.index
         }));
         return transactions;
     });

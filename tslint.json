@@ -5,6 +5,7 @@
   "rules": {
     "curly": false,
     "eofline": false,
+    "member-ordering": false,
     "no-unused-variable": true,
     "space-before-function-paren": false
   },

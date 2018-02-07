@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_functions_1 = require("./client-functions");
+const utility_1 = require("./utility");
 class EthereumBlockClient {
     constructor(web3) {
         this.web3 = web3;
@@ -30,6 +31,9 @@ class EthereumBlockClient {
     }
     getBlockTransactions(block) {
         return client_functions_1.getBlockTransactions(this.web3, block);
+    }
+    static createFromConfig(config) {
+        return new EthereumBlockClient(utility_1.initializeWeb3(config));
     }
 }
 exports.EthereumBlockClient = EthereumBlockClient;

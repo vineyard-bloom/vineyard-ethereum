@@ -1,6 +1,9 @@
 import BigNumber from 'bignumber.js'
 import { each as promiseEach } from 'promise-each2'
 import { AddressManager, EthereumClient } from './types'
+import { Web3Client } from './client-functions'
+import { Web3EthereumClientConfig } from './ethereum-client'
+const Web3 = require('web3')
 
 export function ethToWei(amount: BigNumber) {
   return amount.times(new BigNumber('1000000000000000000'))
@@ -16,7 +19,7 @@ export function checkAllBalances(web3: any) {
   for (let acctNum in web3.eth.accounts) {
     let acct = web3.eth.accounts[acctNum]
     let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether')
-    sortableBalances.push({'id': acctNum, 'acct': acct, 'acctBal': acctBal})
+    sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal })
     totalBal += parseFloat(acctBal)
   }
   let sortedBalances = sortableBalances.sort(function (a, b) {
@@ -114,4 +117,12 @@ function scanBlocks(client: EthereumClient, addressManager: AddressManager, i: n
 
 export function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock: any, newLastBlock: any) {
   return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock)
+}
+
+export function initializeWeb3(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client) {
+  if (!web3) {
+    web3 = new Web3()
+    web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http))
+  }
+  return web3
 }

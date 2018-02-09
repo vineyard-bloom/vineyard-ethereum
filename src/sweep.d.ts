@@ -1,4 +1,5 @@
 import { SweepManager } from './types';
+import BigNumber from 'bignumber.js';
 export interface Bristle {
     from: string;
     to: string;
@@ -19,8 +20,9 @@ export declare class Broom {
     private client;
     private config;
     private tokenContract;
+    private gasTotal;
     constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any);
-    calculateSendAmount(amount: any): any;
+    getTotalGas(): BigNumber;
     saveSweepRecord(bristle: Bristle): Promise<any>;
     sweep(): Promise<void>;
     tokenSweep(abi: any): Promise<void>;

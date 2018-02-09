@@ -13,11 +13,11 @@ class Broom {
         this.manager = ethereumManager;
         this.client = ethereumClient;
         this.tokenContract = new token_contract_1.TokenContract(this.client);
+        this.gasTotal = this.getTotalGas();
     }
-    calculateSendAmount(amount) {
-        const gasPrice = gweiToWei(new bignumber_js_1.default(this.config.gasPrice));
-        const gasTotal = new bignumber_js_1.default(this.config.gas).times(gasPrice);
-        return amount.minus(gasTotal);
+    getTotalGas() {
+        const totalGwei = (new bignumber_js_1.default(this.config.gas)).times(new bignumber_js_1.default(this.config.gasPrice));
+        return totalGwei;
     }
     saveSweepRecord(bristle) {
         return this.manager.saveSweepRecord(bristle);
@@ -82,8 +82,8 @@ class Broom {
     singleSweep(address) {
         return this.client.getBalance(address)
             .then((balance) => {
-            if (balance.greaterThan(this.config.minSweepAmount)) {
-                const sendAmount = this.calculateSendAmount(balance);
+            const sendAmount = balance.minus(this.gasTotal);
+            if (sendAmount.greaterThan(this.gasTotal)) {
                 const transaction = {
                     from: address,
                     to: this.config.sweepAddress,
@@ -92,7 +92,7 @@ class Broom {
                     gasPrice: this.config.gasPrice
                 };
                 console.log('Sweeping address', transaction);
-                return this.client.send(transaction)
+                return this.client.sendTransaction(transaction)
                     .then((tx) => {
                     console.log('Sweeping address succeeded', tx.hash);
                     return this.saveSweepRecord({
@@ -104,6 +104,7 @@ class Broom {
                     });
                 });
             }
+            return Promise.resolve();
         });
     }
 }

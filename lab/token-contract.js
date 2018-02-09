@@ -1,19 +1,46 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const contract = require('truffle-contract');
+const abii = require('../test/res/abi.json');
 class TokenContract {
-    constructor(client) {
+    constructor(client, abi) {
         this.client = client;
         this.web3 = client.getWeb3();
+        // this.abi = abi ? abi : require('../test/res/abi.json') // this is SALT abi for now
+        // TODO run truffle compile to build contract abi
+        this.abi = abii;
+        this.contract = contract(this.abi);
+        this.contract.setProvider(this.web3.currentProvider || 'https://localhost:8545');
     }
     compileContract(source) {
+        // deprecated
         return this.web3.eth.compile.solidity(source);
     }
-    loadContract(abi) {
+    getContract(abi) {
         return Promise.resolve(this.web3.eth.contract(abi));
     }
+    loadContract(address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.client.unlockAccount(address);
+            try {
+                const instance = yield this.contract.new({ from: address, gas: 4712388 });
+                return instance;
+            }
+            catch (err) {
+                console.error('Error loading contract: ', err);
+            }
+        });
+    }
     getTotalSupply(abi, address) {
-        return this.loadContract(abi)
+        return this.getContract(abi)
             .then(contract => {
             return Promise.resolve(contract.at(address))
                 .then(instance => {
@@ -22,7 +49,7 @@ class TokenContract {
         });
     }
     getData(abi, address, from) {
-        return this.loadContract(abi)
+        return this.getContract(abi)
             .then(contract => {
             return Promise.resolve(contract.at(address))
                 .then(instance => {
@@ -33,7 +60,7 @@ class TokenContract {
     getBalanceOf(abi, address, from) {
         // address = token contract address
         // func = token contract method to call
-        return this.loadContract(abi)
+        return this.getContract(abi)
             .then(contract => {
             return Promise.resolve(contract.at(address))
                 .then(instance => {
@@ -44,7 +71,7 @@ class TokenContract {
     }
     transfer(abi, address, from, to, value) {
         // address = token contract address
-        return this.loadContract(abi)
+        return this.getContract(abi)
             .then(contract => {
             return Promise.resolve(contract.at(address))
                 .then(instance => {

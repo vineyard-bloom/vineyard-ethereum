@@ -1,26 +1,46 @@
 import { Web3EthereumClient } from '../src'
 
 const contract = require('truffle-contract')
+const abii = require('../test/res/abi.json')
 
 export class TokenContract {
   private client: Web3EthereumClient
   private web3: any
+  private abi: any
+  private contract: any
 
-  constructor(client: Web3EthereumClient) {
+  constructor(client: Web3EthereumClient, abi?: any) {
     this.client = client
     this.web3 = client.getWeb3()
+    // this.abi = abi ? abi : require('../test/res/abi.json') // this is SALT abi for now
+    // TODO run truffle compile to build contract abi
+    this.abi = abii
+
+    this.contract = contract(this.abi)
+    this.contract.setProvider(this.web3.currentProvider || 'https://localhost:8545')
   }
 
   compileContract(source: any) {
+    // deprecated
     return this.web3.eth.compile.solidity(source)
   }
 
-  loadContract(abi: any) {
+  getContract(abi) {
     return Promise.resolve(this.web3.eth.contract(abi))
   }
 
+  async loadContract(address: string) {
+    await this.client.unlockAccount(address)
+    try {
+      const instance = await this.contract.new({ from: address, gas: 4712388 })
+      return instance
+    } catch (err) {
+      console.error('Error loading contract: ', err)
+    }
+  }
+
   getTotalSupply(abi: any, address: string) {
-    return this.loadContract(abi)
+    return this.getContract(abi)
       .then(contract => {
         return Promise.resolve(contract.at(address))
           .then(instance => {
@@ -30,7 +50,7 @@ export class TokenContract {
   }
 
   getData(abi: any, address: string, from: string) {
-    return this.loadContract(abi)
+    return this.getContract(abi)
       .then(contract => {
         return Promise.resolve(contract.at(address))
           .then(instance => {
@@ -42,7 +62,7 @@ export class TokenContract {
   getBalanceOf(abi: any, address: string, from: string) {
     // address = token contract address
     // func = token contract method to call
-    return this.loadContract(abi)
+    return this.getContract(abi)
       .then(contract => {
         return Promise.resolve(contract.at(address))
           .then(instance => {
@@ -54,7 +74,7 @@ export class TokenContract {
 
   transfer(abi: any, address: string, from: string, to: string, value: any) {
     // address = token contract address
-    return this.loadContract(abi)
+    return this.getContract(abi)
       .then(contract => {
         return Promise.resolve(contract.at(address))
           .then(instance => {

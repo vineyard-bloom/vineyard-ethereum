@@ -19,4 +19,5 @@ export declare function getTransactionReceipt(web3: Web3Client, txid: string): P
 export declare function getTransactionStatus(web3: Web3Client, txid: string): Promise<TransactionStatus>;
 export declare function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined>;
 export declare function convertStatus(gethStatus: string): TransactionStatus;
+export declare function getChecksum(web3: Web3Client, address?: string): string | undefined;
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>>;

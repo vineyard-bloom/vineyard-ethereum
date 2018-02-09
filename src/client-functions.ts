@@ -65,7 +65,7 @@ export function getBlock(web3: Web3Client, blockIndex: number): Promise<Block> {
   return new Promise((resolve: Resolve<Block>, reject) => {
     web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
       if (err) {
-        console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
+        // console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
         reject(new Error(err))
       } else {
         resolve(block)
@@ -78,7 +78,7 @@ export function getBlockIndex(web3: Web3Client): Promise<number> {
   return new Promise((resolve: Resolve<number>, reject) => {
     web3.eth.getBlockNumber((err: any, blockNumber: number) => {
       if (err) {
-        console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
+        // console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
         reject(new Error(err))
       } else {
         resolve(blockNumber)
@@ -101,7 +101,7 @@ export function getTransactionReceipt(web3: Web3Client, txid: string): Promise<W
   return new Promise((resolve: Resolve<Web3TransactionReceipt>, reject) => {
     web3.eth.getTransactionReceipt(txid, (err: any, transaction: Web3TransactionReceipt) => {
       if (err) {
-        console.error('Error querying transaction', txid, 'with message', err.message)
+        // console.error('Error querying transaction', txid, 'with message', err.message)
         reject(err)
       } else {
         resolve(transaction)
@@ -145,13 +145,19 @@ export function convertStatus(gethStatus: string): TransactionStatus {
   }
 }
 
+export function getChecksum(web3: Web3Client, address?: string): string | undefined {
+  return address === undefined
+    ? undefined
+    : web3.utils.toChecksumAddress(address)
+}
+
 export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>> {
   let block = await getBlock(web3, blockIndex)
   let blockHeight = await getBlockIndex(web3)
   const transactions = block.transactions.map(t => ({
     txid: t.hash,
-    to: t.to,
-    from: t.from,
+    to: getChecksum(web3, t.to),
+    from: getChecksum(web3, t.from),
     amount: t.value,
     timeReceived: new Date(block.timestamp * 1000),
     confirmations: blockHeight - blockIndex,

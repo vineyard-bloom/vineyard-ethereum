@@ -61,7 +61,7 @@ function getBlock(web3, blockIndex) {
     return new Promise((resolve, reject) => {
         web3.eth.getBlock(blockIndex, true, (err, block) => {
             if (err) {
-                console.error('Error processing ethereum block', blockIndex, 'with message', err.message);
+                // console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
                 reject(new Error(err));
             }
             else {
@@ -75,7 +75,7 @@ function getBlockIndex(web3) {
     return new Promise((resolve, reject) => {
         web3.eth.getBlockNumber((err, blockNumber) => {
             if (err) {
-                console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
+                // console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
                 reject(new Error(err));
             }
             else {
@@ -101,7 +101,7 @@ function getTransactionReceipt(web3, txid) {
     return new Promise((resolve, reject) => {
         web3.eth.getTransactionReceipt(txid, (err, transaction) => {
             if (err) {
-                console.error('Error querying transaction', txid, 'with message', err.message);
+                // console.error('Error querying transaction', txid, 'with message', err.message)
                 reject(err);
             }
             else {
@@ -147,14 +147,20 @@ function convertStatus(gethStatus) {
     }
 }
 exports.convertStatus = convertStatus;
+function getChecksum(web3, address) {
+    return address === undefined
+        ? undefined
+        : web3.utils.toChecksumAddress(address);
+}
+exports.getChecksum = getChecksum;
 function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         let block = yield getBlock(web3, blockIndex);
         let blockHeight = yield getBlockIndex(web3);
         const transactions = block.transactions.map(t => ({
             txid: t.hash,
-            to: t.to,
-            from: t.from,
+            to: getChecksum(web3, t.to),
+            from: getChecksum(web3, t.from),
             amount: t.value,
             timeReceived: new Date(block.timestamp * 1000),
             confirmations: blockHeight - blockIndex,

@@ -6,6 +6,7 @@ export declare class EthereumBlockClient implements blockchain.BlockClient<block
     constructor(web3: Web3Client);
     getBlockIndex(): Promise<number>;
     getBlockInfo(index: number): Promise<blockchain.Block | undefined>;
-    getBlockTransactions(block: blockchain.Block): Promise<blockchain.SingleTransaction[]>;
+    getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction> | undefined>;
+    getBlockTransactions(blockIndex: number): Promise<blockchain.SingleTransaction[]>;
     static createFromConfig(config: Web3EthereumClientConfig): EthereumBlockClient;
 }

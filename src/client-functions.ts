@@ -146,9 +146,9 @@ export function convertStatus(gethStatus: string): TransactionStatus {
 }
 
 export function getChecksum(web3: Web3Client, address?: string): string | undefined {
-  return address === undefined
-    ? undefined
-    : web3.utils.toChecksumAddress(address)
+  return typeof address === 'string'
+    ? web3.toChecksumAddress(address)
+    : undefined
 }
 
 export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>> {

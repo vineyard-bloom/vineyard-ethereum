@@ -148,9 +148,9 @@ function convertStatus(gethStatus) {
 }
 exports.convertStatus = convertStatus;
 function getChecksum(web3, address) {
-    return address === undefined
-        ? undefined
-        : web3.utils.toChecksumAddress(address);
+    return typeof address === 'string'
+        ? web3.toChecksumAddress(address)
+        : undefined;
 }
 exports.getChecksum = getChecksum;
 function getFullBlock(web3, blockIndex) {

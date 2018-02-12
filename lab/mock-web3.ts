@@ -37,24 +37,51 @@ export class MockEth {
     const debits = debitTxs.reduce((acc, tx) => tx.value + acc, 0)
     return credits - debits
   }
-  // TODO: Check which functions are async or not
+
   getBlock(hashOrNumber: string, includeTxs: boolean, callback: Function) {
-    const getByHash = this.transactions.filter(tx => tx.hash === hashOrNumber)
-    const getByNumber = this.transactions.filter(tx => tx.block === hashOrNumber)
+    let hash, number
+    const getByHash = this.transactions.find(tx => tx.hash === hashOrNumber)
+    const getByNumber = this.transactions.find(tx => tx.block === hashOrNumber)
     const blockTransactions = getByHash || getByNumber
+    if (!getByHash) {
+      number = hashOrNumber
+    }
+    if(!getByNumber) {
+      hash = hashOrNumber
+    }
+    const block = {
+      hash: hash || randomTxHash(),
+      number: number || randomBlockNumber(),
+      timestamp: Date.now().toString(),
+      transactions: blockTransactions
+    }
+    return callback(null, block)
   }
 
   getBlockNumber (callback: Function) {
     return callback(null, randomBlockNumber())
   }
 
-  getTransaction (hash: string) {
-    const tx = this.transactions.filter(tx => tx.hash === hash)
+  getTransaction (hash: string): GethTransaction {
+    const tx = this.transactions.find(tx => tx.hash === hash)
     return tx || randomTx()
   }
 
   getTransactionReceipt (txHash: string, callback: Function) {
-
+    const getTx = this.getTransaction(txHash)
+    const receipt = {
+      blockHash: randomTxHash(),
+      blockNumber: getTx.block,
+      transactionHash: txHash,
+      transactionIndex: Math.floor(Math.random() * 10),
+      from: getTx.from,
+      to: getTx.to,
+      cumulativeGasUsed: Math.floor(Math.random() * 100000),
+      gasUsed: Math.floor(Math.random() * 10000),
+      contractAddress: randomAddress(),
+      logs: '',
+      status: '0x1'
+    }
   }
 
   sendTransaction(transaction: EthereumTransaction, callback: Function) {

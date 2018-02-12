@@ -1,22 +1,24 @@
 import { Web3EthereumClient } from '../src'
 
 const contract = require('truffle-contract')
-const abii = require('../test/res/abi.json')
+// this is SALT abi
+const defaultAbi = require('../test/res/abi.json')
 
 export class TokenContract {
   private client: Web3EthereumClient
   private web3: any
   private abi: any
   private contract: any
+  private rawCompiledContract: any
 
   constructor(client: Web3EthereumClient, abi?: any) {
     this.client = client
     this.web3 = client.getWeb3()
-    // this.abi = abi ? abi : require('../test/res/abi.json') // this is SALT abi for now
     // TODO run truffle compile to build contract abi
-    this.abi = abii
-
-    this.contract = contract(this.abi)
+    this.rawCompiledContract = defaultAbi // this is the fully compiled smart contract
+    this.abi = abi ? abi : defaultAbi
+    // this is for deploying a contract locally in test environment
+    this.contract = contract(this.rawCompiledContract)
     this.contract.setProvider(this.web3.currentProvider || 'https://localhost:8545')
   }
 
@@ -25,10 +27,11 @@ export class TokenContract {
     return this.web3.eth.compile.solidity(source)
   }
 
-  getContract(abi) {
+  getContract(abi: any) {
     return Promise.resolve(this.web3.eth.contract(abi))
   }
 
+  // this is for unit testing
   async loadContract(address: string) {
     await this.client.unlockAccount(address)
     try {
@@ -67,7 +70,10 @@ export class TokenContract {
         return Promise.resolve(contract.at(address))
           .then(instance => {
             // last param is total tx object
-            return instance.balanceOf.call(from)
+            return Promise.resolve(instance.balanceOf.call(from)) // balanceOf is contract specific, make dynamic
+          })
+          .catch(e => {
+            console.error('Error getting balance of: ', e.message)
           })
       })
   }
@@ -79,12 +85,12 @@ export class TokenContract {
         return Promise.resolve(contract.at(address))
           .then(instance => {
             // this.watchContract(instance, from)
-            return Promise.resolve(instance.transfer.sendTransaction(to, value, {from: from, gas: 4712388}))
+            return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
               .then(result => {
-                console.log(result)
+                console.log('Token transfer success:', result)
                 return result
               }).catch(e => {
-                console.error(e)
+                console.error('Token transfer error: ', e.message)
               })
           })
       })

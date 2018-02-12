@@ -35,7 +35,7 @@ class Broom {
         console.log('Starting Token sweep');
         return this.manager.getDustyAddresses()
             .then(addresses => {
-            console.log('Dusty addresses', addresses.length, addresses);
+            console.log('Dusty token addresses', addresses.length, addresses);
             return promise_each2_1.each(addresses, (address) => this.tokenSingleSweep(abi, address));
         })
             .then(() => console.log('Finished Token sweep'));
@@ -44,17 +44,31 @@ class Broom {
         return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
             .then(balance => {
             console.log('Sweeping address', address);
-            return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
-                .then(tx => {
-                console.log('Sweeping address succeeded', tx.hash);
-                return this.saveSweepRecord({
-                    from: address,
-                    to: this.config.sweepAddress,
-                    status: 0,
-                    txid: tx.hash,
-                    amount: balance
+            return this.client.unlockAccount(address).then(() => {
+                return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.toNumber())
+                    .then(tx => {
+                    console.log('Sweeping address succeeded', tx);
+                    return this.saveSweepRecord({
+                        from: address,
+                        to: this.config.sweepAddress,
+                        status: 0,
+                        txid: tx,
+                        amount: balance
+                    });
+                })
+                    .catch(e => {
+                    console.error('Error sweeping token: ', e.message);
+                    return new Error(e);
                 });
+            })
+                .catch(e => {
+                console.error('Error getting token address balance: ', e.message);
+                return new Error(e);
             });
+        })
+            .catch(e => {
+            console.error('Error unlocking address in token sweep: ', e.message);
+            return new Error(e);
         });
     }
     needsGas(abi, address) {

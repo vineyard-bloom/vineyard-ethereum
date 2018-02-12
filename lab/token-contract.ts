@@ -1,8 +1,8 @@
 import { Web3EthereumClient } from '../src'
 
 const contract = require('truffle-contract')
-// this is SALT abi
-const defaultAbi = require('../test/res/abi.json')
+// this is SALT smart contract - artifact of running truffle-compile
+const saltCompiledContract = require('../test/res/compiled-salt-contract.json')
 
 export class TokenContract {
   private client: Web3EthereumClient
@@ -15,8 +15,8 @@ export class TokenContract {
     this.client = client
     this.web3 = client.getWeb3()
     // TODO run truffle compile to build contract abi
-    this.rawCompiledContract = defaultAbi // this is the fully compiled smart contract
-    this.abi = abi ? abi : defaultAbi
+    this.rawCompiledContract = saltCompiledContract
+    this.abi = abi ? abi : this.rawCompiledContract.abi
     // this is for deploying a contract locally in test environment
     this.contract = contract(this.rawCompiledContract)
     this.contract.setProvider(this.web3.currentProvider || 'https://localhost:8545')

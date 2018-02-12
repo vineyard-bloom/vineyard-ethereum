@@ -1,5 +1,5 @@
 import { each as promiseEach } from 'promise-each2'
-import { SweepManager } from './types'
+import { SweepManager, EthereumTransaction } from './types'
 import BigNumber from 'bignumber.js'
 import { TokenContract } from '../lab/token-contract'
 
@@ -16,7 +16,8 @@ export interface SweepConfig {
   minSweepAmount: any
   gas: any
   gasPrice: any
-  tokenContractAddress: string
+  tokenContractAddress: string,
+  hotWallet: string
 }
 
 export function gweiToWei(amount: any) {
@@ -57,8 +58,9 @@ export class Broom {
       .then(() => console.log('Finished Ethereum sweep'))
   }
 
-  tokenSweep(abi: any) {
+  async tokenSweep(abi: any) {
     console.log('Starting Token sweep')
+    await this.provideGas(abi)
     return this.manager.getDustyAddresses()
       .then(addresses => {
         console.log('Dusty token addresses', addresses.length, addresses)
@@ -88,7 +90,7 @@ export class Broom {
               return new Error(e)
             })
         })
-        .catch(e => {
+        .catch((e: any) => {
           console.error('Error getting token address balance: ', e.message)
           return new Error(e)
         })
@@ -110,19 +112,28 @@ export class Broom {
     return this.needsGas(abi, address)
       .then(gasLess => {
         if (gasLess) {
-          return this.client.send(address, this.config.tokenContractAddress, 0.0003)
+          const tx = {
+            from: this.config.hotWallet,
+            to: address,
+            value: this.client.toWei(0.0003),
+            gas: this.config.gas,
+            gasPrice: this.config.gasPrice
+          }
+          return this.client.sendTransaction(tx).then((result: EthereumTransaction) => {
+            this.manager.saveGasTransaction({ address: result.to, txid: result.hash})
+          })
         }
       })
   }
 
   provideGas(abi: any) {
-    console.log('Starting Salt Gas Provider')
+    console.log('Starting Token Gas Provider')
     return this.manager.getDustyAddresses()
       .then(addresses => {
         console.log('Dusty addresses', addresses.length, addresses)
         return promiseEach(addresses, (address: string) => this.gasTransaction(abi, address))
       })
-      .then(() => console.log('Finished Salt Gas Provider job'))
+      .then(() => console.log('Finished Token Gas Provider job'))
   }
 
   private singleSweep(address: any): Promise<Bristle> {

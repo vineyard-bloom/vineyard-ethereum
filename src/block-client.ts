@@ -1,5 +1,5 @@
 import { blockchain } from 'vineyard-blockchain'
-import { getBlock, getBlockIndex, getBlockTransactions, Web3Client } from './client-functions'
+import { getBlock, getBlockIndex, getFullBlock, Web3Client } from './client-functions'
 import { initializeWeb3 } from './utility'
 import { Web3EthereumClientConfig } from './ethereum-client'
 
@@ -25,8 +25,15 @@ export class EthereumBlockClient implements blockchain.BlockClient<blockchain.Si
       : undefined
   }
 
-  getBlockTransactions(block: blockchain.Block): Promise<blockchain.SingleTransaction[]> {
-    return getBlockTransactions(this.web3, block)
+  getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction> | undefined> {
+    return getFullBlock(this.web3, blockIndex)
+  }
+
+  async getBlockTransactions(blockIndex: number): Promise<blockchain.SingleTransaction[]> {
+    const block = await getFullBlock(this.web3, blockIndex)
+    return block
+      ? block.transactions
+      : []
   }
 
   static createFromConfig(config: Web3EthereumClientConfig) {

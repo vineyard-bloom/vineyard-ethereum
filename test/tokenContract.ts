@@ -15,11 +15,11 @@ const saltContractAddress = '0x6b9f85527043d105326453d664a687025354c443'
 // testrpc salt contract address
 const address = '0x3cf8390712ab180df3ebfb3cd6e43f96712c2917'
 
-const ethClient = new Web3EthereumClient({http: ethConfig, sweepAddress: ''})
+const ethClient = new Web3EthereumClient({ http: ethConfig, sweepAddress: '' })
 // const node = new GethNode()
 const tokenContract = new TokenContract(ethClient, abi)
 
-async function fundNewAddress(){
+async function fundNewAddress() {
   const coinbase = ethClient.getWeb3().eth.coinbase
   const balance = await ethClient.getBalance(ethClient.getWeb3().eth.accounts[0])
   const coinbaseBalance = await ethClient.getBalance(coinbase)
@@ -33,7 +33,7 @@ async function fundNewAddress(){
   })
   return tx
 }
-async function loadContract(){
+async function loadContract() {
   const result = await fundNewAddress()
   const instance = await tokenContract.loadContract(ethClient.getWeb3().eth.accounts[0])
   return instance

@@ -9,15 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const contract = require('truffle-contract');
-const abii = require('../test/res/abi.json');
+// this is SALT abi
+const defaultAbi = require('../test/res/abi.json');
 class TokenContract {
     constructor(client, abi) {
         this.client = client;
         this.web3 = client.getWeb3();
-        // this.abi = abi ? abi : require('../test/res/abi.json') // this is SALT abi for now
         // TODO run truffle compile to build contract abi
-        this.abi = abii;
-        this.contract = contract(this.abi);
+        this.rawCompiledContract = defaultAbi; // this is the fully compiled smart contract
+        this.abi = abi ? abi : defaultAbi;
+        // this is for deploying a contract locally in test environment
+        this.contract = contract(this.rawCompiledContract);
         this.contract.setProvider(this.web3.currentProvider || 'https://localhost:8545');
     }
     compileContract(source) {
@@ -27,6 +29,7 @@ class TokenContract {
     getContract(abi) {
         return Promise.resolve(this.web3.eth.contract(abi));
     }
+    // this is for unit testing
     loadContract(address) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.client.unlockAccount(address);
@@ -65,7 +68,10 @@ class TokenContract {
             return Promise.resolve(contract.at(address))
                 .then(instance => {
                 // last param is total tx object
-                return instance.balanceOf.call(from);
+                return Promise.resolve(instance.balanceOf.call(from)); // balanceOf is contract specific, make dynamic
+            })
+                .catch(e => {
+                console.error('Error getting balance of: ', e.message);
             });
         });
     }
@@ -78,10 +84,10 @@ class TokenContract {
                 // this.watchContract(instance, from)
                 return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
                     .then(result => {
-                    console.log(result);
+                    console.log('Token transfer success:', result);
                     return result;
                 }).catch(e => {
-                    console.error(e);
+                    console.error('Token transfer error: ', e.message);
                 });
             });
         });

@@ -4,6 +4,7 @@ export declare class TokenContract {
     private web3;
     private abi;
     private contract;
+    private rawCompiledContract;
     constructor(client: Web3EthereumClient, abi?: any);
     compileContract(source: any): any;
     getContract(abi: any): Promise<any>;

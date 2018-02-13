@@ -11,7 +11,7 @@ export class MockWeb3 {
     this.eth.getAccounts = this.personal.getAccounts // eth not responsible for account generation but for some reason has a read function. Copying it from personal on initialization.
   }
 
-  setProvider() {
+  setProvider () {
     return
   }
 }
@@ -21,16 +21,16 @@ export class MockEth {
   coinbase: string
   getAccounts: Function
 
-  constructor() {
+  constructor () {
     this.transactions = []
     this.coinbase = randomAddress()
   }
 
-  getGasPrice() {
+  getGasPrice () {
     return Math.floor(Math.random() * 1e+6)
   }
 
-  getBalance(address: string, callback: Function) {
+  getBalance (address: string, callback: Function) {
     const creditTxs = this.transactions.filter(tx => tx.to === address)
     const debitTxs = this.transactions.filter( tx => tx.from === address)
     const credits = creditTxs.reduce((acc, tx) => tx.value + acc, 0)
@@ -38,7 +38,7 @@ export class MockEth {
     return credits - debits
   }
 
-  getBlock(hashOrNumber: string, includeTxs: boolean, callback: Function) {
+  getBlock (hashOrNumber: string, includeTxs: boolean, callback: Function) {
     let hash, number
     const getByHash = this.transactions.find(tx => tx.hash === hashOrNumber)
     const getByNumber = this.transactions.find(tx => tx.block === hashOrNumber)
@@ -46,7 +46,7 @@ export class MockEth {
     if (!getByHash) {
       number = hashOrNumber
     }
-    if(!getByNumber) {
+    if (!getByNumber) {
       hash = hashOrNumber
     }
     const block = {
@@ -84,7 +84,7 @@ export class MockEth {
     }
   }
 
-  sendTransaction(transaction: EthereumTransaction, callback: Function) {
+  sendTransaction (transaction: EthereumTransaction, callback: Function) {
     const hash = randomTxHash()
     const transactionWithId = Object.assign({ hash: hash, block: randomBlockNumber(), status: '1' }, transaction)
     this.transactions.push(transactionWithId)
@@ -102,13 +102,13 @@ export class MockPersonal {
   }
 
   unlockAccount(address: string, callback: Function) {
-    callback(null, true)
+    return callback(null, true)
   }
 
-  newAccount() {
+  newAccount(callback: Function) {
     const newAccount = randomAddress()
     this.accounts.push(newAccount)
-    return newAccount
+    return callback(null, newAccount)
   }
 
   getAccounts() {

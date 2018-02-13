@@ -21,7 +21,7 @@ export declare class MockEth {
 export declare class MockPersonal {
     accounts: string[];
     constructor();
-    unlockAccount(address: string, callback: Function): void;
-    newAccount(): string;
+    unlockAccount(address: string, callback: Function): any;
+    newAccount(callback: Function): any;
     getAccounts(): Promise<string[]>;
 }

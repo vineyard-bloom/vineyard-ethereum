@@ -29,8 +29,16 @@ class EthereumBlockClient {
                 : undefined;
         });
     }
-    getBlockTransactions(block) {
-        return client_functions_1.getBlockTransactions(this.web3, block);
+    getFullBlock(blockIndex) {
+        return client_functions_1.getFullBlock(this.web3, blockIndex);
+    }
+    getBlockTransactions(blockIndex) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const block = yield client_functions_1.getFullBlock(this.web3, blockIndex);
+            return block
+                ? block.transactions
+                : [];
+        });
     }
     static createFromConfig(config) {
         return new EthereumBlockClient(utility_1.initializeWeb3(config));

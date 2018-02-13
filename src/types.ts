@@ -6,6 +6,11 @@ export interface FakeBlock {
 
 }
 
+export interface GasTransaction {
+  txid: string
+  address: string
+}
+
 export interface EthereumTransactionOld {
   to: string
   from: string
@@ -110,4 +115,6 @@ export interface SweepManager {
   saveSweepRecord (bristle: Bristle): Promise<any>
 
   getDustyAddresses (): Promise<string[]>
+
+  saveGasTransaction(gasTransaction: GasTransaction): Promise<GasTransaction | undefined>
 }

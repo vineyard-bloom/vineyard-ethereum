@@ -2,9 +2,13 @@ import { Web3EthereumClient } from '../src';
 export declare class TokenContract {
     private client;
     private web3;
-    constructor(client: Web3EthereumClient);
+    private abi;
+    private contract;
+    private rawCompiledContract;
+    constructor(client: Web3EthereumClient, abi?: any);
     compileContract(source: any): any;
-    loadContract(abi: any): Promise<any>;
+    getContract(abi: any): Promise<any>;
+    loadContract(address: string): Promise<any>;
     getTotalSupply(abi: any, address: string): Promise<any>;
     getData(abi: any, address: string, from: string): Promise<any>;
     getBalanceOf(abi: any, address: string, from: string): Promise<any>;

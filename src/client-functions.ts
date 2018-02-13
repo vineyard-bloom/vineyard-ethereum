@@ -145,18 +145,23 @@ export function convertStatus(gethStatus: string): TransactionStatus {
   }
 }
 
-export async function getBlockTransactions(web3: Web3Client, block: blockchain.Block): Promise<blockchain.SingleTransaction[]> {
-  let fullBlock = await getBlock(web3, block.index)
+export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>> {
+  let block = await getBlock(web3, blockIndex)
   let blockHeight = await getBlockIndex(web3)
-  const transactions = fullBlock.transactions.map(t => ({
+  const transactions = block.transactions.map(t => ({
     txid: t.hash,
     to: t.to,
     from: t.from,
     amount: t.value,
-    timeReceived: new Date(fullBlock.timestamp * 1000),
-    confirmations: blockHeight - block.index,
+    timeReceived: new Date(block.timestamp * 1000),
+    confirmations: blockHeight - blockIndex,
     status: convertStatus(t.status),
-    blockIndex: block.index
+    blockIndex: blockIndex
   }))
-  return transactions
+  return {
+    index: blockIndex,
+    hash: block.hash,
+    timeMined: new Date(block.timestamp * 1000),
+    transactions: transactions
+  }
 }

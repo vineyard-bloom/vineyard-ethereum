@@ -147,22 +147,27 @@ function convertStatus(gethStatus) {
     }
 }
 exports.convertStatus = convertStatus;
-function getBlockTransactions(web3, block) {
+function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
-        let fullBlock = yield getBlock(web3, block.index);
+        let block = yield getBlock(web3, blockIndex);
         let blockHeight = yield getBlockIndex(web3);
-        const transactions = fullBlock.transactions.map(t => ({
+        const transactions = block.transactions.map(t => ({
             txid: t.hash,
             to: t.to,
             from: t.from,
             amount: t.value,
-            timeReceived: new Date(fullBlock.timestamp * 1000),
-            confirmations: blockHeight - block.index,
+            timeReceived: new Date(block.timestamp * 1000),
+            confirmations: blockHeight - blockIndex,
             status: convertStatus(t.status),
-            blockIndex: block.index
+            blockIndex: blockIndex
         }));
-        return transactions;
+        return {
+            index: blockIndex,
+            hash: block.hash,
+            timeMined: new Date(block.timestamp * 1000),
+            transactions: transactions
+        };
     });
 }
-exports.getBlockTransactions = getBlockTransactions;
+exports.getFullBlock = getFullBlock;
 //# sourceMappingURL=client-functions.js.map

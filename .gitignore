@@ -10,3 +10,4 @@ init
 .vscode
 package-lock.json
 /temp
+/test/res/compiled-salt-contract.json

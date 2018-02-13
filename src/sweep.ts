@@ -1,5 +1,5 @@
 import { each as promiseEach } from 'promise-each2'
-import { SweepManager } from './types'
+import { SweepManager, EthereumTransaction } from './types'
 import BigNumber from 'bignumber.js'
 import { TokenContract } from '../lab/token-contract'
 
@@ -16,7 +16,8 @@ export interface SweepConfig {
   minSweepAmount: any
   gas: any
   gasPrice: any
-  tokenContractAddress: string
+  tokenContractAddress: string,
+  hotWallet: string
 }
 
 export function gweiToWei(amount: any) {
@@ -57,11 +58,12 @@ export class Broom {
       .then(() => console.log('Finished Ethereum sweep'))
   }
 
-  tokenSweep(abi: any) {
+  async tokenSweep(abi: any) {
     console.log('Starting Token sweep')
+    await this.provideGas(abi)
     return this.manager.getDustyAddresses()
       .then(addresses => {
-        console.log('Dusty addresses', addresses.length, addresses)
+        console.log('Dusty token addresses', addresses.length, addresses)
         return promiseEach(addresses, (address: any) => this.tokenSingleSweep(abi, address))
       })
       .then(() => console.log('Finished Token sweep'))
@@ -71,17 +73,31 @@ export class Broom {
     return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
       .then(balance => {
         console.log('Sweeping address', address)
-        return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
-          .then(tx => {
-            console.log('Sweeping address succeeded', tx.hash)
-            return this.saveSweepRecord({
-              from: address,
-              to: this.config.sweepAddress,
-              status: 0,
-              txid: tx.hash,
-              amount: balance
+        return this.client.unlockAccount(address).then(() => {
+          return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.toNumber())
+            .then(tx => {
+              console.log('Sweeping address succeeded', tx)
+              return this.saveSweepRecord({
+                from: address,
+                to: this.config.sweepAddress,
+                status: 0,
+                txid: tx,
+                amount: balance
+              })
             })
-          })
+            .catch(e => {
+              console.error('Error sweeping token: ', e.message)
+              return new Error(e)
+            })
+        })
+        .catch((e: any) => {
+          console.error('Error getting token address balance: ', e.message)
+          return new Error(e)
+        })
+      })
+      .catch(e => {
+        console.error('Error unlocking address in token sweep: ', e.message)
+        return new Error(e)
       })
   }
 
@@ -95,20 +111,31 @@ export class Broom {
   gasTransaction(abi: any, address: any) {
     return this.needsGas(abi, address)
       .then(gasLess => {
-        if (gasLess) {
-          return this.client.send(address, this.config.tokenContractAddress, 0.0003)
+        if (gasLess && this.config.hotWallet) {
+          const tx = {
+            from: this.config.hotWallet,
+            to: address,
+            value: this.client.toWei(0.0003),
+            gas: this.config.gas,
+            gasPrice: this.config.gasPrice
+          }
+          return this.client.sendTransaction(tx).then((result: EthereumTransaction) => {
+            this.manager.saveGasTransaction({ address: result.to, txid: result.hash})
+          })
+        } else {
+          Promise.resolve()
         }
       })
   }
 
   provideGas(abi: any) {
-    console.log('Starting Salt Gas Provider')
+    console.log('Starting Token Gas Provider')
     return this.manager.getDustyAddresses()
       .then(addresses => {
         console.log('Dusty addresses', addresses.length, addresses)
         return promiseEach(addresses, (address: string) => this.gasTransaction(abi, address))
       })
-      .then(() => console.log('Finished Salt Gas Provider job'))
+      .then(() => console.log('Finished Token Gas Provider job'))
   }
 
   private singleSweep(address: any): Promise<Bristle> {

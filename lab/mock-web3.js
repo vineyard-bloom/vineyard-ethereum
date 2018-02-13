@@ -82,12 +82,12 @@ class MockPersonal {
         this.accounts = [];
     }
     unlockAccount(address, callback) {
-        callback(null, true);
+        return callback(null, true);
     }
-    newAccount() {
+    newAccount(callback) {
         const newAccount = randomAddress();
         this.accounts.push(newAccount);
-        return newAccount;
+        return callback(null, newAccount);
     }
     getAccounts() {
         return Promise.resolve(this.accounts);

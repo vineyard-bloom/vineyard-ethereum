@@ -90,7 +90,7 @@ class Broom {
     gasTransaction(abi, address) {
         return this.needsGas(abi, address)
             .then(gasLess => {
-            if (gasLess) {
+            if (gasLess && this.config.hotWallet) {
                 const tx = {
                     from: this.config.hotWallet,
                     to: address,
@@ -101,6 +101,9 @@ class Broom {
                 return this.client.sendTransaction(tx).then((result) => {
                     this.manager.saveGasTransaction({ address: result.to, txid: result.hash });
                 });
+            }
+            else {
+                Promise.resolve();
             }
         });
     }

@@ -111,7 +111,7 @@ export class Broom {
   gasTransaction(abi: any, address: any) {
     return this.needsGas(abi, address)
       .then(gasLess => {
-        if (gasLess) {
+        if (gasLess && this.config.hotWallet) {
           const tx = {
             from: this.config.hotWallet,
             to: address,
@@ -122,6 +122,8 @@ export class Broom {
           return this.client.sendTransaction(tx).then((result: EthereumTransaction) => {
             this.manager.saveGasTransaction({ address: result.to, txid: result.hash})
           })
+        } else {
+          Promise.resolve()
         }
       })
   }

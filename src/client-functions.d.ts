@@ -20,4 +20,6 @@ export declare function getTransactionStatus(web3: Web3Client, txid: string): Pr
 export declare function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined>;
 export declare function convertStatus(gethStatus: string): TransactionStatus;
 export declare function getChecksum(web3: Web3Client, address?: string): string | undefined;
-export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>>;
+export declare function callContractMethod<T>(contract: any, methodName: string, args?: any[]): Promise<T>;
+export declare function getContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract>;
+export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;

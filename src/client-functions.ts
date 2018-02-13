@@ -151,19 +151,61 @@ export function getChecksum(web3: Web3Client, address?: string): string | undefi
     : undefined
 }
 
-export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>> {
+const ERC20_ABI = [{
+  'constant': true,
+  'inputs': [],
+  'name': 'name',
+  'outputs': [{
+    'name': '',
+    'type': 'string'
+  }],
+  'payable': false,
+  'type': 'function'
+}]
+
+export function callContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T> {
+  return new Promise((resolve: Resolve<T>, reject) => {
+    const handler = (err: any, blockNumber: T) => {
+      if (err) {
+        reject(new Error(err))
+      } else {
+        resolve(blockNumber)
+      }
+    }
+    contract[methodName].apply(null, args.concat(handler))
+  })
+}
+
+export async function getContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract> {
+  const contract = web3.eth.contract(ERC20_ABI).at(address)
+  const name = await callContractMethod<string>(contract, 'name')
+  return {
+    address: address,
+    name: name
+  }
+}
+
+export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
   let block = await getBlock(web3, blockIndex)
-  let blockHeight = await getBlockIndex(web3)
-  const transactions = block.transactions.map(t => ({
-    txid: t.hash,
-    to: getChecksum(web3, t.to),
-    from: getChecksum(web3, t.from),
-    amount: t.value,
-    timeReceived: new Date(block.timestamp * 1000),
-    confirmations: blockHeight - blockIndex,
-    status: convertStatus(t.status),
-    blockIndex: blockIndex
-  }))
+  const transactions = []
+  for (let tx of block.transactions) {
+    const receipt = await getTransactionReceipt(web3, tx.hash)
+    const contract = receipt.contractAddress
+      ? await getContractFromReceipt(web3, receipt.contractAddress)
+      : undefined
+    transactions.push({
+      txid: tx.hash,
+      to: getChecksum(web3, tx.to),
+      from: getChecksum(web3, tx.from),
+      amount: tx.value,
+      timeReceived: new Date(block.timestamp * 1000),
+      status: convertStatus(tx.status),
+      blockIndex: blockIndex,
+      gasUsed: receipt.gasUsed,
+      newContract: contract
+    })
+  }
+
   return {
     index: blockIndex,
     hash: block.hash,

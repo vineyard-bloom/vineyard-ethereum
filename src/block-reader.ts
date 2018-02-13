@@ -3,7 +3,7 @@ import { getBlock, getBlockIndex, getFullBlock, Web3Client } from './client-func
 import { initializeWeb3 } from './utility'
 import { Web3EthereumClientConfig } from './ethereum-client'
 
-export class EthereumBlockClient implements blockchain.BlockClient<blockchain.SingleTransaction> {
+export class EthereumBlockClient implements blockchain.BlockReader<blockchain.SingleTransaction> {
   private web3: Web3Client
 
   constructor(web3: Web3Client) {
@@ -25,7 +25,7 @@ export class EthereumBlockClient implements blockchain.BlockClient<blockchain.Si
       : undefined
   }
 
-  getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction> | undefined> {
+  getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction> | undefined> {
     return getFullBlock(this.web3, blockIndex)
   }
 

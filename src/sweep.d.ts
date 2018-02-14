@@ -13,6 +13,7 @@ export interface SweepConfig {
     gas: any;
     gasPrice: any;
     tokenContractAddress: string;
+    hotWallet: string;
 }
 export declare function gweiToWei(amount: any): any;
 export declare class Broom {

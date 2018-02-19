@@ -6,5 +6,5 @@ export * from './mock-ethereum-client'
 export * from './sweep'
 export * from './block-scanner'
 export * from './token-client'
-export * from './block-client'
-
+export * from './block-reader'
+export * from './client-functions'

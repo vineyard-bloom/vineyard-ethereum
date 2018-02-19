@@ -45,4 +45,4 @@ class EthereumBlockClient {
     }
 }
 exports.EthereumBlockClient = EthereumBlockClient;
-//# sourceMappingURL=block-client.js.map
+//# sourceMappingURL=block-reader.js.map

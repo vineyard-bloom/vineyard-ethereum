@@ -170,4 +170,56 @@ function getFullBlock(web3, blockIndex) {
     });
 }
 exports.getFullBlock = getFullBlock;
+return new Promise((resolve, reject) => {
+    const handler = (err, blockNumber) => {
+        if (err) {
+            reject(new Error(err));
+        }
+        else {
+            resolve(blockNumber);
+        }
+    };
+    contract[methodName].apply(null, args.concat(handler));
+});
+function getContractFromReceipt(web3, address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const contract = web3.eth.contract(ERC20_ABI).at(address);
+        const name = yield callContractMethod(contract, 'name');
+        return {
+            address: address,
+            name: name
+        };
+    });
+}
+exports.getContractFromReceipt = getContractFromReceipt;
+function getFullBlock(web3, blockIndex) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let block = yield getBlock(web3, blockIndex);
+        const transactions = [];
+        for (let tx of block.transactions) {
+            const receipt = yield getTransactionReceipt(web3, tx.hash);
+            const contract = receipt.contractAddress
+                ? yield getContractFromReceipt(web3, receipt.contractAddress)
+                : undefined;
+            transactions.push({
+                txid: tx.hash,
+                to: getChecksum(web3, tx.to),
+                from: getChecksum(web3, tx.from),
+                amount: tx.value,
+                timeReceived: new Date(block.timestamp * 1000),
+                status: convertStatus(tx.status),
+                blockIndex: blockIndex,
+                gasUsed: receipt.gasUsed,
+                newContract: contract
+            });
+        }
+        return {
+            index: blockIndex,
+            hash: block.hash,
+            timeMined: new Date(block.timestamp * 1000),
+            transactions: transactions
+        };
+    });
+}
+exports.getFullBlock = getFullBlock;
 //# sourceMappingURL=client-functions.js.map

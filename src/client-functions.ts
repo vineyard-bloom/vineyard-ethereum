@@ -65,7 +65,7 @@ export function getBlock(web3: Web3Client, blockIndex: number): Promise<Block> {
   return new Promise((resolve: Resolve<Block>, reject) => {
     web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
       if (err) {
-        console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
+        // console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
         reject(new Error(err))
       } else {
         resolve(block)
@@ -78,7 +78,7 @@ export function getBlockIndex(web3: Web3Client): Promise<number> {
   return new Promise((resolve: Resolve<number>, reject) => {
     web3.eth.getBlockNumber((err: any, blockNumber: number) => {
       if (err) {
-        console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
+        // console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
         reject(new Error(err))
       } else {
         resolve(blockNumber)
@@ -101,7 +101,7 @@ export function getTransactionReceipt(web3: Web3Client, txid: string): Promise<W
   return new Promise((resolve: Resolve<Web3TransactionReceipt>, reject) => {
     web3.eth.getTransactionReceipt(txid, (err: any, transaction: Web3TransactionReceipt) => {
       if (err) {
-        console.error('Error querying transaction', txid, 'with message', err.message)
+        // console.error('Error querying transaction', txid, 'with message', err.message)
         reject(err)
       } else {
         resolve(transaction)
@@ -145,19 +145,67 @@ export function convertStatus(gethStatus: string): TransactionStatus {
   }
 }
 
-export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.SingleTransaction>> {
+export function getChecksum(web3: Web3Client, address?: string): string | undefined {
+  return typeof address === 'string'
+    ? web3.toChecksumAddress(address)
+    : undefined
+}
+
+const ERC20_ABI = [{
+  'constant': true,
+  'inputs': [],
+  'name': 'name',
+  'outputs': [{
+    'name': '',
+    'type': 'string'
+  }],
+  'payable': false,
+  'type': 'function'
+}]
+
+export function callContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T> {
+  return new Promise((resolve: Resolve<T>, reject) => {
+    const handler = (err: any, blockNumber: T) => {
+      if (err) {
+        reject(new Error(err))
+      } else {
+        resolve(blockNumber)
+      }
+    }
+    contract[methodName].apply(null, args.concat(handler))
+  })
+}
+
+export async function getContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract> {
+  const contract = web3.eth.contract(ERC20_ABI).at(address)
+  const name = await callContractMethod<string>(contract, 'name')
+  return {
+    address: address,
+    name: name
+  }
+}
+
+export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
   let block = await getBlock(web3, blockIndex)
-  let blockHeight = await getBlockIndex(web3)
-  const transactions = block.transactions.map(t => ({
-    txid: t.hash,
-    to: t.to,
-    from: t.from,
-    amount: t.value,
-    timeReceived: new Date(block.timestamp * 1000),
-    confirmations: blockHeight - blockIndex,
-    status: convertStatus(t.status),
-    blockIndex: blockIndex
-  }))
+  const transactions = []
+  for (let tx of block.transactions) {
+    const receipt = await getTransactionReceipt(web3, tx.hash)
+    const contract = receipt.contractAddress
+      ? await getContractFromReceipt(web3, receipt.contractAddress)
+      : undefined
+    transactions.push({
+      txid: tx.hash,
+      to: getChecksum(web3, tx.to),
+      from: getChecksum(web3, tx.from),
+      amount: tx.value,
+      timeReceived: new Date(block.timestamp * 1000),
+      status: convertStatus(tx.status),
+      blockIndex: blockIndex,
+      gasUsed: receipt.gasUsed,
+      newContract: contract
+    })
+  }
+
   return {
     index: blockIndex,
     hash: block.hash,

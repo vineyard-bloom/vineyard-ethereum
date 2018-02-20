@@ -4,5 +4,5 @@ export declare class GethServer {
     private stderr;
     private childProcess;
     start(): Promise<void>;
-    stop(): Promise<void> | Promise<{}>;
+    stop(): Promise<{}> | Promise<void>;
 }

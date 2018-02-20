@@ -2,6 +2,8 @@ import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
 import { BaseBlock, blockchain, Resolve, TransactionStatus } from 'vineyard-blockchain'
 
+const SolidityFunction = require('web3/lib/web3/function')
+
 export type Resolve2<T> = (value: T) => void
 
 export type Web3Client = any
@@ -151,37 +153,70 @@ export function getChecksum(web3: Web3Client, address?: string): string | undefi
     : undefined
 }
 
-const ERC20_ABI = [{
-  'constant': true,
-  'inputs': [],
-  'name': 'name',
-  'outputs': [{
-    'name': '',
-    'type': 'string'
-  }],
-  'payable': false,
-  'type': 'function'
-}]
+const erc20ReadonlyAbi = require('./abi/erc20-readonly.json')
 
-export function callContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T> {
+export function checkContractMethod(contract: any, methodName: string, args: any[] = []): Promise<boolean> {
+  const method = contract[methodName]
+  const payload = method.toPayload(args)
+  const defaultBlock = method.extractDefaultBlock(args)
+
+  return new Promise((resolve: Resolve<boolean>, reject) => {
+    method._eth.call(payload, defaultBlock, (error: Error, output: string) => {
+      if (error) {
+        reject(false)
+      }
+      else {
+        resolve(output !== '0x')
+      }
+    })
+  })
+}
+
+export async function callContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T> {
+
   return new Promise((resolve: Resolve<T>, reject) => {
     const handler = (err: any, blockNumber: T) => {
       if (err) {
-        reject(new Error(err))
+        reject(err)
       } else {
         resolve(blockNumber)
       }
     }
-    contract[methodName].apply(null, args.concat(handler))
+    const method = contract[methodName]
+    method.call.apply(method, args.concat(handler))
   })
 }
 
-export async function getContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract> {
-  const contract = web3.eth.contract(ERC20_ABI).at(address)
-  const name = await callContractMethod<string>(contract, 'name')
-  return {
-    address: address,
-    name: name
+export async function callCheckedContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T | undefined> {
+  const exists = await checkContractMethod(contract, methodName, args)
+  if (!exists)
+    return undefined
+
+  return callContractMethod<T>(contract, methodName, args)
+}
+
+export function createContract(eth: any, abi: any, address: string): any {
+  const result: any = {}
+  for (let method of abi) {
+    result[method.name] = new SolidityFunction(eth, method, address)
+  }
+  return result
+}
+
+export async function getTokenContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract | undefined> {
+  // const contract = web3.eth.contract(ERC20_ABI).at(address)
+  const contract = createContract(web3.eth, erc20ReadonlyAbi.members, address)
+  try {
+    const name = await callCheckedContractMethod<string>(contract, 'name')
+    if (!name)
+      return undefined
+
+    return {
+      address: address,
+      name: name
+    }
+  } catch (error) { // Currently assuming that any thrown errors here mean the contract is not a token contract
+    return undefined
   }
 }
 
@@ -191,7 +226,7 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
   for (let tx of block.transactions) {
     const receipt = await getTransactionReceipt(web3, tx.hash)
     const contract = receipt.contractAddress
-      ? await getContractFromReceipt(web3, receipt.contractAddress)
+      ? await getTokenContractFromReceipt(web3, receipt.contractAddress)
       : undefined
     transactions.push({
       txid: tx.hash,

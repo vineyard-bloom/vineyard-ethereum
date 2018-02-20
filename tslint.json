@@ -3,10 +3,13 @@
     "tslint-config-standard"
   ],
   "rules": {
+    "brace-style": false,
     "curly": false,
     "eofline": false,
     "member-ordering": false,
+    "no-trailing-whitespace": false,
     "no-unused-variable": true,
+    "one-line": true,
     "space-before-function-paren": false
   },
   "exclude": ["node_modules"]

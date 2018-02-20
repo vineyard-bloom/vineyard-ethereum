@@ -10,7 +10,8 @@
     "no-trailing-whitespace": false,
     "no-unused-variable": true,
     "one-line": true,
-    "space-before-function-paren": false
+    "space-before-function-paren": false,
+    "triple-equals": false
   },
   "exclude": ["node_modules"]
 }

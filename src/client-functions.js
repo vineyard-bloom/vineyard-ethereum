@@ -154,7 +154,9 @@ function getChecksum(web3, address) {
         : undefined;
 }
 exports.getChecksum = getChecksum;
-const erc20ReadonlyAbi = require('./abi/erc20-readonly.json');
+const erc20AttributesAbi = require('./abi/erc20-attributes.json');
+const erc20BalanceAbi = require('./abi/erc20-balance.json');
+const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi);
 function checkContractMethod(contract, methodName, args = []) {
     const method = contract[methodName];
     const payload = method.toPayload(args);
@@ -207,16 +209,22 @@ function createContract(eth, abi, address) {
 exports.createContract = createContract;
 function getTokenContractFromReceipt(web3, address) {
     return __awaiter(this, void 0, void 0, function* () {
-        // const contract = web3.eth.contract(ERC20_ABI).at(address)
-        const contract = createContract(web3.eth, erc20ReadonlyAbi.members, address);
+        const contract = createContract(web3.eth, erc20AttributesAbi, address);
+        const result = {
+            contractType: vineyard_blockchain_1.blockchain.ContractType.token,
+            address: address
+        };
         try {
-            const name = yield callCheckedContractMethod(contract, 'name');
-            if (!name)
-                return undefined;
-            return {
-                address: address,
-                name: name
-            };
+            for (let method of erc20AttributesAbi) {
+                const value = yield callCheckedContractMethod(contract, method.name);
+                if (value === undefined)
+                    return {
+                        contractType: vineyard_blockchain_1.blockchain.ContractType.unknown,
+                        address: address
+                    };
+                result[method.name] = value;
+            }
+            return result;
         }
         catch (error) {
             return undefined;

@@ -153,7 +153,10 @@ export function getChecksum(web3: Web3Client, address?: string): string | undefi
     : undefined
 }
 
-const erc20ReadonlyAbi = require('./abi/erc20-readonly.json')
+const erc20AttributesAbi = require('./abi/erc20-attributes.json')
+const erc20BalanceAbi = require('./abi/erc20-balance.json')
+
+const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi)
 
 export function checkContractMethod(contract: any, methodName: string, args: any[] = []): Promise<boolean> {
   const method = contract[methodName]
@@ -173,7 +176,6 @@ export function checkContractMethod(contract: any, methodName: string, args: any
 }
 
 export async function callContractMethod<T>(contract: any, methodName: string, args: any[] = []): Promise<T> {
-
   return new Promise((resolve: Resolve<T>, reject) => {
     const handler = (err: any, blockNumber: T) => {
       if (err) {
@@ -203,19 +205,25 @@ export function createContract(eth: any, abi: any, address: string): any {
   return result
 }
 
-export async function getTokenContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.Contract | undefined> {
-  // const contract = web3.eth.contract(ERC20_ABI).at(address)
-  const contract = createContract(web3.eth, erc20ReadonlyAbi.members, address)
+export async function getTokenContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.AnyContract | undefined> {
+  const contract = createContract(web3.eth, erc20AttributesAbi, address)
+  const result: any = {
+    contractType: blockchain.ContractType.token,
+    address: address
+  }
   try {
-    const name = await callCheckedContractMethod<string>(contract, 'name')
-    if (!name)
-      return undefined
-
-    return {
-      address: address,
-      name: name
+    for (let method of erc20AttributesAbi) {
+      const value = await callCheckedContractMethod<any>(contract, method.name)
+      if (value === undefined)
+        return {
+          contractType: blockchain.ContractType.unknown,
+          address: address
+        }
+      result[method.name] = value
     }
-  } catch (error) { // Currently assuming that any thrown errors here mean the contract is not a token contract
+
+    return result
+  } catch (error) {
     return undefined
   }
 }

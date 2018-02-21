@@ -73,7 +73,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
       amount: t.value,
       timeReceived: new Date(fullBlock.timestamp * 1000),
       confirmations: blockHeight - block.index,
-      block: block.id,
+      block: block.index,
       status: convertStatus(t.status)
     }))
     return {

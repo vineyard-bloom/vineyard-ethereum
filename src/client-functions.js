@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vineyard_blockchain_1 = require("vineyard-blockchain");
+const SolidityFunction = require('web3/lib/web3/function');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -153,42 +154,84 @@ function getChecksum(web3, address) {
         : undefined;
 }
 exports.getChecksum = getChecksum;
-const ERC20_ABI = [{
-        'constant': true,
-        'inputs': [],
-        'name': 'name',
-        'outputs': [{
-                'name': '',
-                'type': 'string'
-            }],
-        'payable': false,
-        'type': 'function'
-    }];
-function callContractMethod(contract, methodName, args = []) {
+const erc20AttributesAbi = require('./abi/erc20-attributes.json');
+const erc20BalanceAbi = require('./abi/erc20-balance.json');
+const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi);
+function checkContractMethod(contract, methodName, args = []) {
+    const method = contract[methodName];
+    const payload = method.toPayload(args);
+    const defaultBlock = method.extractDefaultBlock(args);
     return new Promise((resolve, reject) => {
-        const handler = (err, blockNumber) => {
-            if (err) {
-                reject(new Error(err));
+        method._eth.call(payload, defaultBlock, (error, output) => {
+            if (error) {
+                reject(false);
             }
             else {
-                resolve(blockNumber);
+                resolve(output !== '0x');
             }
-        };
-        contract[methodName].apply(null, args.concat(handler));
+        });
+    });
+}
+exports.checkContractMethod = checkContractMethod;
+function callContractMethod(contract, methodName, args = []) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            const handler = (err, blockNumber) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(blockNumber);
+                }
+            };
+            const method = contract[methodName];
+            method.call.apply(method, args.concat(handler));
+        });
     });
 }
 exports.callContractMethod = callContractMethod;
-function getContractFromReceipt(web3, address) {
+function callCheckedContractMethod(contract, methodName, args = []) {
     return __awaiter(this, void 0, void 0, function* () {
-        const contract = web3.eth.contract(ERC20_ABI).at(address);
-        const name = yield callContractMethod(contract, 'name');
-        return {
-            address: address,
-            name: name
-        };
+        const exists = yield checkContractMethod(contract, methodName, args);
+        if (!exists)
+            return undefined;
+        return callContractMethod(contract, methodName, args);
     });
 }
-exports.getContractFromReceipt = getContractFromReceipt;
+exports.callCheckedContractMethod = callCheckedContractMethod;
+function createContract(eth, abi, address) {
+    const result = {};
+    for (let method of abi) {
+        result[method.name] = new SolidityFunction(eth, method, address);
+    }
+    return result;
+}
+exports.createContract = createContract;
+function getTokenContractFromReceipt(web3, address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const contract = createContract(web3.eth, erc20AttributesAbi, address);
+        const result = {
+            contractType: vineyard_blockchain_1.blockchain.ContractType.token,
+            address: address
+        };
+        try {
+            for (let method of erc20AttributesAbi) {
+                const value = yield callCheckedContractMethod(contract, method.name);
+                if (value === undefined)
+                    return {
+                        contractType: vineyard_blockchain_1.blockchain.ContractType.unknown,
+                        address: address
+                    };
+                result[method.name] = value;
+            }
+            return result;
+        }
+        catch (error) {
+            return undefined;
+        }
+    });
+}
+exports.getTokenContractFromReceipt = getTokenContractFromReceipt;
 function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         let block = yield getBlock(web3, blockIndex);
@@ -196,7 +239,7 @@ function getFullBlock(web3, blockIndex) {
         for (let tx of block.transactions) {
             const receipt = yield getTransactionReceipt(web3, tx.hash);
             const contract = receipt.contractAddress
-                ? yield getContractFromReceipt(web3, receipt.contractAddress)
+                ? yield getTokenContractFromReceipt(web3, receipt.contractAddress)
                 : undefined;
             transactions.push({
                 txid: tx.hash,

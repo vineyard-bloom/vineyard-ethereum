@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-var BlockScanner = (function () {
+var BlockScanner = /** @class */ (function () {
     function BlockScanner(model, client, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 13; }
         this.minimumConfirmations = 13;
@@ -21,9 +21,22 @@ var BlockScanner = (function () {
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
-                console.log('Confirming transaction', transaction);
-                return _this.manager.setStatus(transaction, 1)
-                    .then(function () { return _this.manager.onConfirm(transaction); });
+                return utility_1.getEvents(_this.client.web3, {
+                    fromBlock: transaction.blockIndex,
+                    toBlock: transaction.blockIndex,
+                })
+                    .then(function (events) {
+                    if (events.result.some(function (e) { return e.transactionHash == transaction.txid; })) {
+                        console.log('Confirming transaction', transaction);
+                        return _this.manager.setStatus(transaction, 1)
+                            .then(function () { return _this.manager.onConfirm(transaction); });
+                    }
+                    else {
+                        console.log('Denying transaction at contract layer', transaction);
+                        return _this.manager.setStatus(transaction, 2)
+                            .then(function () { return _this.manager.onDenial(transaction); });
+                    }
+                });
             }
         }).catch(function (e) { console.error('Error resolving transation: ', e); });
     };

@@ -5,3 +5,4 @@ export declare function checkAllBalances(web3: any): void;
 export declare function getTransactions(client: EthereumClient, addressManager: AddressManager, i: number): Promise<any[]>;
 export declare function isTransactionValid(client: EthereumClient, txid: any): Promise<Boolean | void>;
 export declare function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock: any, newLastBlock: any): Promise<any[]>;
+export declare function getEvents(web3: any, filter: any): Promise<any>;

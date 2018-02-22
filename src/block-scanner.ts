@@ -1,6 +1,6 @@
 import { each as promiseEach } from 'promise-each2'
 import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './types'
-import { isTransactionValid } from './utility'
+import { getEvents, isTransactionValid } from './utility'
 
 //more strongly typed eventually
 export type TransactionFilter = (transaction) => Promise<boolean>
@@ -17,7 +17,7 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     this.minimumConfirmations = minimumConfirmations
   }
 
-  private resolveTransaction(transaction): Promise<any> {
+  resolveTransaction(transaction): Promise<any> {
   console.log('RESOLVING TRANSACTION: ', transaction.txid)
   return isTransactionValid(this.client, transaction.txid)
     .then(valid => {
@@ -27,9 +27,22 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
           .then(() => this.manager.onDenial(transaction))
       }
       else {
-        console.log('Confirming transaction', transaction)
-        return this.manager.setStatus(transaction, 1)
-          .then(() => this.manager.onConfirm(transaction))
+        return getEvents((this.client as any).web3, {
+          fromBlock: transaction.blockIndex,
+          toBlock: transaction.blockIndex,
+        })
+          .then((events:any) => {
+            if (events.result.some(e=> e.transactionHash == transaction.txid)) {
+              console.log('Confirming transaction', transaction)
+              return this.manager.setStatus(transaction, 1)
+                .then(() => this.manager.onConfirm(transaction))
+            }
+            else {
+              console.log('Denying transaction at contract layer', transaction)
+              return this.manager.setStatus(transaction, 2)
+                .then(() => this.manager.onDenial(transaction))
+            }
+          })
       }
     }).catch(e => {console.error('Error resolving transation: ', e)})
   }
@@ -86,7 +99,8 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     const secondPassOffset = 5
 
     if (blockIndex > endBlockNumber)
-      return Promise.resolve<void>()
+      return Promise.resolve()
+
     return this.processBlock(blockIndex)
       .then(() => {
         console.log('Finished block', blockIndex)

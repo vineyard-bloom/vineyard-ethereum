@@ -12,6 +12,7 @@
   "dependencies": {
     "bignumber.js": "^4.0.2",
     "promise-each2": "^1.0.0",
+    "request": "^2.83.0",
     "truffle-contract": "^3.0.0",
     "web3": "0.19.1"
   },

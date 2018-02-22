@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var bignumber_js_1 = require("bignumber.js");
 var promise_each2_1 = require("promise-each2");
+var promiseRequest = require('./request-promise');
 function ethToWei(amount) {
     return amount.times(new bignumber_js_1.default("1000000000000000000"));
 }
@@ -116,4 +117,29 @@ function getTransactionsFromRange(client, addressManager, lastBlock, newLastBloc
     return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);
 }
 exports.getTransactionsFromRange = getTransactionsFromRange;
+var formatters = require('web3/lib/web3/formatters');
+function getEvents(web3, filter) {
+    var processedFilter = {
+        address: filter.address,
+        from: filter.from,
+        to: filter.to,
+        fromBlock: formatters.inputBlockNumberFormatter(filter.fromBlock),
+        toBlock: formatters.inputBlockNumberFormatter(filter.toBlock),
+        topics: filter.topics,
+    };
+    var body = {
+        jsonrpc: "2.0",
+        method: "eth_getLogs",
+        id: 1,
+        params: [processedFilter],
+    };
+    return promiseRequest({
+        method: 'POST',
+        uri: web3.currentProvider.host,
+        body: body,
+        json: true,
+        jar: false,
+    });
+}
+exports.getEvents = getEvents;
 //# sourceMappingURL=utility.js.map

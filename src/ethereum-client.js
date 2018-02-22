@@ -71,7 +71,7 @@ class Web3EthereumClient {
                 amount: t.value,
                 timeReceived: new Date(fullBlock.timestamp * 1000),
                 confirmations: blockHeight - block.index,
-                block: block.id,
+                block: block.index,
                 status: client_functions_1.convertStatus(t.status)
             }));
             return {

@@ -97,11 +97,11 @@ function isTransactionValid(client, txid) {
         //'0x1' == successful
         if (receipt && receipt.blockNumber && receipt.status === '0x1') {
             console.log('VALID TRANSACTION: ', receipt);
-            return true;
+            return { receipt: receipt, isValid: true };
         }
         else {
             console.log('INVALID TRANSACTION: ', receipt);
-            return false;
+            return { receipt: receipt, isValid: false };
         }
     });
 }

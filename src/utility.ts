@@ -88,7 +88,11 @@ export function getTransactions(client: EthereumClient, addressManager: AddressM
     })
 }
 
-export function isTransactionValid(client: EthereumClient, txid): Promise<Boolean | void> {
+export interface ValidationResult{
+  receipt: any
+  isValid: boolean
+}
+export function isTransactionValid(client: EthereumClient, txid): Promise<ValidationResult> {
   return new Promise((resolve, reject) => {
     client.web3.eth.getTransactionReceipt(txid, (err, receipt) => {
       if (err) {
@@ -103,10 +107,10 @@ export function isTransactionValid(client: EthereumClient, txid): Promise<Boolea
     //'0x1' == successful
     if (receipt && receipt.blockNumber && receipt.status === '0x1') {
       console.log('VALID TRANSACTION: ', receipt)
-      return true
+      return { receipt: receipt, isValid: true }
     } else {
       console.log('INVALID TRANSACTION: ', receipt)
-      return false
+      return { receipt: receipt, isValid: false }
     }
   })
 }

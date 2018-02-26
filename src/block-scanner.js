@@ -14,16 +14,16 @@ var BlockScanner = /** @class */ (function () {
         var _this = this;
         console.log('RESOLVING TRANSACTION: ', transaction.txid);
         return utility_1.isTransactionValid(this.client, transaction.txid)
-            .then(function (valid) {
-            if (!valid) {
+            .then(function (result) {
+            if (!result.isValid) {
                 console.log('Denying transaction', transaction);
                 return _this.manager.setStatus(transaction, 2)
                     .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
                 return utility_1.getEvents(_this.client.web3, {
-                    fromBlock: transaction.blockIndex,
-                    toBlock: transaction.blockIndex,
+                    fromBlock: result.receipt.blockNumber,
+                    toBlock: result.receipt.blockNumber,
                 })
                     .then(function (events) {
                     if (events.result.some(function (e) { return e.transactionHash == transaction.txid; })) {
@@ -38,7 +38,9 @@ var BlockScanner = /** @class */ (function () {
                     }
                 });
             }
-        }).catch(function (e) { console.error('Error resolving transation: ', e); });
+        }).catch(function (e) {
+            console.error('Error resolving transation: ', e);
+        });
     };
     BlockScanner.prototype.updatePending = function (newLastBlock) {
         var _this = this;
@@ -48,14 +50,18 @@ var BlockScanner = /** @class */ (function () {
             console.log('RESOLVED TRANSACTIONS ', transactions);
             return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); });
         })
-            .catch(function (e) { console.error(e); });
+            .catch(function (e) {
+            console.error(e);
+        });
     };
     BlockScanner.prototype.gatherTransactions = function (block, transactions) {
         var _this = this;
         return this.manager.filterSaltTransactions(transactions)
             .then(function (saltTransactions) { return _this.manager.filterAccountAddresses(saltTransactions); })
             .then(function (databaseAddresses) { return databaseAddresses.map(function (tx) { return _this.manager.mapTransaction(tx, block); }); })
-            .catch(function (e) { console.error('ERROR GATHERING TRANSACTIONS: ', e); });
+            .catch(function (e) {
+            console.error('ERROR GATHERING TRANSACTIONS: ', e);
+        });
     };
     BlockScanner.prototype.getTransactions = function (i) {
         var _this = this;

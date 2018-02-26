@@ -1,5 +1,5 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransaction, GenericEthereumManager} from './types'
+import { EthereumClient, EthereumTransaction } from './types'
 import { getEvents, isTransactionValid } from './utility'
 
 //more strongly typed eventually
@@ -18,33 +18,35 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
   }
 
   resolveTransaction(transaction): Promise<any> {
-  console.log('RESOLVING TRANSACTION: ', transaction.txid)
-  return isTransactionValid(this.client, transaction.txid)
-    .then(valid => {
-      if (!valid) {
-        console.log('Denying transaction', transaction)
-        return this.manager.setStatus(transaction, 2)
-          .then(() => this.manager.onDenial(transaction))
-      }
-      else {
-        return getEvents((this.client as any).web3, {
-          fromBlock: transaction.blockIndex,
-          toBlock: transaction.blockIndex,
-        })
-          .then((events:any) => {
-            if (events.result.some(e=> e.transactionHash == transaction.txid)) {
-              console.log('Confirming transaction', transaction)
-              return this.manager.setStatus(transaction, 1)
-                .then(() => this.manager.onConfirm(transaction))
-            }
-            else {
-              console.log('Denying transaction at contract layer', transaction)
-              return this.manager.setStatus(transaction, 2)
-                .then(() => this.manager.onDenial(transaction))
-            }
+    console.log('RESOLVING TRANSACTION: ', transaction.txid)
+    return isTransactionValid(this.client, transaction.txid)
+      .then(result => {
+        if (!result.isValid) {
+          console.log('Denying transaction', transaction)
+          return this.manager.setStatus(transaction, 2)
+            .then(() => this.manager.onDenial(transaction))
+        }
+        else {
+          return getEvents((this.client as any).web3, {
+            fromBlock: result.receipt.blockNumber,
+            toBlock: result.receipt.blockNumber,
           })
-      }
-    }).catch(e => {console.error('Error resolving transation: ', e)})
+            .then((events: any) => {
+              if (events.result.some(e => e.transactionHash == transaction.txid)) {
+                console.log('Confirming transaction', transaction)
+                return this.manager.setStatus(transaction, 1)
+                  .then(() => this.manager.onConfirm(transaction))
+              }
+              else {
+                console.log('Denying transaction at contract layer', transaction)
+                return this.manager.setStatus(transaction, 2)
+                  .then(() => this.manager.onDenial(transaction))
+              }
+            })
+        }
+      }).catch(e => {
+        console.error('Error resolving transation: ', e)
+      })
   }
 
   private updatePending(newLastBlock: number): Promise<void> {
@@ -52,16 +54,21 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     return this.manager.getResolvedTransactions(newLastBlock)
       .then(transactions => {
         console.log('RESOLVED TRANSACTIONS ', transactions)
-        return promiseEach(transactions, transaction => this.resolveTransaction(transaction))})
-      .catch(e => {console.error(e)})
+        return promiseEach(transactions, transaction => this.resolveTransaction(transaction))
+      })
+      .catch(e => {
+        console.error(e)
+      })
   }
 
   gatherTransactions(block, transactions): Promise<any[]> {
-      return this.manager.filterSaltTransactions(transactions)
+    return this.manager.filterSaltTransactions(transactions)
       .then(saltTransactions => this.manager.filterAccountAddresses(saltTransactions))
       .then(databaseAddresses => databaseAddresses.map(tx => this.manager.mapTransaction(tx, block)))
-      .catch(e => {console.error('ERROR GATHERING TRANSACTIONS: ', e)})
-    }
+      .catch(e => {
+        console.error('ERROR GATHERING TRANSACTIONS: ', e)
+      })
+  }
 
   getTransactions(i: number): Promise<any[]> {
     return this.client.getBlock(i)
@@ -124,17 +131,17 @@ export class BlockScanner<Transaction extends EthereumTransaction> {
     //lastBlock = what is recorded in db as blockchainstates.lastBlock
       .then(lastBlock => this.client.getBlockNumber()
         //newLastBlock = newest block on ethereum blockchain
-        .then(newLastBlock => {
-          console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
-          if (newLastBlock == lastBlock)
-            return Promise.resolve<void>()
+          .then(newLastBlock => {
+            console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
+            if (newLastBlock == lastBlock)
+              return Promise.resolve<void>()
 
-          return this.processBlocks(lastBlock + 1, newLastBlock)
-            .then(() => {
-              console.log('STARTING UPDATE PENDING, newLastBlock: ', newLastBlock)
-              return this.updatePending(newLastBlock - this.minimumConfirmations)
-            })
-        })
+            return this.processBlocks(lastBlock + 1, newLastBlock)
+              .then(() => {
+                console.log('STARTING UPDATE PENDING, newLastBlock: ', newLastBlock)
+                return this.updatePending(newLastBlock - this.minimumConfirmations)
+              })
+          })
       )
   }
 

@@ -10,4 +10,5 @@ __export(require("./geth-node"));
 __export(require("./double-spend"));
 __export(require("./ethereum-network"));
 __export(require("./token-contract"));
+__export(require("./mock-web3"));
 //# sourceMappingURL=index.js.map

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var promise_each2_1 = require("promise-each2");
 var utility_1 = require("./utility");
-var BlockScanner = /** @class */ (function () {
+var BlockScanner = (function () {
     function BlockScanner(model, client, minimumConfirmations) {
         if (minimumConfirmations === void 0) { minimumConfirmations = 13; }
         this.minimumConfirmations = 13;

@@ -8,7 +8,7 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
-var GethNode = /** @class */ (function () {
+var GethNode = (function () {
     function GethNode(config, port) {
         this.childProcess = null;
         this.config = config || {};
@@ -181,9 +181,9 @@ var GethNode = /** @class */ (function () {
             .then(function (blockNumber) { return console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."); })
             .then(function () { return _this.stop(); });
     };
-    GethNode.instanceIndex = 0;
     return GethNode;
 }());
+GethNode.instanceIndex = 0;
 exports.GethNode = GethNode;
 // export function mine(node, milliseconds: number) {
 //   console.log('Mining for ' + milliseconds + ' milliseconds.')

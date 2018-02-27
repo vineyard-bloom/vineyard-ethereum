@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function fund(client) {
-    const web3 = client;
-    return new Promise((resolve, reject) => {
+    var web3 = client;
+    return new Promise(function (resolve, reject) {
         console.log(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'I AM THE COINBASE BALANCE');
         web3.personal.unlockAccount(web3.eth.coinbase);
         web3.eth.sendTransaction({
@@ -15,10 +15,10 @@ function fund(client) {
     });
 }
 function spend(node) {
-    const web3 = node.getWeb3();
-    fund(web3).then(() => {
-        return new Promise((resolve, reject) => {
-            const send = () => {
+    var web3 = node.getWeb3();
+    fund(web3).then(function () {
+        return new Promise(function (resolve, reject) {
+            var send = function () {
                 web3.personal.unlockAccount(web3.eth.accounts[1]);
                 web3.eth.sendTransaction({
                     from: web3.eth.accounts[1],
@@ -37,7 +37,7 @@ function spend(node) {
             };
             setTimeout(send, 10000);
         })
-            .then(result => console.log(web3.eth.getTransaction(result)));
+            .then(function (result) { return console.log(web3.eth.getTransaction(result)); });
     });
 }
 // export function doubleSpend(config?: GethNodeConfig) {

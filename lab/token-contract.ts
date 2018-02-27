@@ -1,65 +1,64 @@
-import { Web3EthereumClient } from '../src'
-
-const contract = require('truffle-contract')
+import {Web3EthereumClient} from '../src'
+import contract from 'truffle-contract'
 
 export class TokenContract {
   private client: Web3EthereumClient
-  private web3: any
+  private web3
 
   constructor(client: Web3EthereumClient) {
     this.client = client
     this.web3 = client.getWeb3()
   }
 
-  compileContract(source: any) {
+  compileContract(source) {
     return this.web3.eth.compile.solidity(source)
   }
 
-  loadContract(abi: any) {
+  loadContract(abi) {
     return Promise.resolve(this.web3.eth.contract(abi))
   }
 
-  getTotalSupply(abi: any, address: string) {
+  getTotalSupply(abi, address) {
     return this.loadContract(abi)
-      .then(contract => {
-        return Promise.resolve(contract.at(address))
-          .then(instance => {
-            return instance.totalSupply.call()
-          })
+    .then(contract => {
+      return Promise.resolve(contract.at(address))
+      .then(instance => {
+        return instance.totalSupply.call()
       })
+    })  
   }
 
-  getData(abi: any, address: string, from: string) {
+  getData(abi, address, from){
     return this.loadContract(abi)
-      .then(contract => {
-        return Promise.resolve(contract.at(address))
-          .then(instance => {
-            return instance.balanceOf.getData(from)
-          })
+    .then(contract => {
+      return Promise.resolve(contract.at(address))
+      .then(instance => {
+        return instance.balanceOf.getData(from)
       })
+    })
   }
 
-  getBalanceOf(abi: any, address: string, from: string) {
-    // address = token contract address
-    // func = token contract method to call
+  getBalanceOf(abi, address, from) {
+    //address = token contract address
+    //func = token contract method to call
     return this.loadContract(abi)
-      .then(contract => {
-        return Promise.resolve(contract.at(address))
-          .then(instance => {
-            // last param is total tx object
-            return instance.balanceOf.call(from)
-          })
+    .then(contract => {
+      return Promise.resolve(contract.at(address))
+      .then(instance => {
+        //last param is total tx object
+        return instance.balanceOf.call(from)
       })
+    })
   }
 
-  transfer(abi: any, address: string, from: string, to: string, value: any) {
-    // address = token contract address
+  transfer(abi, address, from, to, value) {
     return this.loadContract(abi)
       .then(contract => {
         return Promise.resolve(contract.at(address))
           .then(instance => {
-            // this.watchContract(instance, from)
-            return Promise.resolve(instance.transfer.sendTransaction(to, value, {from: from, gas: 4712388}))
+            const getData = instance.transfer.getData(to, value)
+            const gasPrice = this.web3.eth.gasPrice
+            return Promise.resolve(this.web3.eth.sendTransaction({to: address, from: from, gas: 60000, gasPrice: gasPrice, data: getData}))
               .then(result => {
                 console.log(result)
                 return result
@@ -70,7 +69,7 @@ export class TokenContract {
       })
   }
 
-  getTransactionReceipt(hash: string) {
+  getTransactionReceipt(hash){
     return Promise.resolve(this.web3.eth.getTransactionReceipt(hash))
       .then(result => {
         return result
@@ -80,28 +79,28 @@ export class TokenContract {
       })
   }
 
-  watchContract(instance: any, from: string) {
-    const myEvent = instance.Transfer({from: from}, {fromBlock: 0, toBlock: 'latest'})
-    myEvent.watch(function (error: Error, result: any) {
-      console.log('watch results: ', result)
+  watchContract(instance, from){
+    const myEvent = instance.Transfer({from: from}, {fromBlock: 0, toBlock: 'latest'});
+    myEvent.watch(function(error, result){
+       console.log('watch results: ', result)
     })
 
-    // const myResults = myEvent.get(function(error, logs){})
+  // const myResults = myEvent.get(function(error, logs){})
   }
 
-  // TODO deploy contract with truffle from in here for easy onboarding
+  //TODO deploy contract with truffle from in here for easy onboarding
 
-  // different approach with truffle-contract directly - not working
-  setupContract(abi: any, address: string, func: any, from: string, ...params: any[]) {
+  //different approach with truffle-contract directly - not working
+  setupContract(abi, address, func, from, ...params) {
     let newContract = contract(abi)
     newContract.setProvider(this.client)
     newContract.deployed()
-      .then((instance: any) => {
-        // last param is total tx object
+      .then(instance => {
+        //last param is total tx object
         return instance.func.sendTransaction(...params, {from: from})
-          .then((result: any) => {
-            console.log(result)
-          })
+        .then(result => {
+          console.log(result)
+        })
       })
   }
 }

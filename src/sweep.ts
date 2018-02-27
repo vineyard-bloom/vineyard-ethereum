@@ -1,46 +1,88 @@
-import { each as promiseEach } from 'promise-each2'
-import { SweepManager } from './types'
-import BigNumber from 'bignumber.js'
-import { TokenContract } from '../lab/token-contract'
+import {each as promiseEach} from 'promise-each2'
+import {EthereumTransaction, SweepManager} from './types'
+import BigNumber from 'bignumber.js';
+import {TokenContract} from "../lab/token-contract";
 
 export interface Bristle {
   from: string
   to: string
   status: number
   txid: string
-  amount: any
+  amount
 }
 
 export interface SweepConfig {
   sweepAddress: string,
-  minSweepAmount: any
-  gas: any
-  gasPrice: any
+  tokenSweepAddress: string,
+  enabled: boolean
+  minSweepAmount: string
+  gas: number
+  gasPrice: string
+  hotWallet: string
   tokenContractAddress: string
+  testTokenContractAddress: string
 }
 
-export function gweiToWei(amount: any) {
-  return amount.times('1000000000')
+export function gweiToWei(amount) {
+  return amount.times("1000000000")
 }
 
 export class Broom {
   private manager: SweepManager
-  private client: any
+  private client
   private config: SweepConfig
   private tokenContract: TokenContract
-  private gasTotal: any
 
-  constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient: any) {
+  constructor(config: SweepConfig, ethereumManager: SweepManager, ethereumClient) {
     this.config = config
     this.manager = ethereumManager
     this.client = ethereumClient
     this.tokenContract = new TokenContract(this.client)
-    this.gasTotal = this.getTotalGas()
   }
 
-  getTotalGas() {
-    const totalGwei = (new BigNumber(this.config.gas)).times(new BigNumber(this.config.gasPrice))
-    return totalGwei
+  private singleSweep(address): Promise<Bristle> {
+    return this.manager.isAwaitingGas(address)
+      .then(bool => {
+        if(bool) {
+          return Promise.resolve()
+        } else {
+          return this.client.getBalance(address)
+            .then(balance => {
+              if (balance.greaterThan(this.config.minSweepAmount)) {
+                return this.sweepSendAndSave(balance, address)
+              }
+            })
+        }
+      })
+  }
+
+  private sweepSendAndSave(balance, address): Promise<any> {
+    const sendAmount = this.calculateSendAmount(balance)
+    const transaction = {
+      from: address,
+      to: this.config.sweepAddress,
+      value: sendAmount,
+      gas: this.config.gas,
+      gasPrice: this.config.gasPrice,
+    }
+    console.log('Sweeping address', transaction)
+    return this.client.send(transaction)
+      .then(tx => {
+        console.log('Sweeping address succeeded', tx.hash)
+        return this.saveSweepRecord({
+          from: address,
+          to: this.config.sweepAddress,
+          status: 0,
+          txid: tx.hash,
+          amount: sendAmount
+        })
+      })
+  }
+
+  calculateSendAmount(amount) {
+    const gasPrice = gweiToWei(new BigNumber(this.config.gasPrice))
+    const gasTotal = new BigNumber(this.config.gas).times(gasPrice)
+    return amount.minus(gasTotal)
   }
 
   saveSweepRecord(bristle: Bristle) {
@@ -52,91 +94,93 @@ export class Broom {
     return this.manager.getDustyAddresses()
       .then(addresses => {
         console.log('Dusty addresses', addresses.length, addresses)
-        return promiseEach(addresses, (address: any) => this.singleSweep(address))
+        return promiseEach(addresses, address => this.singleSweep(address))
       })
       .then(() => console.log('Finished Ethereum sweep'))
   }
 
-  tokenSweep(abi: any) {
+  tokenSweep(abi) {
     console.log('Starting Token sweep')
-    return this.manager.getDustyAddresses()
-      .then(addresses => {
-        console.log('Dusty addresses', addresses.length, addresses)
-        return promiseEach(addresses, (address: any) => this.tokenSingleSweep(abi, address))
-      })
-      .then(() => console.log('Finished Token sweep'))
+    return this.provideGas(abi)
+      .then(() => this.manager.getDustyAddresses()
+        .then(addresses => {
+          console.log('Dusty addresses', addresses.length, addresses)
+          return promiseEach(addresses, address => this.tokenSingleSweep(abi, address))
+        })
+    ).then(() => console.log('Finished Token sweep'))
   }
 
-  tokenSingleSweep(abi: any, address: string) {
-    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
-      .then(balance => {
-        console.log('Sweeping address', address)
-        return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.sweepAddress, balance.c[0])
-          .then(tx => {
-            console.log('Sweeping address succeeded', tx.hash)
-            return this.saveSweepRecord({
-              from: address,
-              to: this.config.sweepAddress,
-              status: 0,
-              txid: tx.hash,
-              amount: balance
-            })
+  tokenSingleSweep(abi, address) {
+    return this.client.unlockAccount(address)
+        .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+          .then(balance => {
+            if(new BigNumber(balance).toNumber() > 0) {
+              console.log('Sweeping address', address)
+              return this.tokenContract.transfer(abi, this.config.tokenContractAddress, address, this.config.tokenSweepAddress, balance.toNumber())
+                .then(tx => {
+                  console.log('Sweeping address succeeded', tx.hash)
+                  return this.saveSweepRecord({
+                    from: address,
+                    to: this.config.tokenSweepAddress,
+                    status: 1,
+                    txid: tx.hash,
+                    amount: balance
+                  }).then(() => this.manager.removeGasTransaction(address))
+                })
+            }
           })
+        ).catch(err => console.error(`Error sweeping address: ${address}:\n ${err}`))
+  }
+
+  needsGas(abi, address):Promise<boolean> {
+    return this.manager.isAwaitingGas(address)
+      .then(bool => {
+        if(bool) {
+          return false
+        } else {
+          return this.client.unlockAccount(address)
+            .then(() => this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
+              .then(tokenBalance => this.client.getBalance(address)
+                .then(ethBalance => {
+                  const gasPrice = this.client.getWeb3().eth.gasPrice
+                  const totalGasEth = 60000 * parseFloat(gweiToWei(new BigNumber(gasPrice)))
+                  return new BigNumber(tokenBalance).toNumber() > 0 && ethBalance.toNumber() < totalGasEth ? new BigNumber(tokenBalance).toNumber() : false
+                })
+              )
+            )
+        }
       })
   }
 
-  needsGas(abi: any, address: string): Promise<boolean> {
-    return this.tokenContract.getBalanceOf(abi, this.config.tokenContractAddress, address)
-      .then(tokenBalance => this.client.getBalance(address)
-        .then((ethBalance: any) => parseFloat(tokenBalance) > 0 && ethBalance.toNumber() < 300000000000000)
-      )
-  }
-
-  gasTransaction(abi: any, address: any) {
+  gasTransaction(abi, address) {
     return this.needsGas(abi, address)
-      .then(gasLess => {
-        if (gasLess) {
-          return this.client.send(address, this.config.tokenContractAddress, 0.0003)
+      .then(tokenBalance => {
+        if(tokenBalance) {
+              const gasPrice = this.client.getWeb3().eth.gasPrice / 1000000000
+              const value = parseFloat(gweiToWei(new BigNumber(gasPrice))) * 60000
+              const transaction = {
+                from: this.config.hotWallet,
+                to: address,
+                gasPrice: gasPrice,
+                gas: this.config.gas,
+                value: value
+              }
+              return this.client.send(transaction)
+                .then(tx => this.manager.saveGasTransaction(address, tx.hash))
         }
-      })
+      }).catch(err => console.error(`Error providing gas at address: ${address}:\n ${err}`))
   }
 
-  provideGas(abi: any) {
+  provideGas(abi) {
     console.log('Starting Salt Gas Provider')
-    return this.manager.getDustyAddresses()
-      .then(addresses => {
-        console.log('Dusty addresses', addresses.length, addresses)
-        return promiseEach(addresses, (address: string) => this.gasTransaction(abi, address))
-      })
-      .then(() => console.log('Finished Salt Gas Provider job'))
-  }
-
-  private singleSweep(address: any): Promise<Bristle> {
-    return this.client.getBalance(address)
-      .then((balance: any) => { // balance is a bigNumber
-        const sendAmount = balance.minus(this.gasTotal)
-        if (sendAmount.greaterThan(this.gasTotal)) {
-          const transaction = {
-            from: address,
-            to: this.config.sweepAddress,
-            value: sendAmount,
-            gas: this.config.gas,
-            gasPrice: this.config.gasPrice
-          }
-          console.log('Sweeping address', transaction)
-          return this.client.sendTransaction(transaction)
-            .then((tx: any) => {
-              console.log('Sweeping address succeeded', tx.hash)
-              return this.saveSweepRecord({
-                from: address,
-                to: this.config.sweepAddress,
-                status: 0,
-                txid: tx.hash,
-                amount: sendAmount
-              })
-            })
-        }
-        return Promise.resolve()
-      })
+    return this.client.unlockAccount(this.config.hotWallet)
+      .then(() => this.manager.getDustyAddresses()
+        .then(addresses => {
+          console.log('Dusty addresses', addresses.length, addresses)
+          return promiseEach(addresses, address => {
+            return this.gasTransaction(abi, address)
+          })
+        })
+      )
   }
 }

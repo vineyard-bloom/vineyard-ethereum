@@ -1,69 +1,112 @@
 import { each as promiseEach } from 'promise-each2'
-import { EthereumClient, EthereumTransactionOld } from './types'
-import { isTransactionValid } from './utility'
+import { EthereumClient, EthereumTransaction } from './types'
+import { getEvents, isTransactionValid } from './utility'
 
-// more strongly typed eventually
-// export type TransactionFilter = (transaction) => Promise<boolean>
-// export type TransactionMap = (transaction) => Promise<EthereumTransaction>
+//more strongly typed eventually
+export type TransactionFilter = (transaction) => Promise<boolean>
+export type TransactionMap = (transaction) => Promise<EthereumTransaction>
 
-export class BlockScanner<Transaction extends EthereumTransactionOld> {
+export class BlockScanner<Transaction extends EthereumTransaction> {
   private client: EthereumClient
   private minimumConfirmations: number = 13
-  private manager: any
+  private manager
 
-  constructor(model: any, client: EthereumClient, minimumConfirmations: number = 13) {
+  constructor(model, client: EthereumClient, minimumConfirmations: number = 13) {
     this.client = client
     this.manager = model
     this.minimumConfirmations = minimumConfirmations
   }
 
-  gatherTransactions(block: any, transactions: any): Promise<any[]> {
+  resolveTransaction(transaction): Promise<any> {
+    console.log('RESOLVING TRANSACTION: ', transaction.txid)
+    return isTransactionValid(this.client, transaction.txid)
+      .then(result => {
+        if (!result.isValid) {
+          console.log('Denying transaction', transaction)
+          return this.manager.setStatus(transaction, 2)
+            .then(() => this.manager.onDenial(transaction))
+        }
+        else {
+          return getEvents((this.client as any).web3, {
+            fromBlock: result.receipt.blockNumber,
+            toBlock: result.receipt.blockNumber,
+          })
+            .then((events: any) => {
+              if (events.result.some(e => e.transactionHash == transaction.txid)) {
+                console.log('Confirming transaction', transaction)
+                return this.manager.setStatus(transaction, 1)
+                  .then(() => this.manager.onConfirm(transaction))
+              }
+              else {
+                console.log('Denying transaction at contract layer', transaction)
+                return this.manager.setStatus(transaction, 2)
+                  .then(() => this.manager.onDenial(transaction))
+              }
+            })
+        }
+      }).catch(e => {
+        console.error('Error resolving transation: ', e)
+      })
+  }
+
+  private updatePending(newLastBlock: number): Promise<void> {
+    console.log('IN UPDATE PENDING')
+    return this.manager.getResolvedTransactions(newLastBlock)
+      .then(transactions => {
+        console.log('RESOLVED TRANSACTIONS ', transactions)
+        return promiseEach(transactions, transaction => this.resolveTransaction(transaction))
+      })
+      .catch(e => {
+        console.error(e)
+      })
+  }
+
+  gatherTransactions(block, transactions): Promise<any[]> {
     return this.manager.filterSaltTransactions(transactions)
-      .then((saltTransactions: any) => this.manager.filterAccountAddresses(saltTransactions))
-      .then((databaseAddresses: any) => databaseAddresses.map((tx: any) => this.manager.mapTransaction(tx, block))
-      )
+      .then(saltTransactions => this.manager.filterAccountAddresses(saltTransactions))
+      .then(databaseAddresses => databaseAddresses.map(tx => this.manager.mapTransaction(tx, block)))
+      .catch(e => {
+        console.error('ERROR GATHERING TRANSACTIONS: ', e)
+      })
   }
 
   getTransactions(i: number): Promise<any[]> {
     return this.client.getBlock(i)
       .then(block => {
-        if (!block || !block.transactions) {
+        if (!block || !block.transactions)
           return Promise.resolve([])
-        }
         return this.gatherTransactions(block, block.transactions)
       })
   }
 
-  scanBlocks(i: number, endBlockNumber: number): Promise<any[]> {
-    if (i > endBlockNumber) {
+  scanBlocks(i, endBlockNumber): Promise<any[]> {
+    if (i > endBlockNumber)
       return Promise.resolve([])
-    }
 
     return this.getTransactions(i)
       .then(first => this.scanBlocks(i + 1, endBlockNumber)
         .then(second => first.concat(second)))
   }
 
-  getTransactionsFromRange(lastBlock: number, newLastBlock: number) {
+  getTransactionsFromRange(lastBlock, newLastBlock) {
     return this.scanBlocks(lastBlock + 1, newLastBlock)
   }
 
-  processBlock(blockIndex: number): Promise<void> {
+  processBlock(blockIndex): Promise<void> {
     return this.getTransactions(blockIndex)
       .then(transactions => {
-        console.log('Scanning block', blockIndex, 'tx-count:', transactions.length)
-        return transactions.length === 0
+        console.log('Scanning block', blockIndex, 'at', new Date(), 'tx-count:', transactions.length)
+        return transactions.length == 0
           ? Promise.resolve()
-          : promiseEach(transactions, (tx: any) => this.manager.saveTransaction(tx, blockIndex))
+          : promiseEach(transactions, tx => this.manager.saveTransaction(tx, blockIndex))
       })
   }
 
-  processBlocks(blockIndex: number, endBlockNumber: number): Promise<void> {
+  processBlocks(blockIndex, endBlockNumber): Promise<void> {
     const secondPassOffset = 5
 
-    if (blockIndex > endBlockNumber) {
+    if (blockIndex > endBlockNumber)
       return Promise.resolve()
-    }
 
     return this.processBlock(blockIndex)
       .then(() => {
@@ -85,43 +128,21 @@ export class BlockScanner<Transaction extends EthereumTransactionOld> {
 
   updateTransactions() {
     return this.manager.getLastBlock()
-      .then((lastBlock: any) => this.client.getBlockNumber()
-        .then((newLastBlock: any) => {
-          console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
-          if (newLastBlock === lastBlock) {
-            return Promise.resolve()
-          }
+    //lastBlock = what is recorded in db as blockchainstates.lastBlock
+      .then(lastBlock => this.client.getBlockNumber()
+        //newLastBlock = newest block on ethereum blockchain
+          .then(newLastBlock => {
+            console.log('Updating blocks (last - current)', lastBlock, newLastBlock)
+            if (newLastBlock == lastBlock)
+              return Promise.resolve<void>()
 
-          return this.processBlocks(lastBlock + 1, newLastBlock)
-            .then(() => this.updatePending(newLastBlock - this.minimumConfirmations))
-        })
+            return this.processBlocks(lastBlock + 1, newLastBlock)
+              .then(() => {
+                console.log('STARTING UPDATE PENDING, newLastBlock: ', newLastBlock)
+                return this.updatePending(newLastBlock - this.minimumConfirmations)
+              })
+          })
       )
   }
 
-  private resolveTransaction(transaction: any): Promise<any> {
-    return isTransactionValid(this.client, transaction.txid)
-      .then(valid => {
-        if (!valid) {
-          console.log('Denying transaction', transaction.txid)
-          return this.manager.setStatus(transaction, 2)
-            .then(() => this.manager.onDenial(transaction))
-        } else {
-          console.log('Confirming transaction', transaction.txid)
-          return this.manager.setStatus(transaction, 1)
-            .then(() => this.manager.onConfirm(transaction))
-        }
-      }).catch(e => {
-        console.error(e)
-      })
-  }
-
-  private updatePending(newLastBlock: number): Promise<void> {
-    return this.manager.getResolvedTransactions(newLastBlock)
-      .then((transactions: any) => {
-        promiseEach(transactions, (transaction: any) => this.resolveTransaction(transaction))
-      })
-      .catch((e: Error) => {
-        console.error(e)
-      })
-  }
-}// end BlockScanner class
+}//end BlockScanner class

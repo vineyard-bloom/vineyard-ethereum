@@ -1,61 +1,62 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bignumber_js_1 = require("bignumber.js");
-class MockWeb3 {
-    constructor() {
+var bignumber_js_1 = require("bignumber.js");
+var MockWeb3 = (function () {
+    function MockWeb3() {
         this.eth = new MockEth();
         this.personal = new MockPersonal();
         this.eth.getAccounts = this.personal.getAccounts; // eth not responsible for account generation but for some reason has a read function. Copying it from personal on initialization.
     }
-    setProvider() {
+    MockWeb3.prototype.setProvider = function () {
         return;
-    }
-}
+    };
+    return MockWeb3;
+}());
 exports.MockWeb3 = MockWeb3;
-class MockEth {
-    constructor() {
+var MockEth = (function () {
+    function MockEth() {
         this.transactions = [];
         this.coinbase = randomAddress();
     }
-    getGasPrice() {
+    MockEth.prototype.getGasPrice = function () {
         return Math.floor(Math.random() * 1e+6);
-    }
-    getBalance(address, callback) {
-        const creditTxs = this.transactions.filter(tx => tx.to === address);
-        const debitTxs = this.transactions.filter(tx => tx.from === address);
-        const credits = creditTxs.reduce((acc, tx) => tx.value + acc, 0);
-        const debits = debitTxs.reduce((acc, tx) => tx.value + acc, 0);
+    };
+    MockEth.prototype.getBalance = function (address, callback) {
+        var creditTxs = this.transactions.filter(function (tx) { return tx.to === address; });
+        var debitTxs = this.transactions.filter(function (tx) { return tx.from === address; });
+        var credits = creditTxs.reduce(function (acc, tx) { return tx.value + acc; }, 0);
+        var debits = debitTxs.reduce(function (acc, tx) { return tx.value + acc; }, 0);
         return credits - debits;
-    }
-    getBlock(hashOrNumber, includeTxs, callback) {
-        let hash, number;
-        const getByHash = this.transactions.find(tx => tx.hash === hashOrNumber);
-        const getByNumber = this.transactions.find(tx => tx.block === hashOrNumber);
-        const blockTransactions = getByHash || getByNumber;
+    };
+    MockEth.prototype.getBlock = function (hashOrNumber, includeTxs, callback) {
+        var hash, number;
+        var getByHash = this.transactions.find(function (tx) { return tx.hash === hashOrNumber; });
+        var getByNumber = this.transactions.find(function (tx) { return tx.block === hashOrNumber; });
+        var blockTransactions = getByHash || getByNumber;
         if (!getByHash) {
             number = hashOrNumber;
         }
         if (!getByNumber) {
             hash = hashOrNumber;
         }
-        const block = {
+        var block = {
             hash: hash || randomTxHash(),
             number: number || randomBlockNumber(),
             timestamp: Date.now().toString(),
             transactions: blockTransactions
         };
         return callback(null, block);
-    }
-    getBlockNumber(callback) {
+    };
+    MockEth.prototype.getBlockNumber = function (callback) {
         return callback(null, randomBlockNumber());
-    }
-    getTransaction(hash) {
-        const tx = this.transactions.find(tx => tx.hash === hash);
+    };
+    MockEth.prototype.getTransaction = function (hash) {
+        var tx = this.transactions.find(function (tx) { return tx.hash === hash; });
         return tx || randomTx();
-    }
-    getTransactionReceipt(txHash, callback) {
-        const getTx = this.getTransaction(txHash);
-        const receipt = {
+    };
+    MockEth.prototype.getTransactionReceipt = function (txHash, callback) {
+        var getTx = this.getTransaction(txHash);
+        var receipt = {
             blockHash: randomTxHash(),
             blockNumber: getTx.block,
             transactionHash: txHash,
@@ -68,31 +69,33 @@ class MockEth {
             logs: '',
             status: '0x1'
         };
-    }
-    sendTransaction(transaction, callback) {
-        const hash = randomTxHash();
-        const transactionWithId = Object.assign({ hash: hash, block: randomBlockNumber(), status: '1' }, transaction);
+    };
+    MockEth.prototype.sendTransaction = function (transaction, callback) {
+        var hash = randomTxHash();
+        var transactionWithId = Object.assign({ hash: hash, block: randomBlockNumber(), status: '1' }, transaction);
         this.transactions.push(transactionWithId);
         return callback(null, hash);
-    }
-}
+    };
+    return MockEth;
+}());
 exports.MockEth = MockEth;
-class MockPersonal {
-    constructor() {
+var MockPersonal = (function () {
+    function MockPersonal() {
         this.accounts = [];
     }
-    unlockAccount(address, callback) {
+    MockPersonal.prototype.unlockAccount = function (address, callback) {
         return callback(null, true);
-    }
-    newAccount(callback) {
-        const newAccount = randomAddress();
+    };
+    MockPersonal.prototype.newAccount = function (callback) {
+        var newAccount = randomAddress();
         this.accounts.push(newAccount);
         return callback(null, newAccount);
-    }
-    getAccounts() {
+    };
+    MockPersonal.prototype.getAccounts = function () {
         return Promise.resolve(this.accounts);
-    }
-}
+    };
+    return MockPersonal;
+}());
 exports.MockPersonal = MockPersonal;
 // Random helpers
 function randomTxHash() {

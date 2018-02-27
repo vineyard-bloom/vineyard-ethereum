@@ -25,11 +25,11 @@ export declare class TokenClient implements ReadClient<ExternalTransaction> {
     decodeTransactions(transactions: any[]): Promise<any[]>;
     decodeTransaction(transaction: any): {
         to: any;
-        value: number | undefined;
+        value: any;
     };
     decodeMethod(data: any): {
         name: string;
         params: any;
-    } | undefined;
+    };
     addAbi(abiArray: any): any[];
 }

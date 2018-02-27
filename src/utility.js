@@ -1,26 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bignumber_js_1 = require("bignumber.js");
-const promise_each2_1 = require("promise-each2");
-const Web3 = require('web3');
+var bignumber_js_1 = require("bignumber.js");
+var promise_each2_1 = require("promise-each2");
+var promiseRequest = require('./request-promise');
 function ethToWei(amount) {
-    return amount.times(new bignumber_js_1.default('1000000000000000000'));
+    return amount.times(new bignumber_js_1.default("1000000000000000000"));
 }
 exports.ethToWei = ethToWei;
 function weiToEth(amount) {
-    return amount.dividedBy(new bignumber_js_1.default('1000000000000000000'));
+    return amount.dividedBy(new bignumber_js_1.default("1000000000000000000"));
 }
 exports.weiToEth = weiToEth;
 function checkAllBalances(web3) {
-    let totalBal = 0;
-    let sortableBalances = [];
-    for (let acctNum in web3.eth.accounts) {
-        let acct = web3.eth.accounts[acctNum];
-        let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
-        sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal });
+    var totalBal = 0;
+    var sortableBalances = [];
+    for (var acctNum in web3.eth.accounts) {
+        var acct = web3.eth.accounts[acctNum];
+        var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
+        sortableBalances.push({ "id": acctNum, "acct": acct, "acctBal": acctBal });
         totalBal += parseFloat(acctBal);
     }
-    let sortedBalances = sortableBalances.sort(function (a, b) {
+    var sortedBalances = sortableBalances.sort(function (a, b) {
         if (a.acctBal > b.acctBal) {
             return -1;
         }
@@ -29,13 +29,14 @@ function checkAllBalances(web3) {
         }
         return 0;
     });
-    for (let acctNum in sortedBalances) {
-        let acct = web3.eth.accounts[acctNum];
-        console.log('  eth.accounts[' + acctNum + ']: \t' + acct + ' \tbalance: ' + sortedBalances[acctNum].acctBal + ' ether');
+    for (var acctNum in sortedBalances) {
+        var acct = web3.eth.accounts[acctNum];
+        console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + sortedBalances[acctNum].acctBal + " ether");
     }
-    console.log('  Total balance: ' + totalBal + ' ether');
+    console.log("  Total balance: " + totalBal + " ether");
 }
 exports.checkAllBalances = checkAllBalances;
+;
 function createTransaction(e, block) {
     return {
         hash: e.hash,
@@ -53,16 +54,16 @@ function createTransaction(e, block) {
     };
 }
 function gatherTransactions(block, transactions, addressManager) {
-    let result = [];
+    var result = [];
     return promise_each2_1.each(transactions
-        .filter((e) => e.to)
-        .map((e) => () => addressManager.hasAddress(e.to)
-        .then(success => {
+        .filter(function (e) { return e.to; })
+        .map(function (e) { return function () { return addressManager.hasAddress(e.to)
+        .then(function (success) {
         if (success) {
             result.push(createTransaction(e, block));
         }
-    })))
-        .then(() => result);
+    }); }; }))
+        .then(function () { return result; });
 }
 // const bundleSize = 20
 // function getTransactionsFromBlock(block, addressManager: AddressManager): Promise<any[]> {
@@ -73,49 +74,72 @@ function gatherTransactions(block, transactions, addressManager) {
 // }
 function getTransactions(client, addressManager, i) {
     return client.getBlock(i)
-        .then(block => {
-        if (!block || !block.transactions) {
+        .then(function (block) {
+        if (!block || !block.transactions)
             return Promise.resolve([]);
-        }
         return gatherTransactions(block, block.transactions, addressManager);
     });
 }
 exports.getTransactions = getTransactions;
 function isTransactionValid(client, txid) {
-    return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
-        .then(transaction => {
-        // '0x0' == failed tx, might still be mined in block, though
-        // '0x1' == successful
-        if (transaction && transaction.blockNumber && transaction.status === '0x1') {
-            return Promise.resolve(true);
+    return new Promise(function (resolve, reject) {
+        client.web3.eth.getTransactionReceipt(txid, function (err, receipt) {
+            if (err) {
+                console.error('Error getting transaction receipt for ', txid, 'with message ', err.message);
+                reject(new Error(err));
+            }
+            else {
+                resolve(receipt);
+            }
+        });
+    }).then(function (receipt) {
+        //'0x0' == failed tx, might still be mined in block, though
+        //'0x1' == successful
+        if (receipt && receipt.blockNumber && receipt.status === '0x1') {
+            console.log('VALID TRANSACTION: ', receipt);
+            return { receipt: receipt, isValid: true };
         }
         else {
-            return Promise.resolve(false);
+            console.log('INVALID TRANSACTION: ', receipt);
+            return { receipt: receipt, isValid: false };
         }
-    }).catch(e => {
-        console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);
-        return Promise.resolve();
     });
 }
 exports.isTransactionValid = isTransactionValid;
 function scanBlocks(client, addressManager, i, endBlockNumber) {
-    if (i > endBlockNumber) {
+    if (i > endBlockNumber)
         return Promise.resolve([]);
-    }
     return getTransactions(client, addressManager, i)
-        .then(first => scanBlocks(client, addressManager, i + 1, endBlockNumber)
-        .then(second => first.concat(second)));
+        .then(function (first) { return scanBlocks(client, addressManager, i + 1, endBlockNumber)
+        .then(function (second) { return first.concat(second); }); });
 }
 function getTransactionsFromRange(client, addressManager, lastBlock, newLastBlock) {
     return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);
 }
 exports.getTransactionsFromRange = getTransactionsFromRange;
-function initializeWeb3(ethereumConfig, web3) {
-    if (!web3) {
-        web3 = new Web3();
-        web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http));
-    }
-    return web3;
+var formatters = require('web3/lib/web3/formatters');
+function getEvents(web3, filter) {
+    var processedFilter = {
+        address: filter.address,
+        from: filter.from,
+        to: filter.to,
+        fromBlock: formatters.inputBlockNumberFormatter(filter.fromBlock),
+        toBlock: formatters.inputBlockNumberFormatter(filter.toBlock),
+        topics: filter.topics,
+    };
+    var body = {
+        jsonrpc: "2.0",
+        method: "eth_getLogs",
+        id: 1,
+        params: [processedFilter],
+    };
+    return promiseRequest({
+        method: 'POST',
+        uri: web3.currentProvider.host,
+        body: body,
+        json: true,
+        jar: false,
+    });
 }
-exports.initializeWeb3 = initializeWeb3;
+exports.getEvents = getEvents;
 //# sourceMappingURL=utility.js.map

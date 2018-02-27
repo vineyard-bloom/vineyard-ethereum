@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const src_1 = require("../src");
-const ChildProcess = require('child_process');
-const rimraf = require('rimraf');
+var src_1 = require("../src");
+var ChildProcess = require('child_process');
+var rimraf = require('rimraf');
 var Status;
 (function (Status) {
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
-class GethNode {
-    constructor(config, port) {
+var GethNode = (function () {
+    function GethNode(config, port) {
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
         this.datadir = './temp/eth/geth' + this.index;
@@ -17,73 +17,75 @@ class GethNode {
         this.port = port;
         this.config.gethPath = this.config.gethPath || 'geth';
     }
-    getWeb3() {
+    GethNode.prototype.getWeb3 = function () {
         return this.client.getWeb3();
-    }
-    getClient() {
+    };
+    GethNode.prototype.getClient = function () {
         return this.client;
-    }
-    getKeydir() {
+    };
+    GethNode.prototype.getKeydir = function () {
         return this.keydir;
-    }
-    getBootNodeFlags() {
+    };
+    GethNode.prototype.getBootNodeFlags = function () {
         return '';
         // return this.config.bootnodes
         //   ? ' --bootnodes ' + this.config.bootnodes + ' '
         //   : ''
-    }
-    getCommonFlags() {
-        const verbosity = this.config.verbosity || 0;
+    };
+    GethNode.prototype.getCommonFlags = function () {
+        var verbosity = this.config.verbosity || 0;
         return ' --ipcdisable --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --verbosity ' + verbosity
             + ' --networkid 101 --port=' + (30303 + this.index)
             + ' ' + this.getEtherbaseFlags();
-    }
-    getRPCFlags() {
+    };
+    GethNode.prototype.getRPCFlags = function () {
         return ' --rpc --rpcport ' + this.port
             + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
-    }
-    getEtherbaseFlags() {
+    };
+    GethNode.prototype.getEtherbaseFlags = function () {
         return '--etherbase=' + this.config.coinbase;
-    }
-    start(flags = '') {
+    };
+    GethNode.prototype.start = function (flags) {
+        if (flags === void 0) { flags = ''; }
         console.log('Starting Geth');
-        const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
+        var command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
         console.log('geth ' + command);
         return this.launch(command);
-    }
-    startMining() {
+    };
+    GethNode.prototype.startMining = function () {
         return this.start('--mine --minerthreads=4');
-    }
-    execSync(suffix) {
-        const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
+    };
+    GethNode.prototype.execSync = function (suffix) {
+        var command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
         console.log(command);
-        const result = ChildProcess.execSync(command);
+        var result = ChildProcess.execSync(command);
         return result.toString();
-    }
-    initialize(genesisPath) {
+    };
+    GethNode.prototype.initialize = function (genesisPath) {
         return this.execSync('init ' + genesisPath);
-    }
-    getNodeUrl() {
+    };
+    GethNode.prototype.getNodeUrl = function () {
         return this.execSync('--exec admin.nodeInfo.enode console')
             .replace(/\r|\n/g, '')
             .replace('[::]', '127.0.0.1');
-    }
-    isRunning() {
+    };
+    GethNode.prototype.isRunning = function () {
         return this.childProcess != null;
-    }
-    isConnected() {
+    };
+    GethNode.prototype.isConnected = function () {
         return this.client.getWeb3().isConnected();
-    }
-    mineBlocks(blockCount) {
+    };
+    GethNode.prototype.mineBlocks = function (blockCount) {
+        var _this = this;
         console.log('Mining', blockCount, 'blocks');
-        let originalBlock;
-        let targetBlock;
-        const next = () => {
-            return new Promise(resolve => setTimeout(resolve, 50))
-                .then(() => this.getClient().getBlockNumber())
-                .then(blockNumber => {
+        var originalBlock;
+        var targetBlock;
+        var next = function () {
+            return new Promise(function (resolve) { return setTimeout(resolve, 50); })
+                .then(function () { return _this.getClient().getBlockNumber(); })
+                .then(function (blockNumber) {
                 if (blockNumber < targetBlock) {
                     return next();
                 }
@@ -91,74 +93,76 @@ class GethNode {
             });
         };
         return this.getClient().getBlockNumber()
-            .then(blockNumber => {
+            .then(function (blockNumber) {
             originalBlock = blockNumber;
             targetBlock = blockNumber + blockCount;
         })
             .then(next);
-    }
-    addPeer(enode) {
+    };
+    GethNode.prototype.addPeer = function (enode) {
         console.log(this.index, 'admin.addPeer(' + enode + ')');
         this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n');
-    }
-    listPeers() {
+    };
+    GethNode.prototype.listPeers = function () {
         this.childProcess.stdin.write('admin.peers\n');
-    }
-    stop() {
+    };
+    GethNode.prototype.stop = function () {
+        var _this = this;
         if (!this.childProcess) {
             return Promise.resolve();
         }
         console.log(this.index, 'Stopping node.');
         this.client.getWeb3().reset();
-        return new Promise((resolve, reject) => {
-            this.childProcess.stdin.write('exit\n');
-            this.childProcess.kill();
-            const onStop = () => {
-                if (this.childProcess) {
-                    this.childProcess = null;
-                    console.log(this.index, 'Node stopped.');
+        return new Promise(function (resolve, reject) {
+            _this.childProcess.stdin.write('exit\n');
+            _this.childProcess.kill();
+            var onStop = function () {
+                if (_this.childProcess) {
+                    _this.childProcess = null;
+                    console.log(_this.index, 'Node stopped.');
                     resolve();
                 }
             };
-            this.childProcess.on('close', (code) => {
+            _this.childProcess.on('close', function (code) {
                 onStop();
             });
-            setTimeout(() => {
+            setTimeout(function () {
                 onStop();
             }, 500);
         });
-    }
-    launch(flags) {
-        const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
-        childProcess.stdout.on('data', (data) => {
-            console.log(this.index, 'stdout:', `${data}`);
+    };
+    GethNode.prototype.launch = function (flags) {
+        var _this = this;
+        var childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
+        childProcess.stdout.on('data', function (data) {
+            console.log(_this.index, 'stdout:', "" + data);
         });
-        childProcess.stderr.on('data', (data) => {
-            console.error(this.index, 'stderr:', `${data}`);
+        childProcess.stderr.on('data', function (data) {
+            console.error(_this.index, 'stderr:', "" + data);
         });
-        this.childProcess.on('close', (code) => {
-            console.log(this.index, `child process exited with code ${code}`);
+        this.childProcess.on('close', function (code) {
+            console.log(_this.index, "child process exited with code " + code);
         });
         this.client = new src_1.Web3EthereumClient({
             http: 'http://localhost:' + this.port
         });
-        return new Promise(resolve => {
-            let isFinished = false;
-            const finished = () => {
+        return new Promise(function (resolve) {
+            var isFinished = false;
+            var finished = function () {
                 if (!isFinished) {
                     isFinished = true;
-                    console.log(this.index, 'Connected to web3', ' (is connected):', this.isConnected());
+                    console.log(_this.index, 'Connected to web3', ' (is connected):', _this.isConnected());
                     resolve();
                 }
             };
             setTimeout(finished, 5500);
-            const next = () => {
-                return new Promise(resolve => setTimeout(resolve, 50))
-                    .then(() => {
+            var next = function () {
+                return new Promise(function (resolve) { return setTimeout(resolve, 50); })
+                    .then(function () {
                     if (isFinished) {
                         return;
                     }
-                    if (!this.isConnected()) {
+                    if (!_this.isConnected()) {
                         return next();
                     }
                     finished();
@@ -166,14 +170,15 @@ class GethNode {
             };
             next();
         })
-            .then(() => {
-            const enodes = this.config.enodes || [];
-            for (let i = 0; i < enodes.length; ++i) {
-                this.addPeer(enodes[i]);
+            .then(function () {
+            var enodes = _this.config.enodes || [];
+            for (var i = 0; i < enodes.length; ++i) {
+                _this.addPeer(enodes[i]);
             }
         });
-    }
-}
-GethNode.instanceIndex = 0;
+    };
+    GethNode.instanceIndex = 0;
+    return GethNode;
+}());
 exports.GethNode = GethNode;
 //# sourceMappingURL=geth-node.js.map

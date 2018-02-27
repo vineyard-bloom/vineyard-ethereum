@@ -1,40 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const gethServer_1 = require("./gethServer");
-const child_process = require('child_process');
-const fs = require('fs');
-class GethLab {
-    constructor(config, client, server = new gethServer_1.GethServer()) {
+var gethServer_1 = require("./gethServer");
+var child_process = require('child_process');
+var fs = require('fs');
+var GethLab = (function () {
+    function GethLab(config, client, server) {
+        if (server === void 0) { server = new gethServer_1.GethServer(); }
         this.defaultAddress = '';
         this.config = config;
         this.client = client;
         this.server = server;
     }
-    getSweepAddress() {
+    GethLab.prototype.getSweepAddress = function () {
         throw new Error('Not implemented.');
         // return this.config.ethereum.sweepAddress
-    }
-    start() {
+    };
+    GethLab.prototype.start = function () {
         return this.server.start();
-    }
-    stop() {
+    };
+    GethLab.prototype.stop = function () {
         return this.server.stop();
-    }
-    reset() {
+    };
+    GethLab.prototype.reset = function () {
+        var _this = this;
         // return this.deleteWallet()
         return this.stop()
-            .then(() => this.start());
-    }
-    send(address, amount) {
-        return new Promise((resolve, reject) => {
-            this.client.send('', address, amount)
-                .then(result => console.log(result))
-                .catch(error => console.log(error));
+            .then(function () { return _this.start(); });
+    };
+    GethLab.prototype.send = function (address, amount) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.client.send('', address, amount)
+                .then(function (result) { return console.log(result); })
+                .catch(function (error) { return console.log(error); });
         });
-    }
-    generate(blockCount) {
+    };
+    GethLab.prototype.generate = function (blockCount) {
         return Promise.resolve();
-    }
-}
+    };
+    return GethLab;
+}());
 exports.GethLab = GethLab;
 //# sourceMappingURL=gethLab.js.map

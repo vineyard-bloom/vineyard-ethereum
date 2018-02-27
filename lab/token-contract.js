@@ -1,94 +1,100 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const contract = require('truffle-contract');
-class TokenContract {
-    constructor(client) {
+var truffle_contract_1 = require("truffle-contract");
+var TokenContract = (function () {
+    function TokenContract(client) {
         this.client = client;
         this.web3 = client.getWeb3();
     }
-    compileContract(source) {
+    TokenContract.prototype.compileContract = function (source) {
         return this.web3.eth.compile.solidity(source);
-    }
-    loadContract(abi) {
+    };
+    TokenContract.prototype.loadContract = function (abi) {
         return Promise.resolve(this.web3.eth.contract(abi));
-    }
-    getTotalSupply(abi, address) {
+    };
+    TokenContract.prototype.getTotalSupply = function (abi, address) {
         return this.loadContract(abi)
-            .then(contract => {
+            .then(function (contract) {
             return Promise.resolve(contract.at(address))
-                .then(instance => {
+                .then(function (instance) {
                 return instance.totalSupply.call();
             });
         });
-    }
-    getData(abi, address, from) {
+    };
+    TokenContract.prototype.getData = function (abi, address, from) {
         return this.loadContract(abi)
-            .then(contract => {
+            .then(function (contract) {
             return Promise.resolve(contract.at(address))
-                .then(instance => {
+                .then(function (instance) {
                 return instance.balanceOf.getData(from);
             });
         });
-    }
-    getBalanceOf(abi, address, from) {
-        // address = token contract address
-        // func = token contract method to call
+    };
+    TokenContract.prototype.getBalanceOf = function (abi, address, from) {
+        //address = token contract address
+        //func = token contract method to call
         return this.loadContract(abi)
-            .then(contract => {
+            .then(function (contract) {
             return Promise.resolve(contract.at(address))
-                .then(instance => {
-                // last param is total tx object
+                .then(function (instance) {
+                //last param is total tx object
                 return instance.balanceOf.call(from);
             });
         });
-    }
-    transfer(abi, address, from, to, value) {
-        // address = token contract address
+    };
+    TokenContract.prototype.transfer = function (abi, address, from, to, value) {
+        var _this = this;
         return this.loadContract(abi)
-            .then(contract => {
+            .then(function (contract) {
             return Promise.resolve(contract.at(address))
-                .then(instance => {
-                // this.watchContract(instance, from)
-                return Promise.resolve(instance.transfer.sendTransaction(to, value, { from: from, gas: 4712388 }))
-                    .then(result => {
+                .then(function (instance) {
+                var getData = instance.transfer.getData(to, value);
+                var gasPrice = _this.web3.eth.gasPrice;
+                return Promise.resolve(_this.web3.eth.sendTransaction({ to: address, from: from, gas: 60000, gasPrice: gasPrice, data: getData }))
+                    .then(function (result) {
                     console.log(result);
                     return result;
-                }).catch(e => {
+                }).catch(function (e) {
                     console.error(e);
                 });
             });
         });
-    }
-    getTransactionReceipt(hash) {
+    };
+    TokenContract.prototype.getTransactionReceipt = function (hash) {
         return Promise.resolve(this.web3.eth.getTransactionReceipt(hash))
-            .then(result => {
+            .then(function (result) {
             return result;
         })
-            .catch(e => {
+            .catch(function (e) {
             console.error(e);
         });
-    }
-    watchContract(instance, from) {
-        const myEvent = instance.Transfer({ from: from }, { fromBlock: 0, toBlock: 'latest' });
+    };
+    TokenContract.prototype.watchContract = function (instance, from) {
+        var myEvent = instance.Transfer({ from: from }, { fromBlock: 0, toBlock: 'latest' });
         myEvent.watch(function (error, result) {
             console.log('watch results: ', result);
         });
         // const myResults = myEvent.get(function(error, logs){})
-    }
-    // TODO deploy contract with truffle from in here for easy onboarding
-    // different approach with truffle-contract directly - not working
-    setupContract(abi, address, func, from, ...params) {
-        let newContract = contract(abi);
+    };
+    //TODO deploy contract with truffle from in here for easy onboarding
+    //different approach with truffle-contract directly - not working
+    TokenContract.prototype.setupContract = function (abi, address, func, from) {
+        var params = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            params[_i - 4] = arguments[_i];
+        }
+        var newContract = truffle_contract_1.default(abi);
         newContract.setProvider(this.client);
         newContract.deployed()
-            .then((instance) => {
-            // last param is total tx object
-            return instance.func.sendTransaction(...params, { from: from })
-                .then((result) => {
+            .then(function (instance) {
+            //last param is total tx object
+            return (_a = instance.func).sendTransaction.apply(_a, params.concat([{ from: from }])).then(function (result) {
                 console.log(result);
             });
+            var _a;
         });
-    }
-}
+    };
+    return TokenContract;
+}());
 exports.TokenContract = TokenContract;
 //# sourceMappingURL=token-contract.js.map

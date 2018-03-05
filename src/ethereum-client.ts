@@ -169,7 +169,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     return new BigNumber(amount).dividedBy(1000000000000000000).toString()
   }
 
-  createAddress(): Promise<string> {
+  createAddress(checksum: boolean = false): Promise<string> {
     return new Promise((resolve: Resolve<string>, reject) => {
       // if (!this.web3.isConnected()) {
       //   reject(new Error("Cannot create address, not connected to client."))
@@ -180,7 +180,11 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
           reject(new Error('Error creating address: ' + err.message))
         } else {
           console.log('Created new address', result)
-          resolve(result)
+          if (checksum) {
+            resolve(this.web3.toChecksumAddress(result))
+          } else {
+            resolve(result)
+          }
         }
       })
     })

@@ -5,6 +5,7 @@ import {
 import { Web3EthereumClientConfig } from './ethereum-client'
 import { Block, Web3Transaction, Web3TransactionReceipt } from './types'
 import { Web3Client } from './client-functions'
+import { initializeWeb3 } from './utility'
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')
@@ -22,9 +23,8 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   private methodIDs: { [key: string]: AbiObject } = {}
   private abi: AbiObject[]
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
-    this.web3 = new Web3()
-    this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
+  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object, web3?: Web3Client) {
+    this.web3 = initializeWeb3(ethereumConfig, web3)
     this.tokenContractAddress = tokenContractAddress
     this.currency = currency
     this.abi = this.addAbi(abi)

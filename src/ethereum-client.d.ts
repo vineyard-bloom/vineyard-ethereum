@@ -22,7 +22,7 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     getCoinbase(): Promise<any>;
     toWei(amount: number): any;
     fromWei(amount: number): string;
-    createAddress(): Promise<string>;
+    createAddress(checksum?: boolean): Promise<string>;
     getAccounts(): Promise<string[]>;
     getBalance(address: string): Promise<string>;
     importAddress(address: string): Promise<void>;

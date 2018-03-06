@@ -160,7 +160,7 @@ class Web3EthereumClient {
     fromWei(amount) {
         return new bignumber_js_1.default(amount).dividedBy(1000000000000000000).toString();
     }
-    createAddress() {
+    createAddress(checksum = false) {
         return new Promise((resolve, reject) => {
             // if (!this.web3.isConnected()) {
             //   reject(new Error("Cannot create address, not connected to client."))
@@ -171,7 +171,12 @@ class Web3EthereumClient {
                 }
                 else {
                     console.log('Created new address', result);
-                    resolve(result);
+                    if (checksum) {
+                        resolve(this.web3.toChecksumAddress(result));
+                    }
+                    else {
+                        resolve(result);
+                    }
                 }
             });
         });

@@ -1,4 +1,4 @@
-import { EthereumTransaction, GethTransaction } from '../src';
+import { EthereumTransaction, Web3Transaction } from '../src';
 export declare class MockWeb3 {
     eth: MockEth;
     personal: MockPersonal;
@@ -6,7 +6,7 @@ export declare class MockWeb3 {
     setProvider(): void;
 }
 export declare class MockEth {
-    transactions: GethTransaction[];
+    transactions: Web3Transaction[];
     coinbase: string;
     getAccounts: Function;
     constructor();
@@ -14,7 +14,7 @@ export declare class MockEth {
     getBalance(address: string, callback: Function): number;
     getBlock(hashOrNumber: string, includeTxs: boolean, callback: Function): any;
     getBlockNumber(callback: Function): any;
-    getTransaction(hash: string): GethTransaction;
+    getTransaction(hash: string): Web3Transaction;
     getTransactionReceipt(txHash: string, callback: Function): void;
     sendTransaction(transaction: EthereumTransaction, callback: Function): any;
 }

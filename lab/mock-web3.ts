@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { EthereumTransaction, GethTransaction } from '../src'
+import { EthereumTransaction, Web3Transaction } from '../src'
 
 export class MockWeb3 {
   eth: MockEth
@@ -17,7 +17,7 @@ export class MockWeb3 {
 }
 
 export class MockEth {
-  transactions: GethTransaction[]
+  transactions: Web3Transaction[]
   coinbase: string
   getAccounts: Function
 
@@ -62,7 +62,7 @@ export class MockEth {
     return callback(null, randomBlockNumber())
   }
 
-  getTransaction (hash: string): GethTransaction {
+  getTransaction (hash: string): Web3Transaction {
     const tx = this.transactions.find(tx => tx.hash === hash)
     return tx || randomTx()
   }
@@ -129,7 +129,7 @@ function randomAddress (): string {
   return '0x' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
 }
 
-function randomTx (): GethTransaction {
+function randomTx (): Web3Transaction {
   return {
     hash: randomTxHash(),
     to: randomAddress(),

@@ -9,7 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vineyard_blockchain_1 = require("vineyard-blockchain");
+const utility_1 = require("./utility");
+const Web3 = require('web3');
 const SolidityFunction = require('web3/lib/web3/function');
+const SolidityEvent = require('web3/lib/web3/event');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -148,14 +151,17 @@ function convertStatus(gethStatus) {
     }
 }
 exports.convertStatus = convertStatus;
-function getChecksum(web3, address) {
+exports.toChecksumAddress = Web3.prototype.toChecksumAddress;
+function getNullableChecksumAddress(address) {
     return typeof address === 'string'
-        ? web3.toChecksumAddress(address)
+        ? Web3.prototype.toChecksumAddress(address)
         : undefined;
 }
-exports.getChecksum = getChecksum;
-const erc20AttributesAbi = require('./abi/erc20-attributes.json');
-const erc20BalanceAbi = require('./abi/erc20-balance.json');
+exports.getNullableChecksumAddress = getNullableChecksumAddress;
+const erc20GroupedAbi = require('./abi/erc20-grouped.json');
+const erc20AttributesAbi = erc20GroupedAbi.attributes;
+const erc20BalanceAbi = erc20GroupedAbi.balance;
+const erc20TransferEventAbi = erc20GroupedAbi.events.filter(e => e.name == 'Transfer')[0];
 const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi);
 function checkContractMethod(contract, methodName, args = []) {
     const method = contract[methodName];
@@ -207,12 +213,14 @@ function createContract(eth, abi, address) {
     return result;
 }
 exports.createContract = createContract;
-function getTokenContractFromReceipt(web3, address) {
+function getTokenContractFromReceipt(web3, receipt) {
     return __awaiter(this, void 0, void 0, function* () {
+        const address = receipt.contractAddress;
         const contract = createContract(web3.eth, erc20AttributesAbi, address);
         const result = {
             contractType: vineyard_blockchain_1.blockchain.ContractType.token,
-            address: address
+            address: address,
+            txid: receipt.transactionHash
         };
         try {
             for (let method of erc20AttributesAbi) {
@@ -220,7 +228,8 @@ function getTokenContractFromReceipt(web3, address) {
                 if (value === undefined)
                     return {
                         contractType: vineyard_blockchain_1.blockchain.ContractType.unknown,
-                        address: address
+                        address: address,
+                        txid: receipt.transactionHash
                     };
                 result[method.name] = value;
             }
@@ -232,25 +241,68 @@ function getTokenContractFromReceipt(web3, address) {
     });
 }
 exports.getTokenContractFromReceipt = getTokenContractFromReceipt;
+const transferEvent = new SolidityEvent(undefined, erc20TransferEventAbi, '');
+function getBlockContractTransfers(web3, filter) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const events = yield utility_1.getEvents(web3, filter);
+        const decoded = events.map(e => transferEvent.decode(e));
+        return decoded;
+        // return decoded.map(d => ({
+        //   to: d.args._to,
+        //   from: d.args._from,
+        //   amount: d.args._value,
+        //   txid: d.transactionHash,
+        //   contractAddress: d.address,
+        //   blockIndex: d.blockNumber
+        // }))
+    });
+}
+exports.getBlockContractTransfers = getBlockContractTransfers;
+function decodeTokenTransfer(event) {
+    const result = transferEvent.decode(event);
+    result.args = {
+        to: exports.toChecksumAddress(result.args._to),
+        from: exports.toChecksumAddress(result.args._from),
+        value: result.args._value
+    };
+    return result;
+}
+exports.decodeTokenTransfer = decodeTokenTransfer;
+function mapTransactionEvents(events, txid) {
+    return events.filter(c => c.transactionHash == txid);
+}
+exports.mapTransactionEvents = mapTransactionEvents;
 function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         let block = yield getBlock(web3, blockIndex);
         const transactions = [];
+        const events = yield utility_1.getEvents(web3, {
+            toBlock: blockIndex,
+            fromBlock: blockIndex,
+        });
+        for (let event of events) {
+            event.address = exports.toChecksumAddress(event.address);
+        }
+        console.log('Loaded', events.length, 'events for block', blockIndex);
         for (let tx of block.transactions) {
             const receipt = yield getTransactionReceipt(web3, tx.hash);
             const contract = receipt.contractAddress
-                ? yield getTokenContractFromReceipt(web3, receipt.contractAddress)
+                ? yield getTokenContractFromReceipt(web3, receipt)
                 : undefined;
             transactions.push({
                 txid: tx.hash,
-                to: getChecksum(web3, tx.to),
-                from: getChecksum(web3, tx.from),
+                to: getNullableChecksumAddress(tx.to),
+                from: getNullableChecksumAddress(tx.from),
                 amount: tx.value,
                 timeReceived: new Date(block.timestamp * 1000),
                 status: convertStatus(tx.status),
                 blockIndex: blockIndex,
                 gasUsed: receipt.gasUsed,
-                newContract: contract
+                gasPrice: tx.gasPrice,
+                fee: tx.gasPrice.times(receipt.gasUsed),
+                newContract: contract,
+                events: mapTransactionEvents(events, tx.hash),
+                nonce: tx.nonce
             });
         }
         return {

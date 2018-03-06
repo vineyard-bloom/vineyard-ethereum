@@ -1,6 +1,6 @@
 import { BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, TransactionStatus } from 'vineyard-blockchain/src/types';
 import { Web3EthereumClientConfig } from './ethereum-client';
-import { Block, GethTransaction, Web3TransactionReceipt } from './types';
+import { Block, Web3Transaction, Web3TransactionReceipt } from './types';
 export interface AbiObject {
     name: string;
     type: string;
@@ -21,7 +21,7 @@ export declare class TokenClient implements ReadClient<ExternalTransaction> {
     getBlock(blockIndex: number): Promise<Block>;
     getBlockNumber(): Promise<number>;
     getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt>;
-    filterTokenTransaction(transactions: GethTransaction[]): GethTransaction[];
+    filterTokenTransaction(transactions: Web3Transaction[]): Web3Transaction[];
     decodeTransactions(transactions: any[]): Promise<any[]>;
     decodeTransaction(transaction: any): {
         to: any;

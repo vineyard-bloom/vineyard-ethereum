@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types';
 import { BaseBlock, blockchain, TransactionStatus } from 'vineyard-blockchain';
+import { ContractEvent, EventFilter } from './utility';
 export declare type Resolve2<T> = (value: T) => void;
 export declare type Web3Client = any;
 export interface SendTransaction {
@@ -19,10 +20,14 @@ export declare function getTransactionReceipt(web3: Web3Client, txid: string): P
 export declare function getTransactionStatus(web3: Web3Client, txid: string): Promise<TransactionStatus>;
 export declare function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined>;
 export declare function convertStatus(gethStatus: string): TransactionStatus;
-export declare function getChecksum(web3: Web3Client, address?: string): string | undefined;
+export declare const toChecksumAddress: any;
+export declare function getNullableChecksumAddress(address?: string): string | undefined;
 export declare function checkContractMethod(contract: any, methodName: string, args?: any[]): Promise<boolean>;
 export declare function callContractMethod<T>(contract: any, methodName: string, args?: any[]): Promise<T>;
 export declare function callCheckedContractMethod<T>(contract: any, methodName: string, args?: any[]): Promise<T | undefined>;
 export declare function createContract(eth: any, abi: any, address: string): any;
-export declare function getTokenContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.AnyContract | undefined>;
+export declare function getTokenContractFromReceipt(web3: Web3Client, receipt: Web3TransactionReceipt): Promise<blockchain.AnyContract | undefined>;
+export declare function getBlockContractTransfers(web3: Web3Client, filter: EventFilter): Promise<blockchain.BaseEvent[]>;
+export declare function decodeTokenTransfer(event: blockchain.BaseEvent): blockchain.DecodedEvent;
+export declare function mapTransactionEvents(events: ContractEvent[], txid: string): ContractEvent[];
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;

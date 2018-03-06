@@ -1,10 +1,12 @@
 import { blockchain } from 'vineyard-blockchain'
-import { getBlock, getBlockIndex, getFullBlock, Web3Client } from './client-functions'
+import { getBlock, getBlockContractTransfers, getBlockIndex, getFullBlock, Web3Client } from './client-functions'
 import { initializeWeb3 } from './utility'
 import { Web3EthereumClientConfig } from './ethereum-client'
 
-export class EthereumBlockClient implements blockchain.BlockReader<blockchain.ContractTransaction> {
-  private web3: Web3Client
+export class EthereumBlockReader implements blockchain.BlockReader<blockchain.ContractTransaction>
+// ,  blockchain.ContractReader
+{
+  protected web3: Web3Client
 
   constructor(web3: Web3Client) {
     this.web3 = web3
@@ -36,7 +38,11 @@ export class EthereumBlockClient implements blockchain.BlockReader<blockchain.Co
       : []
   }
 
+  // getBlockContractTransfers(toBlock: number, fromBlock: number, watchAddresses: string[]): Promise<blockchain.TokenTransfer[]> {
+  //   return getBlockContractTransfers(this.web3, toBlock, fromBlock, watchAddresses)
+  // }
+
   static createFromConfig(config: Web3EthereumClientConfig) {
-    return new EthereumBlockClient(initializeWeb3(config))
+    return new EthereumBlockReader(initializeWeb3(config))
   }
 }

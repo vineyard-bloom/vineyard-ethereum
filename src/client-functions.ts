@@ -1,8 +1,12 @@
 import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
 import { BaseBlock, blockchain, Resolve, TransactionStatus } from 'vineyard-blockchain'
+import { ContractEvent, EventFilter, getEvents } from './utility'
+
+const Web3 = require('web3')
 
 const SolidityFunction = require('web3/lib/web3/function')
+const SolidityEvent = require('web3/lib/web3/event')
 
 export type Resolve2<T> = (value: T) => void
 
@@ -147,14 +151,24 @@ export function convertStatus(gethStatus: string): TransactionStatus {
   }
 }
 
-export function getChecksum(web3: Web3Client, address?: string): string | undefined {
+export const toChecksumAddress = Web3.prototype.toChecksumAddress
+
+export function getNullableChecksumAddress(address?: string): string | undefined {
   return typeof address === 'string'
-    ? web3.toChecksumAddress(address)
+    ? Web3.prototype.toChecksumAddress(address)
     : undefined
 }
 
-const erc20AttributesAbi = require('./abi/erc20-attributes.json')
-const erc20BalanceAbi = require('./abi/erc20-balance.json')
+interface Erc20Grouped {
+  attributes: any[],
+  balance: any[]
+  events: any[],
+}
+
+const erc20GroupedAbi = require('./abi/erc20-grouped.json') as Erc20Grouped
+const erc20AttributesAbi = erc20GroupedAbi.attributes
+const erc20BalanceAbi = erc20GroupedAbi.balance
+const erc20TransferEventAbi = erc20GroupedAbi.events.filter(e => e.name == 'Transfer')[0]
 
 const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi)
 
@@ -205,11 +219,13 @@ export function createContract(eth: any, abi: any, address: string): any {
   return result
 }
 
-export async function getTokenContractFromReceipt(web3: Web3Client, address: string): Promise<blockchain.AnyContract | undefined> {
+export async function getTokenContractFromReceipt(web3: Web3Client, receipt: Web3TransactionReceipt): Promise<blockchain.AnyContract | undefined> {
+  const address = receipt.contractAddress
   const contract = createContract(web3.eth, erc20AttributesAbi, address)
   const result: any = {
     contractType: blockchain.ContractType.token,
-    address: address
+    address: address,
+    txid: receipt.transactionHash
   }
   try {
     for (let method of erc20AttributesAbi) {
@@ -217,7 +233,8 @@ export async function getTokenContractFromReceipt(web3: Web3Client, address: str
       if (value === undefined)
         return {
           contractType: blockchain.ContractType.unknown,
-          address: address
+          address: address,
+          txid: receipt.transactionHash
         }
       result[method.name] = value
     }
@@ -228,24 +245,68 @@ export async function getTokenContractFromReceipt(web3: Web3Client, address: str
   }
 }
 
+const transferEvent = new SolidityEvent(undefined, erc20TransferEventAbi, '')
+
+export async function getBlockContractTransfers(web3: Web3Client, filter: EventFilter): Promise<blockchain.BaseEvent[]> {
+  const events = await getEvents(web3, filter)
+
+  const decoded = events.map(e => transferEvent.decode(e))
+  return decoded
+  // return decoded.map(d => ({
+  //   to: d.args._to,
+  //   from: d.args._from,
+  //   amount: d.args._value,
+  //   txid: d.transactionHash,
+  //   contractAddress: d.address,
+  //   blockIndex: d.blockNumber
+  // }))
+}
+
+export function decodeTokenTransfer(event: blockchain.BaseEvent): blockchain.DecodedEvent {
+  const result = transferEvent.decode(event)
+  result.args = {
+    to: toChecksumAddress(result.args._to),
+    from: toChecksumAddress(result.args._from),
+    value: result.args._value
+  }
+
+  return result
+}
+
+export function mapTransactionEvents(events: ContractEvent[], txid: string) {
+  return events.filter(c => c.transactionHash == txid)
+}
+
 export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
   let block = await getBlock(web3, blockIndex)
   const transactions = []
+  const events = await getEvents(web3, {
+    toBlock: blockIndex,
+    fromBlock: blockIndex,
+  })
+  for (let event of events) {
+    event.address = toChecksumAddress(event.address)
+  }
+  console.log('Loaded', events.length, 'events for block', blockIndex)
   for (let tx of block.transactions) {
     const receipt = await getTransactionReceipt(web3, tx.hash)
     const contract = receipt.contractAddress
-      ? await getTokenContractFromReceipt(web3, receipt.contractAddress)
+      ? await getTokenContractFromReceipt(web3, receipt)
       : undefined
     transactions.push({
       txid: tx.hash,
-      to: getChecksum(web3, tx.to),
-      from: getChecksum(web3, tx.from),
+      to: getNullableChecksumAddress(tx.to),
+      from: getNullableChecksumAddress(tx.from),
       amount: tx.value,
       timeReceived: new Date(block.timestamp * 1000),
       status: convertStatus(tx.status),
       blockIndex: blockIndex,
       gasUsed: receipt.gasUsed,
-      newContract: contract
+      gasPrice: tx.gasPrice,
+      fee: tx.gasPrice.times(receipt.gasUsed),
+      newContract: contract,
+      events: mapTransactionEvents(events, tx.hash),
+      nonce: tx.nonce
     })
   }
 

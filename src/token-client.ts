@@ -3,7 +3,7 @@ import {
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
 import { Web3EthereumClientConfig } from './ethereum-client'
-import { Block, GethTransaction, Web3TransactionReceipt } from './types'
+import { Block, Web3Transaction, Web3TransactionReceipt } from './types'
 import { Web3Client } from './client-functions'
 
 const Web3 = require('web3')
@@ -134,7 +134,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  filterTokenTransaction(transactions: GethTransaction[]) {
+  filterTokenTransaction(transactions: Web3Transaction[]) {
     return transactions.filter(tx => {
       if (tx && tx.to) {
         return tx.to.toLowerCase() === this.tokenContractAddress.toLowerCase()

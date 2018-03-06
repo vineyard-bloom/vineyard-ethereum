@@ -23,6 +23,16 @@ export interface EthereumTransaction {
     gasPrice: BigNumber;
     hash: string;
 }
+export interface Web3Transaction {
+    hash: string;
+    to: string;
+    from: string;
+    value: BigNumber;
+    block: string;
+    status: string;
+    gasPrice: BigNumber;
+    nonce: number;
+}
 export interface Web3TransactionReceipt {
     blockHash: string;
     blockNumber: number;
@@ -36,16 +46,8 @@ export interface Web3TransactionReceipt {
     logs: {}[];
     status: string;
 }
-export interface GethTransaction {
-    hash: string;
-    to: string;
-    from: string;
-    value: BigNumber;
-    block: string;
-    status: string;
-}
 export interface Block {
-    transactions: GethTransaction[];
+    transactions: Web3Transaction[];
     hash: string;
     number: number;
     timestamp: number;

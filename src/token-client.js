@@ -9,13 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const types_1 = require("vineyard-blockchain/src/types");
+const utility_1 = require("./utility");
 const Web3 = require('web3');
 const SolidityCoder = require('web3/lib/solidity/coder.js');
 class TokenClient {
-    constructor(ethereumConfig, currency, tokenContractAddress, abi) {
+    constructor(ethereumConfig, currency, tokenContractAddress, abi, web3) {
         this.methodIDs = {};
-        this.web3 = new Web3();
-        this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http));
+        this.web3 = utility_1.initializeWeb3(ethereumConfig, web3);
         this.tokenContractAddress = tokenContractAddress;
         this.currency = currency;
         this.abi = this.addAbi(abi);

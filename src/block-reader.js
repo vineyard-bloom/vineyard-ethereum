@@ -14,7 +14,7 @@ class EthereumBlockReader {
     constructor(web3) {
         this.web3 = web3;
     }
-    getBlockIndex() {
+    getHeighestBlockIndex() {
         return client_functions_1.getBlockIndex(this.web3);
     }
     getBlockInfo(index) {

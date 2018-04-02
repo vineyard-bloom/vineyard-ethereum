@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
+import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
 import { BaseBlock, blockchain, Resolve, TransactionStatus } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
 
@@ -277,9 +277,52 @@ export function mapTransactionEvents(events: ContractEvent[], txid: string) {
   return events.filter(c => c.transactionHash == txid)
 }
 
+export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, block: Block, events: ContractEvent[]) {
+  const receipt = await getTransactionReceipt(web3, tx.hash)
+  const contract = receipt.contractAddress
+    ? await getTokenContractFromReceipt(web3, receipt)
+    : undefined
+
+  return {
+    txid: tx.hash,
+    to: getNullableChecksumAddress(tx.to),
+    from: getNullableChecksumAddress(tx.from),
+    amount: tx.value,
+    timeReceived: new Date(block.timestamp * 1000),
+    status: convertStatus(tx.status),
+    blockIndex: block.number,
+    gasUsed: receipt.gasUsed,
+    gasPrice: tx.gasPrice,
+    fee: tx.gasPrice.times(receipt.gasUsed),
+    newContract: contract,
+    events: mapTransactionEvents(events, tx.hash),
+    nonce: tx.nonce
+  }
+}
+
+export function partitionArray<T>(partitionSize: number, items: T[]): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < items.length; i += partitionSize) {
+    result.push(items.slice(i, i + partitionSize))
+  }
+
+  return result
+}
+
+export async function partitionedMap<T, O>(partitionSize: number, action: (item: T) => Promise<O>, items: T[]): Promise<O[]> {
+  const groups = partitionArray(partitionSize, items)
+  let result: O[] = []
+  for (let group of groups) {
+    const promises = group.map(action)
+    const newItems = await Promise.all(promises)
+    result = result.concat(newItems)
+  }
+
+  return result
+}
+
 export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
   let block = await getBlock(web3, blockIndex)
-  const transactions = []
   const events = await getEvents(web3, {
     toBlock: blockIndex,
     fromBlock: blockIndex,
@@ -287,28 +330,10 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
   for (let event of events) {
     event.address = toChecksumAddress(event.address)
   }
-  console.log('Loaded', events.length, 'events for block', blockIndex)
-  for (let tx of block.transactions) {
-    const receipt = await getTransactionReceipt(web3, tx.hash)
-    const contract = receipt.contractAddress
-      ? await getTokenContractFromReceipt(web3, receipt)
-      : undefined
-    transactions.push({
-      txid: tx.hash,
-      to: getNullableChecksumAddress(tx.to),
-      from: getNullableChecksumAddress(tx.from),
-      amount: tx.value,
-      timeReceived: new Date(block.timestamp * 1000),
-      status: convertStatus(tx.status),
-      blockIndex: blockIndex,
-      gasUsed: receipt.gasUsed,
-      gasPrice: tx.gasPrice,
-      fee: tx.gasPrice.times(receipt.gasUsed),
-      newContract: contract,
-      events: mapTransactionEvents(events, tx.hash),
-      nonce: tx.nonce
-    })
-  }
+  // console.log('Loaded', events.length, 'events for block', blockIndex)
+
+  const transactions = await partitionedMap(10, tx => loadTransaction(web3, tx, block, events), block.transactions)
+  // console.log('Loaded', block.transactions.length, 'transactions for block', blockIndex)
 
   return {
     index: blockIndex,

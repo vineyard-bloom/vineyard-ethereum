@@ -272,10 +272,54 @@ function mapTransactionEvents(events, txid) {
     return events.filter(c => c.transactionHash == txid);
 }
 exports.mapTransactionEvents = mapTransactionEvents;
+function loadTransaction(web3, tx, block, events) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const receipt = yield getTransactionReceipt(web3, tx.hash);
+        const contract = receipt.contractAddress
+            ? yield getTokenContractFromReceipt(web3, receipt)
+            : undefined;
+        return {
+            txid: tx.hash,
+            to: getNullableChecksumAddress(tx.to),
+            from: getNullableChecksumAddress(tx.from),
+            amount: tx.value,
+            timeReceived: new Date(block.timestamp * 1000),
+            status: convertStatus(tx.status),
+            blockIndex: block.number,
+            gasUsed: receipt.gasUsed,
+            gasPrice: tx.gasPrice,
+            fee: tx.gasPrice.times(receipt.gasUsed),
+            newContract: contract,
+            events: mapTransactionEvents(events, tx.hash),
+            nonce: tx.nonce
+        };
+    });
+}
+exports.loadTransaction = loadTransaction;
+function partitionArray(partitionSize, items) {
+    const result = [];
+    for (let i = 0; i < items.length; i += partitionSize) {
+        result.push(items.slice(i, i + partitionSize));
+    }
+    return result;
+}
+exports.partitionArray = partitionArray;
+function partitionedMap(partitionSize, action, items) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const groups = partitionArray(partitionSize, items);
+        let result = [];
+        for (let group of groups) {
+            const promises = group.map(action);
+            const newItems = yield Promise.all(promises);
+            result = result.concat(newItems);
+        }
+        return result;
+    });
+}
+exports.partitionedMap = partitionedMap;
 function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         let block = yield getBlock(web3, blockIndex);
-        const transactions = [];
         const events = yield utility_1.getEvents(web3, {
             toBlock: blockIndex,
             fromBlock: blockIndex,
@@ -283,28 +327,9 @@ function getFullBlock(web3, blockIndex) {
         for (let event of events) {
             event.address = exports.toChecksumAddress(event.address);
         }
-        console.log('Loaded', events.length, 'events for block', blockIndex);
-        for (let tx of block.transactions) {
-            const receipt = yield getTransactionReceipt(web3, tx.hash);
-            const contract = receipt.contractAddress
-                ? yield getTokenContractFromReceipt(web3, receipt)
-                : undefined;
-            transactions.push({
-                txid: tx.hash,
-                to: getNullableChecksumAddress(tx.to),
-                from: getNullableChecksumAddress(tx.from),
-                amount: tx.value,
-                timeReceived: new Date(block.timestamp * 1000),
-                status: convertStatus(tx.status),
-                blockIndex: blockIndex,
-                gasUsed: receipt.gasUsed,
-                gasPrice: tx.gasPrice,
-                fee: tx.gasPrice.times(receipt.gasUsed),
-                newContract: contract,
-                events: mapTransactionEvents(events, tx.hash),
-                nonce: tx.nonce
-            });
-        }
+        // console.log('Loaded', events.length, 'events for block', blockIndex)
+        const transactions = yield partitionedMap(10, tx => loadTransaction(web3, tx, block, events), block.transactions);
+        // console.log('Loaded', block.transactions.length, 'transactions for block', blockIndex)
         return {
             index: blockIndex,
             hash: block.hash,

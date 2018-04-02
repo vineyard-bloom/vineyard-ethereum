@@ -12,7 +12,7 @@ export class EthereumBlockReader implements blockchain.BlockReader<blockchain.Co
     this.web3 = web3
   }
 
-  getBlockIndex(): Promise<number> {
+  getHeighestBlockIndex(): Promise<number> {
     return getBlockIndex(this.web3)
   }
 

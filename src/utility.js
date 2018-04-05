@@ -118,4 +118,31 @@ function initializeWeb3(ethereumConfig, web3) {
     return web3;
 }
 exports.initializeWeb3 = initializeWeb3;
+const formatters = require('web3/lib/web3/formatters');
+const promiseRequest = require('./request-promise');
+function getEvents(web3, filter) {
+    const processedFilter = {
+        address: filter.address,
+        from: filter.from,
+        to: filter.to,
+        fromBlock: formatters.inputBlockNumberFormatter(filter.fromBlock),
+        toBlock: formatters.inputBlockNumberFormatter(filter.toBlock),
+        topics: filter.topics,
+    };
+    const body = {
+        jsonrpc: '2.0',
+        method: 'eth_getLogs',
+        id: 1,
+        params: [processedFilter],
+    };
+    return promiseRequest({
+        method: 'POST',
+        uri: web3.currentProvider.host,
+        body: body,
+        json: true,
+        jar: false,
+    })
+        .then((response) => response.result);
+}
+exports.getEvents = getEvents;
 //# sourceMappingURL=utility.js.map

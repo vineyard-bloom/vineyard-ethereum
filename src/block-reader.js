@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_functions_1 = require("./client-functions");
 const utility_1 = require("./utility");
-class EthereumBlockClient {
+class EthereumBlockReader {
     constructor(web3) {
         this.web3 = web3;
     }
-    getBlockIndex() {
+    getHeighestBlockIndex() {
         return client_functions_1.getBlockIndex(this.web3);
     }
     getBlockInfo(index) {
@@ -40,9 +40,12 @@ class EthereumBlockClient {
                 : [];
         });
     }
+    // getBlockContractTransfers(toBlock: number, fromBlock: number, watchAddresses: string[]): Promise<blockchain.TokenTransfer[]> {
+    //   return getBlockContractTransfers(this.web3, toBlock, fromBlock, watchAddresses)
+    // }
     static createFromConfig(config) {
-        return new EthereumBlockClient(utility_1.initializeWeb3(config));
+        return new EthereumBlockReader(utility_1.initializeWeb3(config));
     }
 }
-exports.EthereumBlockClient = EthereumBlockClient;
-//# sourceMappingURL=block-client.js.map
+exports.EthereumBlockReader = EthereumBlockReader;
+//# sourceMappingURL=block-reader.js.map

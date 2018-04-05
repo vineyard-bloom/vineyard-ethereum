@@ -3,8 +3,9 @@ import {
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
 import { Web3EthereumClientConfig } from './ethereum-client'
-import { Block, EthereumTransaction, GethTransaction, Web3TransactionReceipt } from './types'
+import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
 import { Web3Client, SendTransaction, Resolve2 } from './client-functions'
+import { initializeWeb3 } from './utility'
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')
@@ -22,9 +23,8 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
   private methodIDs: { [key: string]: AbiObject } = {}
   private abi: AbiObject[]
 
-  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object) {
-    this.web3 = new Web3()
-    this.web3.setProvider(new this.web3.providers.HttpProvider(ethereumConfig.http))
+  constructor(ethereumConfig: Web3EthereumClientConfig, currency: number, tokenContractAddress: string, abi: object, web3?: Web3Client) {
+    this.web3 = initializeWeb3(ethereumConfig, web3)
     this.tokenContractAddress = tokenContractAddress
     this.currency = currency
     this.abi = this.addAbi(abi)
@@ -181,7 +181,7 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     })
   }
 
-  filterTokenTransaction(transactions: GethTransaction[]) {
+  filterTokenTransaction(transactions: Web3Transaction[]) {
     return transactions.filter(tx => {
       if (tx && tx.to) {
         return tx.to.toLowerCase() === this.tokenContractAddress.toLowerCase()

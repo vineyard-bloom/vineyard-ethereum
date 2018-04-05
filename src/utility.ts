@@ -3,6 +3,7 @@ import { each as promiseEach } from 'promise-each2'
 import { AddressManager, EthereumClient } from './types'
 import { Web3Client } from './client-functions'
 import { Web3EthereumClientConfig } from './ethereum-client'
+
 const Web3 = require('web3')
 
 export function ethToWei(amount: BigNumber) {
@@ -125,4 +126,47 @@ export function initializeWeb3(ethereumConfig: Web3EthereumClientConfig, web3?: 
     web3.setProvider(new web3.providers.HttpProvider(ethereumConfig.http))
   }
   return web3
+}
+
+const formatters = require('web3/lib/web3/formatters')
+const promiseRequest = require('./request-promise')
+
+export interface ContractEvent {
+  transactionHash: string
+  address: string
+}
+
+export interface EventFilter {
+  address?: string | string[]
+  to?: string
+  from?: string
+  toBlock?: number
+  fromBlock?: number
+  topics?: any[]
+}
+
+export function getEvents(web3: any, filter: EventFilter): Promise<ContractEvent[]> {
+  const processedFilter = {
+    address: filter.address,
+    from: filter.from,
+    to: filter.to,
+    fromBlock: formatters.inputBlockNumberFormatter(filter.fromBlock),
+    toBlock: formatters.inputBlockNumberFormatter(filter.toBlock),
+    topics: filter.topics,
+  }
+
+  const body = {
+    jsonrpc: '2.0',
+    method: 'eth_getLogs',
+    id: 1,
+    params: [processedFilter],
+  }
+  return promiseRequest({
+    method: 'POST',
+    uri: web3.currentProvider.host,
+    body: body,
+    json: true,
+    jar: false,
+  })
+    .then((response: any) => response.result)
 }

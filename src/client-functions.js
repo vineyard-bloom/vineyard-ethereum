@@ -9,6 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vineyard_blockchain_1 = require("vineyard-blockchain");
+const utility_1 = require("./utility");
+const Web3 = require('web3');
+const SolidityFunction = require('web3/lib/web3/function');
+const SolidityEvent = require('web3/lib/web3/event');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -61,7 +65,7 @@ function getBlock(web3, blockIndex) {
     return new Promise((resolve, reject) => {
         web3.eth.getBlock(blockIndex, true, (err, block) => {
             if (err) {
-                console.error('Error processing ethereum block', blockIndex, 'with message', err.message);
+                // console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
                 reject(new Error(err));
             }
             else {
@@ -75,7 +79,7 @@ function getBlockIndex(web3) {
     return new Promise((resolve, reject) => {
         web3.eth.getBlockNumber((err, blockNumber) => {
             if (err) {
-                console.error('Error processing ethereum block number', blockNumber, 'with message', err.message);
+                // console.error('Error processing ethereum block number', blockNumber, 'with message', err.message)
                 reject(new Error(err));
             }
             else {
@@ -101,7 +105,7 @@ function getTransactionReceipt(web3, txid) {
     return new Promise((resolve, reject) => {
         web3.eth.getTransactionReceipt(txid, (err, transaction) => {
             if (err) {
-                console.error('Error querying transaction', txid, 'with message', err.message);
+                // console.error('Error querying transaction', txid, 'with message', err.message)
                 reject(err);
             }
             else {
@@ -147,20 +151,185 @@ function convertStatus(gethStatus) {
     }
 }
 exports.convertStatus = convertStatus;
+exports.toChecksumAddress = Web3.prototype.toChecksumAddress;
+function getNullableChecksumAddress(address) {
+    return typeof address === 'string'
+        ? Web3.prototype.toChecksumAddress(address)
+        : undefined;
+}
+exports.getNullableChecksumAddress = getNullableChecksumAddress;
+const erc20GroupedAbi = require('./abi/erc20-grouped.json');
+const erc20AttributesAbi = erc20GroupedAbi.attributes;
+const erc20BalanceAbi = erc20GroupedAbi.balance;
+const erc20TransferEventAbi = erc20GroupedAbi.events.filter(e => e.name == 'Transfer')[0];
+const erc20ReadonlyAbi = erc20AttributesAbi.concat(erc20BalanceAbi);
+function checkContractMethod(contract, methodName, args = []) {
+    const method = contract[methodName];
+    const payload = method.toPayload(args);
+    const defaultBlock = method.extractDefaultBlock(args);
+    return new Promise((resolve, reject) => {
+        method._eth.call(payload, defaultBlock, (error, output) => {
+            if (error) {
+                reject(false);
+            }
+            else {
+                resolve(output !== '0x');
+            }
+        });
+    });
+}
+exports.checkContractMethod = checkContractMethod;
+function callContractMethod(contract, methodName, args = []) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            const handler = (err, blockNumber) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(blockNumber);
+                }
+            };
+            const method = contract[methodName];
+            method.call.apply(method, args.concat(handler));
+        });
+    });
+}
+exports.callContractMethod = callContractMethod;
+function callCheckedContractMethod(contract, methodName, args = []) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const exists = yield checkContractMethod(contract, methodName, args);
+        if (!exists)
+            return undefined;
+        return callContractMethod(contract, methodName, args);
+    });
+}
+exports.callCheckedContractMethod = callCheckedContractMethod;
+function createContract(eth, abi, address) {
+    const result = {};
+    for (let method of abi) {
+        result[method.name] = new SolidityFunction(eth, method, address);
+    }
+    return result;
+}
+exports.createContract = createContract;
+function getTokenContractFromReceipt(web3, receipt) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const address = receipt.contractAddress;
+        const contract = createContract(web3.eth, erc20AttributesAbi, address);
+        const result = {
+            contractType: vineyard_blockchain_1.blockchain.ContractType.token,
+            address: address,
+            txid: receipt.transactionHash
+        };
+        try {
+            for (let method of erc20AttributesAbi) {
+                const value = yield callCheckedContractMethod(contract, method.name);
+                if (value === undefined)
+                    return {
+                        contractType: vineyard_blockchain_1.blockchain.ContractType.unknown,
+                        address: address,
+                        txid: receipt.transactionHash
+                    };
+                result[method.name] = value;
+            }
+            return result;
+        }
+        catch (error) {
+            return undefined;
+        }
+    });
+}
+exports.getTokenContractFromReceipt = getTokenContractFromReceipt;
+const transferEvent = new SolidityEvent(undefined, erc20TransferEventAbi, '');
+function getBlockContractTransfers(web3, filter) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const events = yield utility_1.getEvents(web3, filter);
+        const decoded = events.map(e => transferEvent.decode(e));
+        return decoded;
+        // return decoded.map(d => ({
+        //   to: d.args._to,
+        //   from: d.args._from,
+        //   amount: d.args._value,
+        //   txid: d.transactionHash,
+        //   contractAddress: d.address,
+        //   blockIndex: d.blockNumber
+        // }))
+    });
+}
+exports.getBlockContractTransfers = getBlockContractTransfers;
+function decodeTokenTransfer(event) {
+    const result = transferEvent.decode(event);
+    result.args = {
+        to: exports.toChecksumAddress(result.args._to),
+        from: exports.toChecksumAddress(result.args._from),
+        value: result.args._value
+    };
+    return result;
+}
+exports.decodeTokenTransfer = decodeTokenTransfer;
+function mapTransactionEvents(events, txid) {
+    return events.filter(c => c.transactionHash == txid);
+}
+exports.mapTransactionEvents = mapTransactionEvents;
+function loadTransaction(web3, tx, block, events) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const receipt = yield getTransactionReceipt(web3, tx.hash);
+        const contract = receipt.contractAddress
+            ? yield getTokenContractFromReceipt(web3, receipt)
+            : undefined;
+        return {
+            txid: tx.hash,
+            to: getNullableChecksumAddress(tx.to),
+            from: getNullableChecksumAddress(tx.from),
+            amount: tx.value,
+            timeReceived: new Date(block.timestamp * 1000),
+            status: convertStatus(tx.status),
+            blockIndex: block.number,
+            gasUsed: receipt.gasUsed,
+            gasPrice: tx.gasPrice,
+            fee: tx.gasPrice.times(receipt.gasUsed),
+            newContract: contract,
+            events: mapTransactionEvents(events, tx.hash),
+            nonce: tx.nonce
+        };
+    });
+}
+exports.loadTransaction = loadTransaction;
+function partitionArray(partitionSize, items) {
+    const result = [];
+    for (let i = 0; i < items.length; i += partitionSize) {
+        result.push(items.slice(i, i + partitionSize));
+    }
+    return result;
+}
+exports.partitionArray = partitionArray;
+function partitionedMap(partitionSize, action, items) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const groups = partitionArray(partitionSize, items);
+        let result = [];
+        for (let group of groups) {
+            const promises = group.map(action);
+            const newItems = yield Promise.all(promises);
+            result = result.concat(newItems);
+        }
+        return result;
+    });
+}
+exports.partitionedMap = partitionedMap;
 function getFullBlock(web3, blockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         let block = yield getBlock(web3, blockIndex);
-        let blockHeight = yield getBlockIndex(web3);
-        const transactions = block.transactions.map(t => ({
-            txid: t.hash,
-            to: t.to,
-            from: t.from,
-            amount: t.value,
-            timeReceived: new Date(block.timestamp * 1000),
-            confirmations: blockHeight - blockIndex,
-            status: convertStatus(t.status),
-            blockIndex: blockIndex
-        }));
+        const events = yield utility_1.getEvents(web3, {
+            toBlock: blockIndex,
+            fromBlock: blockIndex,
+        });
+        for (let event of events) {
+            event.address = exports.toChecksumAddress(event.address);
+        }
+        // console.log('Loaded', events.length, 'events for block', blockIndex)
+        const transactions = yield partitionedMap(10, tx => loadTransaction(web3, tx, block, events), block.transactions);
+        // console.log('Loaded', block.transactions.length, 'transactions for block', blockIndex)
         return {
             index: blockIndex,
             hash: block.hash,

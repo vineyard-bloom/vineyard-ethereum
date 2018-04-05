@@ -9,3 +9,16 @@ export declare function getTransactions(client: EthereumClient, addressManager: 
 export declare function isTransactionValid(client: EthereumClient, txid: string): Promise<Boolean | void>;
 export declare function getTransactionsFromRange(client: EthereumClient, addressManager: AddressManager, lastBlock: any, newLastBlock: any): Promise<any[]>;
 export declare function initializeWeb3(ethereumConfig: Web3EthereumClientConfig, web3?: Web3Client): any;
+export interface ContractEvent {
+    transactionHash: string;
+    address: string;
+}
+export interface EventFilter {
+    address?: string | string[];
+    to?: string;
+    from?: string;
+    toBlock?: number;
+    fromBlock?: number;
+    topics?: any[];
+}
+export declare function getEvents(web3: any, filter: EventFilter): Promise<ContractEvent[]>;

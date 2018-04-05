@@ -3,8 +3,8 @@ import {
   TransactionStatus
 } from 'vineyard-blockchain/src/types'
 import { Web3EthereumClientConfig } from './ethereum-client'
-import { Block, Web3Transaction, Web3TransactionReceipt } from './types'
-import { Web3Client } from './client-functions'
+import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
+import { Web3Client, SendTransaction, Resolve2 } from './client-functions'
 import { initializeWeb3 } from './utility'
 
 const Web3 = require('web3')
@@ -28,6 +28,53 @@ export class TokenClient implements ReadClient<ExternalTransaction> {
     this.tokenContractAddress = tokenContractAddress
     this.currency = currency
     this.abi = this.addAbi(abi)
+  }
+
+  async unlockWeb3Account(address: string): Promise<boolean> {
+    return new Promise((resolve: Resolve<boolean>, reject) => {
+      try {
+        this.web3.personal.unlockAccount(address, (err: any, result: boolean) => {
+          if (err) {
+            reject(new Error('Error unlocking account: ' + err.message))
+          } else {
+            resolve(result)
+          }
+        })
+      } catch (error) {
+        reject(new Error('Error unlocking account: ' + address + '.  ' + error.message))
+      }
+    })
+  }
+
+  async send(transaction: SendTransaction) {
+    if (!transaction.from) {
+      throw Error('Ethereum transaction.from cannot be empty.')
+    }
+  
+    if (!transaction.to) {
+      throw Error('Ethereum transaction.to cannot be empty.')
+    }
+  
+    return this.unlockWeb3Account(transaction.from)
+      .then(() => {
+        return new Promise((resolve: Resolve2<EthereumTransaction>, reject) => {
+          this.web3.eth.sendTransaction(transaction, (err: any, txid: string) => {
+            if (err) {
+              console.log('Error sending (original)', transaction)
+              reject('Error sending to ' + transaction.to + ': ' + err)
+            } else {
+              const txInfo = this.web3.eth.getTransaction(txid)
+              console.log('Sent Token transaction', txid, txInfo)
+              const transactionResult = Object.assign({}, transaction, {
+                hash: txid,
+                gasPrice: txInfo.gasPrice,
+                gas: txInfo.gas
+              })
+              resolve(transactionResult)
+            }
+          })
+        })
+      })
   }
 
   async getBlockIndex(): Promise<number> {

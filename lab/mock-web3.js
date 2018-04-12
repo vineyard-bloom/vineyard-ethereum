@@ -23,24 +23,24 @@ class MockEth {
     getBalance(address, callback) {
         const creditTxs = this.transactions.filter(tx => tx.to === address);
         const debitTxs = this.transactions.filter(tx => tx.from === address);
-        const credits = creditTxs.reduce((acc, tx) => tx.value + acc, 0);
-        const debits = debitTxs.reduce((acc, tx) => tx.value + acc, 0);
-        return credits - debits;
+        const credits = creditTxs.reduce((acc, tx) => tx.value.plus(acc), new bignumber_js_1.default(0));
+        const debits = debitTxs.reduce((acc, tx) => tx.value.plus(acc), new bignumber_js_1.default(0));
+        return credits.minus(debits);
     }
     getBlock(hashOrNumber, includeTxs, callback) {
-        let hash, number;
+        let hash, amount;
         const getByHash = this.transactions.find(tx => tx.hash === hashOrNumber);
         const getByNumber = this.transactions.find(tx => tx.block === hashOrNumber);
         const blockTransactions = getByHash || getByNumber;
         if (!getByHash) {
-            number = hashOrNumber;
+            amount = hashOrNumber;
         }
         if (!getByNumber) {
             hash = hashOrNumber;
         }
         const block = {
             hash: hash || randomTxHash(),
-            number: number || randomBlockNumber(),
+            number: amount || randomBlockNumber(),
             timestamp: Date.now().toString(),
             transactions: blockTransactions
         };

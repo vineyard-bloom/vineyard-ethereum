@@ -16,14 +16,14 @@ export function weiToEth(amount: BigNumber) {
 
 export function checkAllBalances(web3: any) {
   let totalBal = 0
-  let sortableBalances = []
+  let sortableBalances: any = []
   for (let acctNum in web3.eth.accounts) {
     let acct = web3.eth.accounts[acctNum]
     let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether')
     sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal })
     totalBal += parseFloat(acctBal)
   }
-  let sortedBalances = sortableBalances.sort(function (a, b) {
+  let sortedBalances: any = sortableBalances.sort(function (a: any, b: any) {
     if (a.acctBal > b.acctBal) {
       return -1
     }

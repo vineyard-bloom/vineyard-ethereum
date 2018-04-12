@@ -1,7 +1,7 @@
 import { blockchain } from 'vineyard-blockchain';
 import { Web3Client } from './client-functions';
 import { Web3EthereumClientConfig } from './ethereum-client';
-export declare class EthereumBlockReader implements blockchain.BlockReader<blockchain.ContractTransaction> {
+export declare class EthereumBlockReader implements blockchain.BlockReader<blockchain.FullBlock<blockchain.ContractTransaction>> {
     protected web3: Web3Client;
     constructor(web3: Web3Client);
     getHeighestBlockIndex(): Promise<number>;

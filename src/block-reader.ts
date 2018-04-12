@@ -3,8 +3,7 @@ import { getBlock, getBlockContractTransfers, getBlockIndex, getFullBlock, Web3C
 import { initializeWeb3 } from './utility'
 import { Web3EthereumClientConfig } from './ethereum-client'
 
-export class EthereumBlockReader implements blockchain.BlockReader<blockchain.ContractTransaction>
-// ,  blockchain.ContractReader
+export class EthereumBlockReader implements blockchain.BlockReader<blockchain.FullBlock<blockchain.ContractTransaction>>
 {
   protected web3: Web3Client
 

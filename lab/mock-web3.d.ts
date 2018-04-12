@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { EthereumTransaction, Web3Transaction } from '../src';
 export declare class MockWeb3 {
     eth: MockEth;
@@ -11,7 +12,7 @@ export declare class MockEth {
     getAccounts: Function;
     constructor();
     getGasPrice(): number;
-    getBalance(address: string, callback: Function): number;
+    getBalance(address: string, callback: Function): BigNumber;
     getBlock(hashOrNumber: string, includeTxs: boolean, callback: Function): any;
     getBlockNumber(callback: Function): any;
     getTransaction(hash: string): Web3Transaction;

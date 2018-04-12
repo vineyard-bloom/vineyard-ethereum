@@ -12,7 +12,8 @@
     "one-line": true,
     "space-before-function-paren": false,
     "trailing-comma": false,
-    "triple-equals": false
+    "triple-equals": false,
+    "one-variable-per-declaration": false
   },
   "exclude": ["node_modules"]
 }

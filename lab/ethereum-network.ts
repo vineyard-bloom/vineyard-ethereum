@@ -51,7 +51,7 @@ export class EthereumNetwork {
   }
 
   async createMiners(count: number): Promise<GethNode[]> {
-    const result = []
+    const result: GethNode[] = []
     for (let i = 0; i < count; ++i) {
       result.push(await this.createMiner())
     }

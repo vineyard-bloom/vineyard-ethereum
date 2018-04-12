@@ -8,6 +8,10 @@
     "newLine": "lf",
     "lib": [
       "es2017"
+    ],
+    "include": [
+      "src/**/*",
+      "test/**/*"
     ]
   }
 }

@@ -14,6 +14,7 @@ class MockWeb3 {
 exports.MockWeb3 = MockWeb3;
 class MockEth {
     constructor() {
+        this.getAccounts = undefined;
         this.transactions = [];
         this.coinbase = randomAddress();
     }

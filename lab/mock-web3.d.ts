@@ -9,7 +9,7 @@ export declare class MockWeb3 {
 export declare class MockEth {
     transactions: Web3Transaction[];
     coinbase: string;
-    getAccounts: Function;
+    getAccounts: Function | undefined;
     constructor();
     getGasPrice(): number;
     getBalance(address: string, callback: Function): BigNumber;

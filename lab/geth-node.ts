@@ -24,7 +24,7 @@ export class GethNode {
   private stdout: any
   private stderr: any
   private childProcess: any
-  private client: Web3EthereumClient
+  private client: Web3EthereumClient | undefined = undefined
   private config: GethNodeConfig
   private datadir: string
   private keydir: string
@@ -41,11 +41,11 @@ export class GethNode {
   }
 
   getWeb3() {
-    return this.client.getWeb3()
+    return this.client!.getWeb3()
   }
 
   getClient() {
-    return this.client
+    return this.client!
   }
 
   getKeydir() {
@@ -111,7 +111,7 @@ export class GethNode {
   }
 
   isConnected() {
-    return this.client.getWeb3().isConnected()
+    return this.client!.getWeb3().isConnected()
   }
 
   mineBlocks(blockCount: number) {
@@ -154,7 +154,7 @@ export class GethNode {
     }
 
     console.log(this.index, 'Stopping node.')
-    this.client.getWeb3().reset()
+    this.client!.getWeb3().reset()
 
     return new Promise((resolve, reject) => {
       this.childProcess.stdin.write('exit\n')

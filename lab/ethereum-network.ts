@@ -1,14 +1,14 @@
 import { GethNode, GethNodeConfig } from './geth-node'
 import { each as promiseEach } from 'promise-each2'
 
-const child_process = require('child_process')
+const childProcess = require('child_process')
 const rimraf = require('rimraf')
 const fs = require('fs')
 
 export class EthereumNetwork {
   private config: GethNodeConfig
   private nextPort = 8546
-  private mainNode: GethNode
+  // private mainNode: GethNode
   private coinbase: string = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba'
   private enode?: string = undefined
   private enodes: string[] = []
@@ -58,9 +58,9 @@ export class EthereumNetwork {
     return result
   }
 
-  getMainNode() {
-    return this.mainNode
-  }
+  // getMainNode() {
+  //   return this.mainNode
+  // }
 
   resetTempDir() {
     rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.

@@ -19,7 +19,7 @@ export class MockWeb3 {
 export class MockEth {
   transactions: Web3Transaction[]
   coinbase: string
-  getAccounts: Function
+  getAccounts: Function | undefined = undefined
 
   constructor() {
     this.transactions = []

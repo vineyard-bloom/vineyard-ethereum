@@ -10,12 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const geth_node_1 = require("./geth-node");
 const promise_each2_1 = require("promise-each2");
-const child_process = require('child_process');
+const childProcess = require('child_process');
 const rimraf = require('rimraf');
 const fs = require('fs');
 class EthereumNetwork {
     constructor(config) {
         this.nextPort = 8546;
+        // private mainNode: GethNode
         this.coinbase = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba';
         this.enode = undefined;
         this.enodes = [];
@@ -63,9 +64,9 @@ class EthereumNetwork {
             return result;
         });
     }
-    getMainNode() {
-        return this.mainNode;
-    }
+    // getMainNode() {
+    //   return this.mainNode
+    // }
     resetTempDir() {
         rimraf.sync('./temp/eth'); // Right now still hard-coded because I don't trust rm -rf.
         if (!fs.existsSync(this.config.tempPath)) {

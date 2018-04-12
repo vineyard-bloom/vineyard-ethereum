@@ -41,7 +41,7 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     gasUsed: number;
     gasPrice: BigNumber;
     fee: BigNumber;
-    newContract: blockchain.Contract | blockchain.TokenContract | undefined;
+    newContract: blockchain.Contract | undefined;
     events: ContractEvent[];
     nonce: number;
 }>;

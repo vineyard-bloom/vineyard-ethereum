@@ -10,6 +10,7 @@ var Status;
 })(Status || (Status = {}));
 class GethNode {
     constructor(config, port) {
+        this.client = undefined;
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
         this.datadir = './temp/eth/geth' + this.index;

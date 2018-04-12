@@ -2,7 +2,6 @@ import { GethNode, GethNodeConfig } from './geth-node';
 export declare class EthereumNetwork {
     private config;
     private nextPort;
-    private mainNode;
     private coinbase;
     private enode?;
     private enodes;
@@ -13,7 +12,6 @@ export declare class EthereumNetwork {
     createMiner(): Promise<GethNode>;
     createControlNode(): Promise<GethNode>;
     createMiners(count: number): Promise<GethNode[]>;
-    getMainNode(): GethNode;
     resetTempDir(): void;
     initialize(): void;
     start(): void;

@@ -1,5 +1,5 @@
 import {
-  BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve,
+  BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, SingleTransaction, ReadClient, Resolve,
   TransactionStatus, blockchain
 } from 'vineyard-blockchain'
 import { Web3EthereumClientConfig } from './ethereum-client'
@@ -28,7 +28,7 @@ export interface AbiObject {
   inputs: AbiObject[]
 }
 
-export class TokenClient implements ReadClient<ExternalTransaction> {
+export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
   private web3: Web3Client
   private tokenContractAddress: string
   private currency: number

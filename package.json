@@ -28,6 +28,6 @@
     "source-map-support": "^0.4.14",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.7.2"
+    "typescript": "2.7.2"
   }
 }

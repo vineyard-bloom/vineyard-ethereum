@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
-import { BaseBlock, blockchain, Resolve, TransactionStatus } from 'vineyard-blockchain'
+import { blockchain, BaseBlock, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
 
 const Web3 = require('web3')
@@ -98,8 +98,7 @@ export async function getLastBlock(web3: Web3Client): Promise<BaseBlock> {
   return {
     hash: lastBlock.hash,
     index: lastBlock.number,
-    timeMined: new Date(lastBlock.timestamp * 1000),
-    currency: 2
+    timeMined: new Date(lastBlock.timestamp * 1000)
   }
 }
 
@@ -116,9 +115,9 @@ export function getTransactionReceipt(web3: Web3Client, txid: string): Promise<W
   })
 }
 
-export async function getTransactionStatus(web3: Web3Client, txid: string): Promise<TransactionStatus> {
+export async function getTransactionStatus(web3: Web3Client, txid: string): Promise<blockchain.TransactionStatus> {
   let transactionReceipt: Web3TransactionReceipt = await getTransactionReceipt(web3, txid)
-  return transactionReceipt.status.substring(2) === '0' ? TransactionStatus.rejected : TransactionStatus.accepted
+  return transactionReceipt.status.substring(2) === '0' ? blockchain.TransactionStatus.rejected : blockchain.TransactionStatus.accepted
 }
 
 export async function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined> {
@@ -130,24 +129,23 @@ export async function getNextBlockInfo(web3: Web3Client, previousBlock: blockcha
   return {
     hash: nextBlock.hash,
     index: nextBlock.number,
-    timeMined: new Date(nextBlock.timestamp * 1000),
-    currency: 2
+    timeMined: new Date(nextBlock.timestamp * 1000)
   }
 }
 
-export function convertStatus(gethStatus: string): TransactionStatus {
+export function convertStatus(gethStatus: string): blockchain.TransactionStatus {
   switch (gethStatus) {
     case 'pending':
-      return TransactionStatus.pending
+      return blockchain.TransactionStatus.pending
 
     case 'accepted':
-      return TransactionStatus.accepted
+      return blockchain.TransactionStatus.accepted
 
     case 'rejected':
-      return TransactionStatus.rejected
+      return blockchain.TransactionStatus.rejected
 
     default:
-      return TransactionStatus.unknown
+      return blockchain.TransactionStatus.unknown
   }
 }
 

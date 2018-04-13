@@ -2,8 +2,7 @@ import { checkAllBalances, initializeWeb3 } from './utility'
 import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, EthereumTransactionOld, Web3TransactionReceipt } from './types'
 import {
-  BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve,
-  TransactionStatus
+  blockchain, BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve
 } from 'vineyard-blockchain'
 import { convertStatus, SendTransaction, sendWeb3Transaction, unlockWeb3Account, Web3Client } from './client-functions'
 
@@ -44,8 +43,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     return {
       hash: lastBlock.hash,
       index: lastBlock.number,
-      timeMined: new Date(lastBlock.timestamp * 1000),
-      currency: 2
+      timeMined: new Date(lastBlock.timestamp * 1000)
     }
   }
 
@@ -58,22 +56,21 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     return {
       hash: nextBlock.hash,
       index: nextBlock.number,
-      timeMined: new Date(nextBlock.timestamp * 1000),
-      currency: 2
+      timeMined: new Date(nextBlock.timestamp * 1000)
     }
   }
 
   async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
     let fullBlock = await this.getBlock(block.index)
-    let blockHeight = await this.getBlockNumber()
+    // let blockHeight = await this.getBlockNumber()
     const transactions = fullBlock.transactions.map(t => ({
       txid: t.hash,
       to: t.to,
       from: t.from,
       amount: t.value,
       timeReceived: new Date(fullBlock.timestamp * 1000),
-      confirmations: blockHeight - block.index,
-      block: block.index,
+      // confirmations: blockHeight - block.index,
+      blockIndex: block.index,
       status: convertStatus(t.status)
     }))
     return {
@@ -84,9 +81,9 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+  async getTransactionStatus(txid: string): Promise<blockchain.TransactionStatus> {
     let transactionReceipt: Web3TransactionReceipt = await this.getTransactionReceipt(txid)
-    return transactionReceipt.status.substring(2) === '0' ? TransactionStatus.rejected : TransactionStatus.accepted
+    return transactionReceipt.status.substring(2) === '0' ? blockchain.TransactionStatus.rejected : blockchain.TransactionStatus.accepted
   }
 
   unlockAccount(address: string) {

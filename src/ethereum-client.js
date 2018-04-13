@@ -40,8 +40,7 @@ class Web3EthereumClient {
             return {
                 hash: lastBlock.hash,
                 index: lastBlock.number,
-                timeMined: new Date(lastBlock.timestamp * 1000),
-                currency: 2
+                timeMined: new Date(lastBlock.timestamp * 1000)
             };
         });
     }
@@ -55,23 +54,22 @@ class Web3EthereumClient {
             return {
                 hash: nextBlock.hash,
                 index: nextBlock.number,
-                timeMined: new Date(nextBlock.timestamp * 1000),
-                currency: 2
+                timeMined: new Date(nextBlock.timestamp * 1000)
             };
         });
     }
     getFullBlock(block) {
         return __awaiter(this, void 0, void 0, function* () {
             let fullBlock = yield this.getBlock(block.index);
-            let blockHeight = yield this.getBlockNumber();
+            // let blockHeight = await this.getBlockNumber()
             const transactions = fullBlock.transactions.map(t => ({
                 txid: t.hash,
                 to: t.to,
                 from: t.from,
                 amount: t.value,
                 timeReceived: new Date(fullBlock.timestamp * 1000),
-                confirmations: blockHeight - block.index,
-                block: block.index,
+                // confirmations: blockHeight - block.index,
+                blockIndex: block.index,
                 status: client_functions_1.convertStatus(t.status)
             }));
             return {
@@ -85,7 +83,7 @@ class Web3EthereumClient {
     getTransactionStatus(txid) {
         return __awaiter(this, void 0, void 0, function* () {
             let transactionReceipt = yield this.getTransactionReceipt(txid);
-            return transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted;
+            return transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.blockchain.TransactionStatus.rejected : vineyard_blockchain_1.blockchain.TransactionStatus.accepted;
         });
     }
     unlockAccount(address) {

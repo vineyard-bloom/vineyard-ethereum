@@ -95,8 +95,7 @@ function getLastBlock(web3) {
         return {
             hash: lastBlock.hash,
             index: lastBlock.number,
-            timeMined: new Date(lastBlock.timestamp * 1000),
-            currency: 2
+            timeMined: new Date(lastBlock.timestamp * 1000)
         };
     });
 }
@@ -118,7 +117,7 @@ exports.getTransactionReceipt = getTransactionReceipt;
 function getTransactionStatus(web3, txid) {
     return __awaiter(this, void 0, void 0, function* () {
         let transactionReceipt = yield getTransactionReceipt(web3, txid);
-        return transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.TransactionStatus.rejected : vineyard_blockchain_1.TransactionStatus.accepted;
+        return transactionReceipt.status.substring(2) === '0' ? vineyard_blockchain_1.blockchain.TransactionStatus.rejected : vineyard_blockchain_1.blockchain.TransactionStatus.accepted;
     });
 }
 exports.getTransactionStatus = getTransactionStatus;
@@ -132,8 +131,7 @@ function getNextBlockInfo(web3, previousBlock) {
         return {
             hash: nextBlock.hash,
             index: nextBlock.number,
-            timeMined: new Date(nextBlock.timestamp * 1000),
-            currency: 2
+            timeMined: new Date(nextBlock.timestamp * 1000)
         };
     });
 }
@@ -141,13 +139,13 @@ exports.getNextBlockInfo = getNextBlockInfo;
 function convertStatus(gethStatus) {
     switch (gethStatus) {
         case 'pending':
-            return vineyard_blockchain_1.TransactionStatus.pending;
+            return vineyard_blockchain_1.blockchain.TransactionStatus.pending;
         case 'accepted':
-            return vineyard_blockchain_1.TransactionStatus.accepted;
+            return vineyard_blockchain_1.blockchain.TransactionStatus.accepted;
         case 'rejected':
-            return vineyard_blockchain_1.TransactionStatus.rejected;
+            return vineyard_blockchain_1.blockchain.TransactionStatus.rejected;
         default:
-            return vineyard_blockchain_1.TransactionStatus.unknown;
+            return vineyard_blockchain_1.blockchain.TransactionStatus.unknown;
     }
 }
 exports.convertStatus = convertStatus;

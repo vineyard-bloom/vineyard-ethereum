@@ -1,23 +1,11 @@
-import {
-  BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, SingleTransaction, ReadClient, Resolve,
-  TransactionStatus, blockchain
-} from 'vineyard-blockchain'
+import { BaseBlock, blockchain, BlockInfo, ReadClient } from 'vineyard-blockchain'
 import { Web3EthereumClientConfig } from './ethereum-client'
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
-import { 
-  Web3Client, 
-  SendTransaction, 
-  Resolve2, 
-  sendWeb3Transaction,
-  getBlockIndex,
-  getLastBlock,
-  getTransactionStatus,
-  getNextBlockInfo,
-  getFullBlock,
-  getBlock,
-  getTransactionReceipt
+import {
+  getBlock, getBlockIndex, getFullBlock, getLastBlock, getNextBlockInfo, getTransactionReceipt,
+  getTransactionStatus, SendTransaction, sendWeb3Transaction, Web3Client
 } from './client-functions'
-import { initializeWeb3, getEvents } from './utility'
+import { initializeWeb3 } from './utility'
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder.js')
@@ -42,7 +30,7 @@ export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
     this.abi = this.addAbi(abi)
   }
 
-  async send(transaction: SendTransaction) {
+  async send(transaction: SendTransaction): Promise<EthereumTransaction> {
     return sendWeb3Transaction(this.web3, transaction)
   }
 
@@ -54,7 +42,7 @@ export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
     return getLastBlock(this.web3)
   }
 
-  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+  async getTransactionStatus(txid: string): Promise<blockchain.TransactionStatus> {
     return getTransactionStatus(this.web3, txid)
   }
 

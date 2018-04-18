@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bignumber_js_1 = require("bignumber.js");
-const promise_each2_1 = require("promise-each2");
-const Web3 = require('web3');
+var bignumber_js_1 = require("bignumber.js");
+var promise_each2_1 = require("promise-each2");
+var Web3 = require('web3');
 function ethToWei(amount) {
     return amount.times(new bignumber_js_1.default('1000000000000000000'));
 }
@@ -12,15 +12,15 @@ function weiToEth(amount) {
 }
 exports.weiToEth = weiToEth;
 function checkAllBalances(web3) {
-    let totalBal = 0;
-    let sortableBalances = [];
-    for (let acctNum in web3.eth.accounts) {
-        let acct = web3.eth.accounts[acctNum];
-        let acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
+    var totalBal = 0;
+    var sortableBalances = [];
+    for (var acctNum in web3.eth.accounts) {
+        var acct = web3.eth.accounts[acctNum];
+        var acctBal = web3.fromWei(web3.eth.getBalance(acct), 'ether');
         sortableBalances.push({ 'id': acctNum, 'acct': acct, 'acctBal': acctBal });
         totalBal += parseFloat(acctBal);
     }
-    let sortedBalances = sortableBalances.sort(function (a, b) {
+    var sortedBalances = sortableBalances.sort(function (a, b) {
         if (a.acctBal > b.acctBal) {
             return -1;
         }
@@ -29,8 +29,8 @@ function checkAllBalances(web3) {
         }
         return 0;
     });
-    for (let acctNum in sortedBalances) {
-        let acct = web3.eth.accounts[acctNum];
+    for (var acctNum in sortedBalances) {
+        var acct = web3.eth.accounts[acctNum];
         console.log('  eth.accounts[' + acctNum + ']: \t' + acct + ' \tbalance: ' + sortedBalances[acctNum].acctBal + ' ether');
     }
     console.log('  Total balance: ' + totalBal + ' ether');
@@ -53,16 +53,16 @@ function createTransaction(e, block) {
     };
 }
 function gatherTransactions(block, transactions, addressManager) {
-    let result = [];
+    var result = [];
     return promise_each2_1.each(transactions
-        .filter((e) => e.to)
-        .map((e) => () => addressManager.hasAddress(e.to)
-        .then(success => {
+        .filter(function (e) { return e.to; })
+        .map(function (e) { return function () { return addressManager.hasAddress(e.to)
+        .then(function (success) {
         if (success) {
             result.push(createTransaction(e, block));
         }
-    })))
-        .then(() => result);
+    }); }; }))
+        .then(function () { return result; });
 }
 // const bundleSize = 20
 // function getTransactionsFromBlock(block, addressManager: AddressManager): Promise<any[]> {
@@ -73,7 +73,7 @@ function gatherTransactions(block, transactions, addressManager) {
 // }
 function getTransactions(client, addressManager, i) {
     return client.getBlock(i)
-        .then(block => {
+        .then(function (block) {
         if (!block || !block.transactions) {
             return Promise.resolve([]);
         }
@@ -83,7 +83,7 @@ function getTransactions(client, addressManager, i) {
 exports.getTransactions = getTransactions;
 function isTransactionValid(client, txid) {
     return Promise.resolve(client.web3.eth.getTransactionReceipt(txid))
-        .then(transaction => {
+        .then(function (transaction) {
         // '0x0' == failed tx, might still be mined in block, though
         // '0x1' == successful
         if (transaction && transaction.blockNumber && transaction.status === '0x1') {
@@ -92,7 +92,7 @@ function isTransactionValid(client, txid) {
         else {
             return Promise.resolve(false);
         }
-    }).catch(e => {
+    }).catch(function (e) {
         console.error('ERROR GETTING TRANSACTION RECEIPT: ', e);
         return Promise.resolve();
     });
@@ -103,8 +103,8 @@ function scanBlocks(client, addressManager, i, endBlockNumber) {
         return Promise.resolve([]);
     }
     return getTransactions(client, addressManager, i)
-        .then(first => scanBlocks(client, addressManager, i + 1, endBlockNumber)
-        .then(second => first.concat(second)));
+        .then(function (first) { return scanBlocks(client, addressManager, i + 1, endBlockNumber)
+        .then(function (second) { return first.concat(second); }); });
 }
 function getTransactionsFromRange(client, addressManager, lastBlock, newLastBlock) {
     return scanBlocks(client, addressManager, lastBlock + 1, newLastBlock);
@@ -118,10 +118,10 @@ function initializeWeb3(ethereumConfig, web3) {
     return web3;
 }
 exports.initializeWeb3 = initializeWeb3;
-const formatters = require('web3/lib/web3/formatters');
-const promiseRequest = require('./request-promise');
+var formatters = require('web3/lib/web3/formatters');
+var promiseRequest = require('./request-promise');
 function getEvents(web3, filter) {
-    const processedFilter = {
+    var processedFilter = {
         address: filter.address,
         from: filter.from,
         to: filter.to,
@@ -129,7 +129,7 @@ function getEvents(web3, filter) {
         toBlock: formatters.inputBlockNumberFormatter(filter.toBlock),
         topics: filter.topics,
     };
-    const body = {
+    var body = {
         jsonrpc: '2.0',
         method: 'eth_getLogs',
         id: 1,
@@ -142,7 +142,6 @@ function getEvents(web3, filter) {
         json: true,
         jar: false,
     })
-        .then((response) => response.result);
+        .then(function (response) { return response.result; });
 }
 exports.getEvents = getEvents;
-//# sourceMappingURL=utility.js.map

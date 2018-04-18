@@ -13,4 +13,3 @@ __export(require("./block-scanner"));
 __export(require("./token-client"));
 __export(require("./block-reader"));
 __export(require("./client-functions"));
-//# sourceMappingURL=index.js.map

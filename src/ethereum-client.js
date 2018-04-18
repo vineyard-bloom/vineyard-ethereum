@@ -44,9 +44,9 @@ class Web3EthereumClient {
             };
         });
     }
-    getNextBlockInfo(previousBlock) {
+    getNextBlockInfo(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0;
+            const nextBlockIndex = blockIndex ? blockIndex + 1 : 0;
             let nextBlock = yield this.getBlock(nextBlockIndex);
             if (!nextBlock) {
                 return undefined;
@@ -58,9 +58,9 @@ class Web3EthereumClient {
             };
         });
     }
-    getFullBlock(block) {
+    getFullBlock(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            let fullBlock = yield this.getBlock(block.index);
+            let fullBlock = yield this.getBlock(blockIndex);
             // let blockHeight = await this.getBlockNumber()
             const transactions = fullBlock.transactions.map(t => ({
                 txid: t.hash,
@@ -69,7 +69,7 @@ class Web3EthereumClient {
                 amount: t.value,
                 timeReceived: new Date(fullBlock.timestamp * 1000),
                 // confirmations: blockHeight - block.index,
-                blockIndex: block.index,
+                blockIndex: blockIndex,
                 status: client_functions_1.convertStatus(t.status)
             }));
             return {

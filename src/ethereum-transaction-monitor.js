@@ -1,80 +1,87 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const promise_each2_1 = require("promise-each2");
-const utility_1 = require("./utility");
-class EthereumTransactionMonitor {
-    constructor(model, ethereumClient, sweepAddress, minimumConfirmations = 12) {
+var promise_each2_1 = require("promise-each2");
+var utility_1 = require("./utility");
+var EthereumTransactionMonitor = /** @class */ (function () {
+    function EthereumTransactionMonitor(model, ethereumClient, sweepAddress, minimumConfirmations) {
+        if (minimumConfirmations === void 0) { minimumConfirmations = 12; }
         this.minimumConfirmations = 12;
         this.manager = model;
         this.ethereumClient = ethereumClient;
         this.sweepAddress = sweepAddress;
         this.minimumConfirmations = minimumConfirmations;
     }
-    processBlock(blockIndex) {
+    EthereumTransactionMonitor.prototype.processBlock = function (blockIndex) {
+        var _this = this;
         return utility_1.getTransactions(this.ethereumClient, this.manager, blockIndex)
-            .then(transactions => {
+            .then(function (transactions) {
             console.log('Scanning block', blockIndex, 'tx-count:', transactions.length);
             return transactions.length === 0
                 ? Promise.resolve()
-                : promise_each2_1.each(transactions, (tx) => {
+                : promise_each2_1.each(transactions, function (tx) {
                     console.log('Saving transaction', tx.hash);
-                    return this.manager.saveTransaction(tx, blockIndex);
+                    return _this.manager.saveTransaction(tx, blockIndex);
                 });
         });
-    }
-    processBlocks(blockIndex, endBlockNumber) {
-        const secondPassOffset = 5;
+    };
+    EthereumTransactionMonitor.prototype.processBlocks = function (blockIndex, endBlockNumber) {
+        var _this = this;
+        var secondPassOffset = 5;
         if (blockIndex > endBlockNumber) {
             return Promise.resolve();
         }
         return this.processBlock(blockIndex)
-            .then(() => {
+            .then(function () {
             console.log('Finished block', blockIndex);
-            return this.manager.setLastBlock(blockIndex);
+            return _this.manager.setLastBlock(blockIndex);
         })
-            .then(() => {
+            .then(function () {
             if (blockIndex > secondPassOffset) {
-                return this.processBlock(blockIndex - secondPassOffset)
-                    .then(() => {
+                return _this.processBlock(blockIndex - secondPassOffset)
+                    .then(function () {
                     console.log('Second scan: Finished block', blockIndex - secondPassOffset);
-                    return this.manager.setLastBlock(blockIndex);
+                    return _this.manager.setLastBlock(blockIndex);
                 });
             }
         })
-            .then(first => this.processBlocks(blockIndex + 1, endBlockNumber));
-    }
-    updateTransactions() {
+            .then(function (first) { return _this.processBlocks(blockIndex + 1, endBlockNumber); });
+    };
+    EthereumTransactionMonitor.prototype.updateTransactions = function () {
+        var _this = this;
         return this.manager.getLastBlock()
-            .then(lastBlock => this.ethereumClient.getBlockNumber()
-            .then(newLastBlock => {
+            .then(function (lastBlock) { return _this.ethereumClient.getBlockNumber()
+            .then(function (newLastBlock) {
             console.log('Updating blocks (last - current)', lastBlock, newLastBlock);
             if (newLastBlock === lastBlock) {
                 return Promise.resolve();
             }
-            return this.processBlocks(lastBlock + 1, newLastBlock)
-                .then(() => this.updatePending(newLastBlock - this.minimumConfirmations));
-        }));
-    }
-    resolveTransaction(transaction) {
+            return _this.processBlocks(lastBlock + 1, newLastBlock)
+                .then(function () { return _this.updatePending(newLastBlock - _this.minimumConfirmations); });
+        }); });
+    };
+    EthereumTransactionMonitor.prototype.resolveTransaction = function (transaction) {
+        var _this = this;
         return this.ethereumClient.getTransaction(transaction.txid)
-            .then((result) => {
+            .then(function (result) {
             if (!result || !result.blockNumber) {
                 console.log('Denying transaction', result.txid);
-                return this.manager.setStatus(transaction, 2)
-                    .then(() => this.manager.onDenial(transaction));
+                return _this.manager.setStatus(transaction, 2)
+                    .then(function () { return _this.manager.onDenial(transaction); });
             }
             else {
                 console.log('Confirming transaction', result.txid);
-                return this.manager.setStatus(transaction, 1)
-                    .then(() => this.manager.onConfirm(transaction));
+                return _this.manager.setStatus(transaction, 1)
+                    .then(function () { return _this.manager.onConfirm(transaction); });
             }
         });
-    }
-    updatePending(newLastBlock) {
+    };
+    EthereumTransactionMonitor.prototype.updatePending = function (newLastBlock) {
+        var _this = this;
         return this.manager.getResolvedTransactions(newLastBlock)
-            .then(transactions => promise_each2_1.each(transactions, (transaction) => this.resolveTransaction(transaction)));
-    }
-}
+            .then(function (transactions) { return promise_each2_1.each(transactions, function (transaction) { return _this.resolveTransaction(transaction); }); });
+    };
+    return EthereumTransactionMonitor;
+}());
 exports.EthereumTransactionMonitor = EthereumTransactionMonitor;
 // export class EthereumBalanceMonitor<EthereumTransaction> {
 //   private ethereumClient:any
@@ -102,4 +109,3 @@ exports.EthereumTransactionMonitor = EthereumTransactionMonitor;
 //       .then(addresses => promiseEach(addresses, address => this.saveNewTransaction(address)))
 //   }
 // }
-//# sourceMappingURL=ethereum-transaction-monitor.js.map

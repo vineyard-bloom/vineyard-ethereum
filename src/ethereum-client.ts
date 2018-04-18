@@ -47,8 +47,8 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
-    const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
+  async getNextBlockInfo(blockIndex: number | undefined): Promise<BaseBlock | undefined> {
+    const nextBlockIndex = blockIndex ? blockIndex + 1 : 0
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
       return undefined
@@ -60,8 +60,8 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
     }
   }
 
-  async getFullBlock(block: BlockInfo): Promise<FullBlock<ExternalTransaction>> {
-    let fullBlock = await this.getBlock(block.index)
+  async getFullBlock(blockIndex: number): Promise<FullBlock<ExternalTransaction>> {
+    let fullBlock = await this.getBlock(blockIndex)
     // let blockHeight = await this.getBlockNumber()
     const transactions = fullBlock.transactions.map(t => ({
       txid: t.hash,
@@ -70,7 +70,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
       amount: t.value,
       timeReceived: new Date(fullBlock.timestamp * 1000),
       // confirmations: blockHeight - block.index,
-      blockIndex: block.index,
+      blockIndex: blockIndex,
       status: convertStatus(t.status)
     }))
     return {

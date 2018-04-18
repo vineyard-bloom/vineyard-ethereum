@@ -18,7 +18,7 @@ export declare function getBlockIndex(web3: Web3Client): Promise<number>;
 export declare function getLastBlock(web3: Web3Client): Promise<BaseBlock>;
 export declare function getTransactionReceipt(web3: Web3Client, txid: string): Promise<Web3TransactionReceipt>;
 export declare function getTransactionStatus(web3: Web3Client, txid: string): Promise<blockchain.TransactionStatus>;
-export declare function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined>;
+export declare function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number | undefined): Promise<BaseBlock | undefined>;
 export declare function convertStatus(gethStatus: string): blockchain.TransactionStatus;
 export declare const toChecksumAddress: any;
 export declare function getNullableChecksumAddress(address?: string): string | undefined;

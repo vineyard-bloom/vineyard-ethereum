@@ -120,8 +120,8 @@ export async function getTransactionStatus(web3: Web3Client, txid: string): Prom
   return transactionReceipt.status.substring(2) === '0' ? blockchain.TransactionStatus.rejected : blockchain.TransactionStatus.accepted
 }
 
-export async function getNextBlockInfo(web3: Web3Client, previousBlock: blockchain.Block | undefined): Promise<BaseBlock | undefined> {
-  const nextBlockIndex = previousBlock ? previousBlock.index + 1 : 0
+export async function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number | undefined): Promise<BaseBlock | undefined> {
+  const nextBlockIndex = previousBlockIndex ? previousBlockIndex + 1 : 0
   let nextBlock: Block = await getBlock(web3, nextBlockIndex)
   if (!nextBlock) {
     return undefined

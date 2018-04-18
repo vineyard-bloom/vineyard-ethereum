@@ -46,12 +46,12 @@ export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
     return getTransactionStatus(this.web3, txid)
   }
 
-  async getNextBlockInfo(previousBlock: BlockInfo | undefined): Promise<BaseBlock | undefined> {
-    return getNextBlockInfo(this.web3, previousBlock)
+  async getNextBlockInfo(blockIndex: number | undefined): Promise<BaseBlock | undefined> {
+    return getNextBlockInfo(this.web3, blockIndex)
   }
 
-  async getFullBlock(blockInfo: BlockInfo): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
-    return getFullBlock(this.web3, blockInfo.index)
+  async getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
+    return getFullBlock(this.web3, blockIndex)
   }
 
   async getBlock(blockIndex: number): Promise<Block> {

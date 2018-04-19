@@ -5,6 +5,7 @@ import {
   blockchain, BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve
 } from 'vineyard-blockchain'
 import { convertStatus, SendTransaction, sendWeb3Transaction, unlockWeb3Account, Web3Client } from './client-functions'
+import { isNullOrUndefined } from 'util'
 
 const util = require('util')
 const Web3 = require('web3')
@@ -48,7 +49,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
   }
 
   async getNextBlockInfo(blockIndex: number | undefined): Promise<BaseBlock | undefined> {
-    const nextBlockIndex = blockIndex ? blockIndex + 1 : 0
+    const nextBlockIndex = isNullOrUndefined(blockIndex) ? 0 : blockIndex + 1
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
       return undefined

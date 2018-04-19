@@ -12,6 +12,7 @@ const utility_1 = require("./utility");
 const bignumber_js_1 = require("bignumber.js");
 const vineyard_blockchain_1 = require("vineyard-blockchain");
 const client_functions_1 = require("./client-functions");
+const util_1 = require("util");
 const util = require('util');
 const Web3 = require('web3');
 class Web3EthereumClient {
@@ -46,7 +47,7 @@ class Web3EthereumClient {
     }
     getNextBlockInfo(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            const nextBlockIndex = blockIndex === (null || undefined) ? 0 : blockIndex + 1;
+            const nextBlockIndex = util_1.isNullOrUndefined(blockIndex) ? 0 : blockIndex + 1;
             let nextBlock = yield this.getBlock(nextBlockIndex);
             if (!nextBlock) {
                 return undefined;

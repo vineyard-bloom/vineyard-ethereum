@@ -46,7 +46,7 @@ class Web3EthereumClient {
     }
     getNextBlockInfo(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            const nextBlockIndex = blockIndex ? blockIndex + 1 : 0;
+            const nextBlockIndex = blockIndex === (null || undefined) ? 0 : blockIndex + 1;
             let nextBlock = yield this.getBlock(nextBlockIndex);
             if (!nextBlock) {
                 return undefined;

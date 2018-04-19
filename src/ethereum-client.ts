@@ -48,7 +48,7 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
   }
 
   async getNextBlockInfo(blockIndex: number | undefined): Promise<BaseBlock | undefined> {
-    const nextBlockIndex = blockIndex ? blockIndex + 1 : 0
+    const nextBlockIndex = blockIndex === (null || undefined) ? 0 : blockIndex + 1
     let nextBlock: Block = await this.getBlock(nextBlockIndex)
     if (!nextBlock) {
       return undefined

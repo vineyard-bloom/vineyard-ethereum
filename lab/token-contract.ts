@@ -2,7 +2,7 @@ import { Web3EthereumClient } from '../src'
 
 const contract = require('truffle-contract')
 // this is SALT smart contract - artifact of running truffle-compile
-const saltCompiledContract = require('../test/res/compiled-salt-contract.json')
+const saltCompiledContract = {} // require('../test/res/compiled-salt-contract.json')
 
 export class TokenContract {
   private client: Web3EthereumClient
@@ -107,7 +107,7 @@ export class TokenContract {
   }
 
   watchContract(instance: any, from: string) {
-    const myEvent = instance.Transfer({from: from}, {fromBlock: 0, toBlock: 'latest'})
+    const myEvent = instance.Transfer({ from: from }, { fromBlock: 0, toBlock: 'latest' })
     myEvent.watch(function (error: Error, result: any) {
       console.log('watch results: ', result)
     })
@@ -124,7 +124,7 @@ export class TokenContract {
     newContract.deployed()
       .then((instance: any) => {
         // last param is total tx object
-        return instance.func.sendTransaction(...params, {from: from})
+        return instance.func.sendTransaction(...params, { from: from })
           .then((result: any) => {
             console.log(result)
           })

@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../src");
 const ChildProcess = require('child_process');
@@ -78,25 +86,20 @@ class GethNode {
         return this.client.getWeb3().isConnected();
     }
     mineBlocks(blockCount) {
-        console.log('Mining', blockCount, 'blocks');
-        let originalBlock;
-        let targetBlock;
-        const next = () => {
-            return new Promise(resolve => setTimeout(resolve, 50))
-                .then(() => this.getClient().getBlockNumber())
-                .then(blockNumber => {
-                if (blockNumber < targetBlock) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Mining', blockCount, 'blocks');
+            const originalBlock = yield this.getClient().getBlockNumber();
+            const targetBlock = originalBlock + blockCount;
+            const next = () => __awaiter(this, void 0, void 0, function* () {
+                yield new Promise(resolve => setTimeout(resolve, 50));
+                const blockNumber = yield this.getClient().getBlockNumber();
+                console.log('mining...', blockNumber, targetBlock);
+                if (blockNumber < targetBlock)
                     return next();
-                }
                 console.log('Mined ' + (blockNumber - originalBlock) + ' blocks');
             });
-        };
-        return this.getClient().getBlockNumber()
-            .then(blockNumber => {
-            originalBlock = blockNumber;
-            targetBlock = blockNumber + blockCount;
-        })
-            .then(next);
+            return next();
+        });
     }
     addPeer(enode) {
         console.log(this.index, 'admin.addPeer(' + enode + ')');

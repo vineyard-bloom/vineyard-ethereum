@@ -114,29 +114,22 @@ export class GethNode {
     return this.client!.getWeb3().isConnected()
   }
 
-  mineBlocks(blockCount: number) {
+  async mineBlocks(blockCount: number) {
     console.log('Mining', blockCount, 'blocks')
-    let originalBlock: any
-    let targetBlock: any
+    const originalBlock = await this.getClient().getBlockNumber()
+    const targetBlock = originalBlock + blockCount
 
-    const next = (): any => {
-      return new Promise<void>(resolve => setTimeout(resolve, 50))
-        .then(() => this.getClient().getBlockNumber())
-        .then(blockNumber => {
-          if (blockNumber < targetBlock) {
-            return next()
-          }
+    const next = async (): Promise<any> => {
+      await new Promise<void>(resolve => setTimeout(resolve, 50))
+      const blockNumber = await this.getClient().getBlockNumber()
+      console.log('mining...', blockNumber, targetBlock)
+      if (blockNumber < targetBlock)
+        return next()
 
-          console.log('Mined ' + (blockNumber - originalBlock) + ' blocks')
-        })
+      console.log('Mined ' + (blockNumber - originalBlock) + ' blocks')
     }
 
-    return this.getClient().getBlockNumber()
-      .then(blockNumber => {
-        originalBlock = blockNumber
-        targetBlock = blockNumber + blockCount
-      })
-      .then(next)
+    return next()
   }
 
   addPeer(enode: string) {

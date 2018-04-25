@@ -2,7 +2,6 @@ import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
 import { blockchain, BaseBlock, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
-
 const Web3 = require('web3')
 
 const SolidityFunction = require('web3/lib/web3/function')

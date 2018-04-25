@@ -1,4 +1,4 @@
-import { BaseBlock, blockchain, BlockInfo, ReadClient } from 'vineyard-blockchain'
+import { BaseBlock, blockchain, ReadClient } from 'vineyard-blockchain'
 import { Web3EthereumClientConfig } from './ethereum-client'
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
 import {

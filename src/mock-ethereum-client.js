@@ -1,52 +1,46 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var PredefinedAddressSource = /** @class */ (function () {
-    function PredefinedAddressSource(addresses) {
+class PredefinedAddressSource {
+    constructor(addresses) {
         this.index = 0;
         this.addresses = addresses;
     }
-    PredefinedAddressSource.prototype.generateAddress = function () {
+    generateAddress() {
         return Promise.resolve(this.addresses[this.index++]);
-    };
-    return PredefinedAddressSource;
-}());
-exports.PredefinedAddressSource = PredefinedAddressSource;
-var RandomAddressSource = /** @class */ (function () {
-    function RandomAddressSource() {
     }
-    RandomAddressSource.prototype.generateAddress = function () {
+}
+exports.PredefinedAddressSource = PredefinedAddressSource;
+class RandomAddressSource {
+    generateAddress() {
         return Promise.resolve('fake-eth-address-' + Math.floor((Math.random() * 100000) + 1));
-    };
-    return RandomAddressSource;
-}());
+    }
+}
 exports.RandomAddressSource = RandomAddressSource;
-var MockEth = /** @class */ (function () {
-    function MockEth() {
+class MockEth {
+    constructor() {
         this.coinbase = '';
     }
-    MockEth.prototype.getBalance = function (address) {
+    getBalance(address) {
         return address.balance;
-    };
-    MockEth.prototype.getBlock = function (blockNumber, blocks, cb) {
+    }
+    getBlock(blockNumber, blocks, cb) {
         return blocks[blockNumber];
-    };
-    MockEth.prototype.blockNumber = function (blocks) {
-        return new Promise(function (resolve, reject) {
+    }
+    blockNumber(blocks) {
+        return new Promise((resolve, reject) => {
             resolve(blocks[blocks.length - 1]);
         });
-    };
-    MockEth.prototype.getTransaction = function (txid, transactions) {
+    }
+    getTransaction(txid, transactions) {
         return transactions[txid];
-    };
-    return MockEth;
-}());
+    }
+}
 exports.MockEth = MockEth;
-var MockWeb3 = /** @class */ (function () {
-    function MockWeb3(mockEth) {
+class MockWeb3 {
+    constructor(mockEth) {
         this.mockEth = mockEth;
     }
-    return MockWeb3;
-}());
+}
 exports.MockWeb3 = MockWeb3;
 /*
 export class MockEthereumClient implements EthereumClient {
@@ -206,3 +200,4 @@ export class MockEthereumClient implements EthereumClient {
   }
 }
 */
+//# sourceMappingURL=mock-ethereum-client.js.map

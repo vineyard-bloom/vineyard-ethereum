@@ -11,8 +11,6 @@ export interface GethNodeConfig {
 }
 export declare class GethNode {
     private static instanceIndex;
-    private stdout;
-    private stderr;
     private childProcess;
     private client;
     private config;
@@ -20,6 +18,7 @@ export declare class GethNode {
     private keydir;
     private port?;
     private index;
+    private isMiner;
     constructor(config?: GethNodeConfig, port?: number);
     getWeb3(): any;
     getClient(): Web3EthereumClient;

@@ -16,9 +16,39 @@ var Status;
     Status[Status["inactive"] = 0] = "inactive";
     Status[Status["active"] = 1] = "active";
 })(Status || (Status = {}));
+const errorMessagePattern = /err="(.*?)"/;
+function preparePossibleErrorMessage(message) {
+    // Currently Geth is outputting non-error messages to stderr.  (Which makes perfect sense in Geth-logic.)
+    if (message.substring(0, 4) == 'INFO') {
+        return { message, verbosity: 2 };
+    }
+    else if (message.substring(0, 5) == 'DEBUG') {
+        const match = message.match(errorMessagePattern);
+        if (match) {
+            const message = match[1];
+            return { message, verbosity: 1 };
+        }
+        else {
+            return { message, verbosity: 2 };
+        }
+    }
+    else {
+        return { message, verbosity: 2 };
+    }
+}
+function handlePossibleErrorMessage(index, message, verbosity = 0) {
+    // This may always be a string but just in case...
+    if (typeof message !== 'string')
+        return;
+    const info = preparePossibleErrorMessage(message);
+    if (info.verbosity >= verbosity) {
+        // console.error(message)
+    }
+}
 class GethNode {
     constructor(config, port) {
         this.client = undefined;
+        this.isMiner = false;
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
         this.datadir = './temp/eth/geth' + this.index;
@@ -42,7 +72,7 @@ class GethNode {
         //   : ''
     }
     getCommonFlags() {
-        const verbosity = this.config.verbosity || 0;
+        const verbosity = 4; // this.isMiner ? 4 : 1 // this.config.verbosity || 0
         return ' --ipcdisable --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --verbosity ' + verbosity
@@ -63,6 +93,7 @@ class GethNode {
         return this.launch(command);
     }
     startMining() {
+        this.isMiner = true;
         return this.start('--mine --minerthreads=4');
     }
     execSync(suffix) {
@@ -142,10 +173,11 @@ class GethNode {
     launch(flags) {
         const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
         childProcess.stdout.on('data', (data) => {
-            console.log(this.index, 'stdout:', `${data}`);
+            if (this.config.verbosity)
+                console.log(this.index, 'stdout:', `${data}`);
         });
         childProcess.stderr.on('data', (data) => {
-            console.error(this.index, 'stderr:', `${data}`);
+            handlePossibleErrorMessage(this.index, data, this.config.verbosity);
         });
         this.childProcess.on('close', (code) => {
             console.log(this.index, `child process exited with code ${code}`);

@@ -13,6 +13,7 @@ const utility_1 = require("./utility");
 const Web3 = require('web3');
 const SolidityFunction = require('web3/lib/web3/function');
 const SolidityEvent = require('web3/lib/web3/event');
+const promisify = require('util').promisify;
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -211,6 +212,13 @@ function createContract(eth, abi, address) {
     return result;
 }
 exports.createContract = createContract;
+function deployContract(web3, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const hash = yield promisify(web3.eth.sendTransaction.bind(web3.eth))(args);
+        return hash;
+    });
+}
+exports.deployContract = deployContract;
 function getTokenContractFromReceipt(web3, receipt) {
     return __awaiter(this, void 0, void 0, function* () {
         const address = receipt.contractAddress;

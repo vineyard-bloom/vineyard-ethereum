@@ -1,7 +1,7 @@
 import { EthereumNetwork } from '../../lab'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
-import { unlockWeb3Account } from '../../src'
+import { deployContract, getTransactionReceipt, unlockWeb3Account } from '../../src'
 
 const promisify = require('util').promisify
 
@@ -66,14 +66,15 @@ describe('ethereum-contract', function () {
 
     const gasEstimate = await promisify(web3.eth.estimateGas.bind(web3.eth))({ data: bytecode, from: address1 })
     await unlockWeb3Account(web3, address1)
-    const deployed = await promisify(contract.new.bind(contract))({
+    const txid = await deployContract(web3, {
       data: bytecode,
       from: address1,
-      gas: gasEstimate, 
+      gas: gasEstimate,
       gasPrice: 1000000000,
-      value: 0
     })
-    await miners[0].mineBlocks(20)
-    await promisify(deployed.send.bind(deployed))(address2)
+    await miners[0].mineBlocks(5, 100 * 1000)
+    const receipt = await getTransactionReceipt(web3, txid)
+    const instance = contract.at(receipt.contractAddress)
+    await promisify(instance.send.bind(instance))(address2)
   })
 })

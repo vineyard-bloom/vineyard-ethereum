@@ -114,22 +114,30 @@ export class GethNode {
     return this.client!.getWeb3().isConnected()
   }
 
-  async mineBlocks(blockCount: number) {
+  async mineBlocks(blockCount: number, timeout: number = 10000) {
     console.log('Mining', blockCount, 'blocks')
     const originalBlock = await this.getClient().getBlockNumber()
     const targetBlock = originalBlock + blockCount
+    const pauseDuration = 50
 
-    const next = async (): Promise<any> => {
-      await new Promise<void>(resolve => setTimeout(resolve, 50))
+    const next = async (duration: number): Promise<any> => {
+      await new Promise<void>(resolve => setTimeout(resolve, pauseDuration))
       const blockNumber = await this.getClient().getBlockNumber()
-      console.log('mining...', blockNumber, targetBlock)
-      if (blockNumber < targetBlock)
-        return next()
+      if (blockNumber < targetBlock) {
+        if (duration >= timeout) {
+          throw new Error('Block mining exceeded timeout of ' + timeout + ' milliseconds. '
+            + (blockNumber - originalBlock) + ' blocks were mined.'
+          )
+        }
+        else {
+          return next(duration + pauseDuration)
+        }
+      }
 
       console.log('Mined ' + (blockNumber - originalBlock) + ' blocks')
     }
 
-    return next()
+    return next(0)
   }
 
   addPeer(enode: string) {

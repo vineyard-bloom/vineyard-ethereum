@@ -1,11 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
-import { blockchain, BaseBlock, Resolve } from 'vineyard-blockchain'
+import { BaseBlock, blockchain, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
+
 const Web3 = require('web3')
 
 const SolidityFunction = require('web3/lib/web3/function')
 const SolidityEvent = require('web3/lib/web3/event')
+const promisify = require('util').promisify
 
 export type Resolve2<T> = (value: T) => void
 
@@ -214,6 +216,19 @@ export function createContract(eth: any, abi: any, address: string): any {
     result[method.name] = new SolidityFunction(eth, method, address)
   }
   return result
+}
+
+export interface DeployContractArguments {
+  data: string,
+  // abi: any
+  from?: string // Not sure this is needed
+  gas: number | BigNumber,
+  gasPrice: number
+}
+
+export async function deployContract(web3: Web3Client, args: DeployContractArguments): Promise<string> {
+  const hash = await promisify(web3.eth.sendTransaction.bind(web3.eth))(args)
+  return hash
 }
 
 export async function getTokenContractFromReceipt(web3: Web3Client, receipt: Web3TransactionReceipt): Promise<blockchain.AnyContract | undefined> {

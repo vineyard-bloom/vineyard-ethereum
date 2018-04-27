@@ -85,20 +85,27 @@ class GethNode {
     isConnected() {
         return this.client.getWeb3().isConnected();
     }
-    mineBlocks(blockCount) {
+    mineBlocks(blockCount, timeout = 10000) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Mining', blockCount, 'blocks');
             const originalBlock = yield this.getClient().getBlockNumber();
             const targetBlock = originalBlock + blockCount;
-            const next = () => __awaiter(this, void 0, void 0, function* () {
-                yield new Promise(resolve => setTimeout(resolve, 50));
+            const pauseDuration = 50;
+            const next = (duration) => __awaiter(this, void 0, void 0, function* () {
+                yield new Promise(resolve => setTimeout(resolve, pauseDuration));
                 const blockNumber = yield this.getClient().getBlockNumber();
-                console.log('mining...', blockNumber, targetBlock);
-                if (blockNumber < targetBlock)
-                    return next();
+                if (blockNumber < targetBlock) {
+                    if (duration >= timeout) {
+                        throw new Error('Block mining exceeded timeout of ' + timeout + ' milliseconds. '
+                            + (blockNumber - originalBlock) + ' blocks were mined.');
+                    }
+                    else {
+                        return next(duration + pauseDuration);
+                    }
+                }
                 console.log('Mined ' + (blockNumber - originalBlock) + ' blocks');
             });
-            return next();
+            return next(0);
         });
     }
     addPeer(enode) {

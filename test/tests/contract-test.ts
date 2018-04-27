@@ -60,7 +60,7 @@ describe('ethereum-contract', function () {
     const output = solc.compile({ sources: { 'internal-transfer.sol': solidityCode } }, 1)
     const parts = output.contracts['internal-transfer.sol:Sender']
     const abi = parts.interface
-    const bytecode = parts.bytecode
+    const bytecode = '0x' + parts.bytecode
     const contract = web3.eth.contract(JSON.parse(abi))
     console.log('block', await client.getWeb3().eth.blockNumber)
 
@@ -69,9 +69,11 @@ describe('ethereum-contract', function () {
     const deployed = await promisify(contract.new.bind(contract))({
       data: bytecode,
       from: address1,
-      gas: gasEstimate
+      gas: gasEstimate, 
+      gasPrice: 1000000000,
+      value: 0
     })
-
+    await miners[0].mineBlocks(20)
     await promisify(deployed.send.bind(deployed))(address2)
   })
 })

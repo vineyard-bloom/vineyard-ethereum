@@ -36,12 +36,12 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     from: string | undefined;
     amount: BigNumber;
     timeReceived: Date;
-    status: blockchain.TransactionStatus;
+    status: any;
     blockIndex: number;
     gasUsed: number;
     gasPrice: BigNumber;
     fee: BigNumber;
-    newContract: blockchain.Contract | undefined;
+    newContract: any;
     events: ContractEvent[];
     nonce: number;
 }>;

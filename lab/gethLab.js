@@ -23,6 +23,7 @@ class GethLab {
     reset() {
         // return this.deleteWallet()
         return this.stop()
+            // .then(() => this.deleteWallet())
             .then(() => this.start());
     }
     send(address, amount) {

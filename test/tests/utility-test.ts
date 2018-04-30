@@ -27,7 +27,7 @@ describe('utility-test', function () {
 
   it('can get contract events', async function() {
     const events = await getEvents(web3, {
-      toBlock: 1, fromBlock: 1
+      toBlock: 4086319, fromBlock: 4086319
     })
 
     assert(events.length > 0)

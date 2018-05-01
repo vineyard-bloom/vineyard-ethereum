@@ -50,7 +50,7 @@ describe('ethereum-contract', function () {
       to: address1,
       value: sendAmount
     })
-    await miners[0].mineBlocks(5)
+    await miners[0].mineBlocks(5, 200 * 1000)
     const amount = await client.getBalance(address1)
     assert.equal(sendAmount.toString(), amount.toString())
 
@@ -68,13 +68,23 @@ describe('ethereum-contract', function () {
     await unlockWeb3Account(web3, address1)
     const txid = await deployContract(web3, {
       data: bytecode,
-      from: address1,
+      from: network.getCoinbase(),
       gas: gasEstimate,
-      gasPrice: 1000000000,
+      gasPrice: 20000000000,
     })
-    await miners[0].mineBlocks(5, 100 * 1000)
+    await miners[0].mineBlocks(5, 200 * 1000)
     const receipt = await getTransactionReceipt(web3, txid)
     const instance = contract.at(receipt.contractAddress)
-    await promisify(instance.send.bind(instance))(address2)
+    const data = await instance.send.getData(7)
+    const gasEstimate2 = await promisify(web3.eth.estimateGas.bind(web3.eth))({ data: instance.send.getData(7), from: network.getCoinbase(), to: receipt.contractAddress })
+    const contractSendTx = await web3.eth.sendTransaction({
+      from: network.getCoinbase(),
+      to: receipt.contractAddress,
+      data: instance.send.getData(7),
+      gas: gasEstimate2,
+      gasPrice: 20000000000 
+    })
+    await miners[0].mineBlocks(5, 200 * 1000)
+    assert(true)
   })
 })

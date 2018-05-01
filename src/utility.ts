@@ -163,7 +163,7 @@ export function getEvents(web3: any, filter: EventFilter): Promise<ContractEvent
   }
 
   return axios.post(web3.currentProvider.host, body)
-    .then(response => response.data.result)
+    .then((response: any) => response.data.result)
     .catch(console.error)
 
 }

@@ -30,7 +30,7 @@ export declare class GethNode {
     start(flags?: string): Promise<void>;
     startMining(): Promise<void>;
     execSync(suffix: string): any;
-    initialize(genesisPath: string): Promise<void>;
+    initialize(genesisPath: string): void;
     getNodeUrl(): string;
     isRunning(): boolean;
     isConnected(): any;

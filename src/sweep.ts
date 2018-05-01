@@ -1,7 +1,11 @@
 import { each as promiseEach } from 'promise-each2'
 import { SweepManager, EthereumTransaction } from './types'
 import BigNumber from 'bignumber.js'
-import { TokenContract } from '../lab/token-contract'
+import { TokenContract } from '../lab'
+
+// TODO: The contents of this file are a candidate for deprecation.  The problem domain of sweeping has turned out to be
+// TODO: vast and may be too broad to fit within the scope of vineyard-ethereum.  It may work best for vineyard-ethereum to
+// TODO: provide a few sweeping utility functions instead of a one-stop sweeping solution. - CJ
 
 export interface Bristle {
   from: string

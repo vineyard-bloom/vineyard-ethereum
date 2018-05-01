@@ -92,11 +92,10 @@ export class GethNode {
   }
 
   getCommonFlags() {
-    const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
+    // const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
 
     return ' --ipcdisable --nodiscover --keystore ' + this.keydir
       + ' --datadir ' + this.datadir
-      + ' --verbosity ' + verbosity
       + ' --networkid 101 --port=' + (30303 + this.index)
       + ' ' + this.getEtherbaseFlags()
   }
@@ -112,7 +111,12 @@ export class GethNode {
 
   start(flags = ''): Promise<void> {
     console.log('Starting Geth')
-    const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console'
+    const command = this.getCommonFlags()
+      + ' --verbosity ' + 4
+      + this.getRPCFlags()
+      + this.getBootNodeFlags()
+      + flags + ' console'
+
     console.log('geth ' + command)
     return this.launch(command)
   }
@@ -123,14 +127,17 @@ export class GethNode {
   }
 
   execSync(suffix: string) {
-    const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix
+    const command = this.config.gethPath
+      + this.getCommonFlags()
+      + ' --verbosity ' + 2
+      + ' ' + suffix
     console.log(command)
     const result = ChildProcess.execSync(command)
     return result.toString()
   }
 
-  initialize(genesisPath: string): Promise<void> {
-    return this.execSync('init ' + genesisPath)
+  initialize(genesisPath: string) {
+    this.execSync('init ' + genesisPath)
   }
 
   getNodeUrl(): string {
@@ -212,15 +219,15 @@ export class GethNode {
   }
 
   private launch(flags: any) {
-    const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags)
-    childProcess.stdout.on('data', (data: any) => {
-      if (this.config.verbosity)
-        console.log(this.index, 'stdout:', `${data}`)
-    })
-
-    childProcess.stderr.on('data', (data: any) => {
-      handlePossibleErrorMessage(this.index, data, this.config.verbosity)
-    })
+    this.childProcess = ChildProcess.exec(this.config.gethPath + flags)
+    // childProcess.stdout.on('data', (data: any) => {
+    //   if (this.config.verbosity)
+    //     console.log(this.index, 'stdout:', `${data}`)
+    // })
+    //
+    // childProcess.stderr.on('data', (data: any) => {
+    //   handlePossibleErrorMessage(this.index, data, this.config.verbosity)
+    // })
 
     this.childProcess.on('close', (code: any) => {
       console.log(this.index, `child process exited with code ${code}`)

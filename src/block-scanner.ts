@@ -2,9 +2,7 @@ import { each as promiseEach } from 'promise-each2'
 import { EthereumClient, EthereumTransactionOld } from './types'
 import { isTransactionValid } from './utility'
 
-// more strongly typed eventually
-// export type TransactionFilter = (transaction) => Promise<boolean>
-// export type TransactionMap = (transaction) => Promise<EthereumTransaction>
+// BlockScanner is deprecated.  Use one of the monitors from vineyard-minotaur instead.
 
 export class BlockScanner<Transaction extends EthereumTransactionOld> {
   private client: EthereumClient

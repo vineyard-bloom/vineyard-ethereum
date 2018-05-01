@@ -136,7 +136,7 @@ function getEvents(web3, filter) {
         params: [processedFilter],
     };
     return axios.post(web3.currentProvider.host, body)
-        .then(response => response.data.result)
+        .then((response) => response.data.result)
         .catch(console.error);
 }
 exports.getEvents = getEvents;

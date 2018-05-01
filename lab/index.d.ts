@@ -1,6 +1,4 @@
 export * from './eth-lab';
-export * from './gethLab';
-export * from './gethServer';
 export * from './geth-node';
 export * from './double-spend';
 export * from './ethereum-network';

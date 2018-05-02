@@ -1,8 +1,10 @@
 pragma solidity ^0.4.16;
 
 contract Sender {
-
-    function send(uint256 to) public {
-        address(this).transfer(to);
+  event Tester(address);
+    function send(address to, uint256 amount) public {
+      emit Tester(to);
+      to.transfer(amount);
     }
+    function() public payable {}
 }

@@ -74,17 +74,23 @@ describe('ethereum-contract', function () {
     })
     await miners[0].mineBlocks(5, 200 * 1000)
     const receipt = await getTransactionReceipt(web3, txid)
+    const tx2 = await client.sendTransaction({
+      from: network.getCoinbase(),
+      to: receipt.contractAddress,
+      value: sendAmount
+    })
+    await miners[0].mineBlocks(5, 200 * 1000)
     const instance = contract.at(receipt.contractAddress)
-    const data = await instance.send.getData(7)
-    const gasEstimate2 = await promisify(web3.eth.estimateGas.bind(web3.eth))({ data: instance.send.getData(7), from: network.getCoinbase(), to: receipt.contractAddress })
+    const data = await instance.send.getData(address2, 7)
     const contractSendTx = await web3.eth.sendTransaction({
       from: network.getCoinbase(),
       to: receipt.contractAddress,
-      data: instance.send.getData(7),
-      gas: gasEstimate2,
+      data: data,
+      value: 0,
+      gas: gasEstimate,
       gasPrice: 20000000000 
     })
     await miners[0].mineBlocks(5, 200 * 1000)
-    assert(true)
+    assert(web3.eth.getBalance(address2).toString() === '7')
   })
 })

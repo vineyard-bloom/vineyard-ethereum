@@ -2,6 +2,8 @@ import { each as promiseEach } from 'promise-each2'
 import { EthereumClient, EthereumTransactionOld, GenericEthereumManager } from './types'
 import { getTransactions } from './utility'
 
+// EthereumTransactionMonitor is deprecated.  Use one of the monitors from vineyard-minotaur instead.
+
 export class EthereumTransactionMonitor<Transaction extends EthereumTransactionOld> {
   private ethereumClient: EthereumClient
   private minimumConfirmations: number = 12

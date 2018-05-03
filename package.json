@@ -10,9 +10,9 @@
   "repository": "git@github.com:vineyard-bloom/vineyard-ethereum.git",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.18.0",
     "bignumber.js": "^4.1.0",
     "promise-each2": "^1.0.0",
-    "request": "^2.83.0",
     "truffle-contract": "^3.0.0",
     "vineyard-blockchain": "vineyard-bloom/vineyard-blockchain#1.0.0-beta",
     "web3": "^0.19.1"
@@ -27,6 +27,7 @@
     "rimraf": "^2.6.1",
     "solc": "^0.4.23",
     "source-map-support": "^0.4.14",
+    "ts-node": "^6.0.2",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
     "typescript": "2.7.2"

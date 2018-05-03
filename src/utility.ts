@@ -129,7 +129,7 @@ export function initializeWeb3(ethereumConfig: Web3EthereumClientConfig, web3?: 
 }
 
 const formatters = require('web3/lib/web3/formatters')
-const promiseRequest = require('./request-promise')
+const axios = require('axios')
 
 export interface ContractEvent {
   transactionHash: string
@@ -161,12 +161,9 @@ export function getEvents(web3: any, filter: EventFilter): Promise<ContractEvent
     id: 1,
     params: [processedFilter],
   }
-  return promiseRequest({
-    method: 'POST',
-    uri: web3.currentProvider.host,
-    body: body,
-    json: true,
-    jar: false,
-  })
-    .then((response: any) => response.result)
+
+  return axios.post(web3.currentProvider.host, body)
+    .then((response: any) => response.data.result)
+    .catch(console.error)
+
 }

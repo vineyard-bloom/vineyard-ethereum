@@ -119,7 +119,7 @@ function initializeWeb3(ethereumConfig, web3) {
 }
 exports.initializeWeb3 = initializeWeb3;
 const formatters = require('web3/lib/web3/formatters');
-const promiseRequest = require('./request-promise');
+const axios = require('axios');
 function getEvents(web3, filter) {
     const processedFilter = {
         address: filter.address,
@@ -135,14 +135,9 @@ function getEvents(web3, filter) {
         id: 1,
         params: [processedFilter],
     };
-    return promiseRequest({
-        method: 'POST',
-        uri: web3.currentProvider.host,
-        body: body,
-        json: true,
-        jar: false,
-    })
-        .then((response) => response.result);
+    return axios.post(web3.currentProvider.host, body)
+        .then((response) => response.data.result)
+        .catch(console.error);
 }
 exports.getEvents = getEvents;
 //# sourceMappingURL=utility.js.map

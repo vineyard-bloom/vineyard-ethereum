@@ -2,9 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const promise_each2_1 = require("promise-each2");
 const utility_1 = require("./utility");
-// more strongly typed eventually
-// export type TransactionFilter = (transaction) => Promise<boolean>
-// export type TransactionMap = (transaction) => Promise<EthereumTransaction>
+// BlockScanner is deprecated.  Use one of the monitors from vineyard-minotaur instead.
 class BlockScanner {
     constructor(model, client, minimumConfirmations = 13) {
         this.minimumConfirmations = 13;

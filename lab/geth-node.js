@@ -72,10 +72,9 @@ class GethNode {
         //   : ''
     }
     getCommonFlags() {
-        const verbosity = 4; // this.isMiner ? 4 : 1 // this.config.verbosity || 0
+        // const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
         return ' --ipcdisable --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
-            + ' --verbosity ' + verbosity
             + ' --networkid 101 --port=' + (30303 + this.index)
             + ' ' + this.getEtherbaseFlags();
     }
@@ -88,7 +87,11 @@ class GethNode {
     }
     start(flags = '') {
         console.log('Starting Geth');
-        const command = this.getCommonFlags() + this.getRPCFlags() + this.getBootNodeFlags() + flags + ' console';
+        const command = this.getCommonFlags()
+            + ' --verbosity ' + 4
+            + this.getRPCFlags()
+            + this.getBootNodeFlags()
+            + flags + ' console';
         console.log('geth ' + command);
         return this.launch(command);
     }
@@ -97,13 +100,16 @@ class GethNode {
         return this.start('--mine --minerthreads=4');
     }
     execSync(suffix) {
-        const command = this.config.gethPath + this.getCommonFlags() + ' ' + suffix;
+        const command = this.config.gethPath
+            + this.getCommonFlags()
+            + ' --verbosity ' + 2
+            + ' ' + suffix;
         console.log(command);
         const result = ChildProcess.execSync(command);
         return result.toString();
     }
     initialize(genesisPath) {
-        return this.execSync('init ' + genesisPath);
+        this.execSync('init ' + genesisPath);
     }
     getNodeUrl() {
         return this.execSync('--exec admin.nodeInfo.enode console')
@@ -171,14 +177,15 @@ class GethNode {
         });
     }
     launch(flags) {
-        const childProcess = this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
-        childProcess.stdout.on('data', (data) => {
-            if (this.config.verbosity)
-                console.log(this.index, 'stdout:', `${data}`);
-        });
-        childProcess.stderr.on('data', (data) => {
-            handlePossibleErrorMessage(this.index, data, this.config.verbosity);
-        });
+        this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
+        // childProcess.stdout.on('data', (data: any) => {
+        //   if (this.config.verbosity)
+        //     console.log(this.index, 'stdout:', `${data}`)
+        // })
+        //
+        // childProcess.stderr.on('data', (data: any) => {
+        //   handlePossibleErrorMessage(this.index, data, this.config.verbosity)
+        // })
         this.childProcess.on('close', (code) => {
             console.log(this.index, `child process exited with code ${code}`);
         });

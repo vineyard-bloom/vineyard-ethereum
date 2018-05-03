@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const promise_each2_1 = require("promise-each2");
 const bignumber_js_1 = require("bignumber.js");
-const token_contract_1 = require("../lab/token-contract");
+const lab_1 = require("../lab");
 function gweiToWei(amount) {
     return amount.times('1000000000');
 }
@@ -20,7 +20,7 @@ class Broom {
         this.config = config;
         this.manager = ethereumManager;
         this.client = ethereumClient;
-        this.tokenContract = new token_contract_1.TokenContract(this.client);
+        this.tokenContract = new lab_1.TokenContract(this.client);
         this.gasTotal = this.getTotalGas();
     }
     getTotalGas() {

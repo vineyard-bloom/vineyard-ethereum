@@ -2,8 +2,8 @@ import { EthereumNetwork } from '../../lab'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 import { deployContract, getTransactionReceipt, unlockWeb3Account } from '../../src'
-
 const promisify = require('util').promisify
+const abiDecoder = require('abi-decoder')
 
 const fs = require('fs')
 
@@ -60,6 +60,7 @@ describe('ethereum-contract', function () {
     const output = solc.compile({ sources: { 'internal-transfer.sol': solidityCode } }, 1)
     const parts = output.contracts['internal-transfer.sol:Sender']
     const abi = parts.interface
+    abiDecoder.addABI(JSON.parse(abi))
     const bytecode = '0x' + parts.bytecode
     const contract = web3.eth.contract(JSON.parse(abi))
     console.log('block', await client.getWeb3().eth.blockNumber)
@@ -81,6 +82,7 @@ describe('ethereum-contract', function () {
     })
     await miners[0].mineBlocks(5, 200 * 1000)
     const instance = contract.at(receipt.contractAddress)
+
     const data = await instance.send.getData(address2, 7)
     const contractSendTx = await web3.eth.sendTransaction({
       from: network.getCoinbase(),

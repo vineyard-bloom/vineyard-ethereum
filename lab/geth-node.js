@@ -73,14 +73,15 @@ class GethNode {
     }
     getCommonFlags() {
         // const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
-        return ' --ipcdisable --nodiscover --keystore ' + this.keydir
+        // return ' --ipcdisable --nodiscover --keystore ' + this.keydir
+        return ' --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --networkid 101 --port=' + (30303 + this.index)
             + ' ' + this.getEtherbaseFlags();
     }
     getRPCFlags() {
         return ' --rpc --rpcport ' + this.port
-            + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" ';
+            + ' --rpcapi=\"db,eth,net,web3,personal,debug,miner,web3\" ';
     }
     getEtherbaseFlags() {
         return '--etherbase=' + this.config.coinbase;

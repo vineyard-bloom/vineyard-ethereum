@@ -14,6 +14,7 @@ const Web3 = require('web3');
 const SolidityFunction = require('web3/lib/web3/function');
 const SolidityEvent = require('web3/lib/web3/event');
 const promisify = require('util').promisify;
+const axios = require('axios');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -302,6 +303,25 @@ function loadTransaction(web3, tx, block, events) {
     });
 }
 exports.loadTransaction = loadTransaction;
+function traceWeb3Transaction(web3, txid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = {
+            jsonrpc: '2.0',
+            method: 'debug_traceTransaction',
+            params: [txid, {}],
+            id: 1
+        };
+        const response = yield axios.post(web3.currentProvider.host, body);
+        const callLogs = response.data.result.structLogs.filter(x => x.op === 'CALL')
+            .map(x => ({
+            gas: parseInt(x.stack[x.stack.length - 1], 10),
+            address: '0x' + x.stack[x.stack.length - 2].slice(24),
+            value: parseInt(x.stack[x.stack.length - 3], 16),
+        }));
+        return callLogs;
+    });
+}
+exports.traceWeb3Transaction = traceWeb3Transaction;
 function partitionArray(partitionSize, items) {
     const result = [];
     for (let i = 0; i < items.length; i += partitionSize) {

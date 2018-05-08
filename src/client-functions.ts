@@ -8,6 +8,7 @@ const Web3 = require('web3')
 const SolidityFunction = require('web3/lib/web3/function')
 const SolidityEvent = require('web3/lib/web3/event')
 const promisify = require('util').promisify
+const axios = require('axios')
 
 export type Resolve2<T> = (value: T) => void
 
@@ -310,6 +311,24 @@ export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, blo
     events: mapTransactionEvents(events, tx.hash),
     nonce: tx.nonce
   }
+}
+
+export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
+  const body = {
+    jsonrpc: '2.0',
+    method: 'debug_traceTransaction',
+    params: [txid, {}],
+    id: 1
+  }
+  const response = await axios.post(web3.currentProvider.host, body)
+  const callLogs = response.data.result.structLogs.filter(x => x.op === 'CALL')
+    .map(x => ({
+      gas: parseInt(x.stack[x.stack.length - 1], 10),
+      address: '0x' + x.stack[x.stack.length - 2].slice(24),
+      value: parseInt(x.stack[x.stack.length - 3], 16),
+    })
+  )
+  return callLogs
 }
 
 export function partitionArray<T>(partitionSize: number, items: T[]): T[][] {

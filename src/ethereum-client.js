@@ -90,6 +90,11 @@ class Web3EthereumClient {
     unlockAccount(address) {
         return client_functions_1.unlockWeb3Account(this.web3, address);
     }
+    traceTransaction(txid) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return client_functions_1.traceWeb3Transaction(this.web3, txid);
+        });
+    }
     send(from, to, amount) {
         const transaction = from && typeof from === 'object'
             ? from

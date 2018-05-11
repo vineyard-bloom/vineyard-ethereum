@@ -11,7 +11,7 @@ export interface SendTransaction {
     gas?: number;
     gasPrice?: BigNumber;
 }
-export declare function unlockWeb3Account(web3: any, address: string): Promise<{}>;
+export declare function unlockWeb3Account(web3: any, address: string): Promise<boolean>;
 export declare function sendWeb3Transaction(web3: any, transaction: SendTransaction): Promise<EthereumTransaction>;
 export declare function getBlock(web3: Web3Client, blockIndex: number): Promise<Block>;
 export declare function getBlockIndex(web3: Web3Client): Promise<number>;
@@ -43,15 +43,18 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     from: string | undefined;
     amount: BigNumber;
     timeReceived: Date;
-    status: any;
+    status: blockchain.TransactionStatus;
     blockIndex: number;
     gasUsed: number;
     gasPrice: BigNumber;
     fee: BigNumber;
-    newContract: any;
+    newContract: blockchain.Contract | undefined;
     events: ContractEvent[];
     nonce: number;
 }>;
+export declare function traceTransaction(web3: Web3Client, txid: string): Promise<any>;
+export declare function traceWeb3Transaction(web3: Web3Client, txid: string): Promise<any>;
 export declare function partitionArray<T>(partitionSize: number, items: T[]): T[][];
 export declare function partitionedMap<T, O>(partitionSize: number, action: (item: T) => Promise<O>, items: T[]): Promise<O[]>;
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;
+export declare function isContractAddress(web3: Web3Client, address: string): Promise<boolean>;

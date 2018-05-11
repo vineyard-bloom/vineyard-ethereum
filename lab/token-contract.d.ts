@@ -7,13 +7,13 @@ export declare class TokenContract {
     private rawCompiledContract;
     constructor(client: Web3EthereumClient, abi?: any);
     compileContract(source: any): any;
-    getContract(abi: any): any;
-    loadContract(address: string): {};
-    getTotalSupply(abi: any, address: string): any;
-    getData(abi: any, address: string, from: string): any;
-    getBalanceOf(abi: any, address: string, from: string): any;
-    transfer(abi: any, address: string, from: string, to: string, value: any): any;
-    getTransactionReceipt(hash: string): any;
+    getContract(abi: any): Promise<any>;
+    loadContract(address: string): Promise<any>;
+    getTotalSupply(abi: any, address: string): Promise<any>;
+    getData(abi: any, address: string, from: string): Promise<any>;
+    getBalanceOf(abi: any, address: string, from: string): Promise<any>;
+    transfer(abi: any, address: string, from: string, to: string, value: any): Promise<any>;
+    getTransactionReceipt(hash: string): Promise<any>;
     watchContract(instance: any, from: string): void;
     setupContract(abi: any, address: string, func: any, from: string, ...params: any[]): void;
 }

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../src");
+const axios = require('axios');
 const ChildProcess = require('child_process');
 const rimraf = require('rimraf');
 var Status;
@@ -49,11 +50,12 @@ class GethNode {
     constructor(config, port) {
         this.client = undefined;
         this.isMiner = false;
+        this.rpcRequestId = 1; // Probably not needed but just in case.
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
         this.datadir = './temp/eth/geth' + this.index;
         this.keydir = './temp/eth/keystore' + this.index;
-        this.port = port;
+        this.rpcPort = port;
         this.config.gethPath = this.config.gethPath || 'geth';
     }
     getWeb3() {
@@ -77,11 +79,12 @@ class GethNode {
         return ' --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
             + ' --networkid 101 --port=' + (30303 + this.index)
-            + ' ' + this.getEtherbaseFlags();
+            + ' ' + this.getEtherbaseFlags()
+            + ' --ipcdisable';
     }
     getRPCFlags() {
-        return ' --rpc --rpcport ' + this.port
-            + ' --rpcapi=\"db,eth,net,web3,personal,debug,miner,web3\" ';
+        return ' --rpc --rpcport ' + this.rpcPort
+            + ' --rpcapi=\"db,eth,net,personal,debug,miner,admin,web3\" ';
     }
     getEtherbaseFlags() {
         return '--etherbase=' + this.config.coinbase;
@@ -112,10 +115,29 @@ class GethNode {
     initialize(genesisPath) {
         this.execSync('init ' + genesisPath);
     }
+    invoke(method, params = []) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // console.log('Geth RPC', this.rpcPort, method, params)
+            const body = {
+                jsonrpc: '2.0',
+                method: method,
+                id: this.rpcRequestId++,
+                params: params,
+            };
+            const response = yield axios.post('http://localhost:' + this.rpcPort, body);
+            const result = response.data.result;
+            // console.log('Geth Responded', this.rpcPort, method, result)
+            return result;
+        });
+    }
     getNodeUrl() {
-        return this.execSync('--exec admin.nodeInfo.enode console')
-            .replace(/\r|\n/g, '')
-            .replace('[::]', '127.0.0.1');
+        return __awaiter(this, void 0, void 0, function* () {
+            const nodeInfo = yield this.invoke('admin_nodeInfo');
+            return nodeInfo.enode;
+            // return this.execSync('--exec admin.nodeInfo.enode console')
+            //   .replace(/\r|\n/g, '')
+            //   .replace('[::]', '127.0.0.1')
+        });
     }
     isRunning() {
         return this.childProcess != null;
@@ -147,8 +169,9 @@ class GethNode {
         });
     }
     addPeer(enode) {
-        console.log(this.index, 'admin.addPeer(' + enode + ')');
-        this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n');
+        return this.invoke('admin_addPeer', [enode]);
+        // console.log(this.index, 'admin.addPeer(' + enode + ')')
+        // this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
     }
     listPeers() {
         this.childProcess.stdin.write('admin.peers\n');
@@ -179,19 +202,18 @@ class GethNode {
     }
     launch(flags) {
         this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
-        // childProcess.stdout.on('data', (data: any) => {
-        //   if (this.config.verbosity)
-        //     console.log(this.index, 'stdout:', `${data}`)
-        // })
-        //
-        // childProcess.stderr.on('data', (data: any) => {
-        //   handlePossibleErrorMessage(this.index, data, this.config.verbosity)
-        // })
+        this.childProcess.stdout.on('data', (data) => {
+            if (this.config.verbosity)
+                console.log(this.index, 'stdout:', `${data}`);
+        });
+        this.childProcess.stderr.on('data', (data) => {
+            handlePossibleErrorMessage(this.index, data, this.config.verbosity);
+        });
         this.childProcess.on('close', (code) => {
             console.log(this.index, `child process exited with code ${code}`);
         });
         this.client = new src_1.Web3EthereumClient({
-            http: 'http://localhost:' + this.port
+            http: 'http://localhost:' + this.rpcPort
         });
         return new Promise(resolve => {
             let isFinished = false;

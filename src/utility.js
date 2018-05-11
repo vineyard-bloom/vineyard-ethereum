@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bignumber_js_1 = require("bignumber.js");
 const promise_each2_1 = require("promise-each2");
+const formatters = require('web3/lib/web3/formatters');
+const axios = require('axios');
 const Web3 = require('web3');
 function ethToWei(amount) {
     return amount.times(new bignumber_js_1.default('1000000000000000000'));
@@ -118,8 +120,6 @@ function initializeWeb3(ethereumConfig, web3) {
     return web3;
 }
 exports.initializeWeb3 = initializeWeb3;
-const formatters = require('web3/lib/web3/formatters');
-const axios = require('axios');
 function getEvents(web3, filter) {
     const processedFilter = {
         address: filter.address,

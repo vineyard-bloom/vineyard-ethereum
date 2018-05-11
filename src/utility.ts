@@ -4,6 +4,9 @@ import { AddressManager, EthereumClient } from './types'
 import { Web3Client } from './client-functions'
 import { Web3EthereumClientConfig } from './ethereum-client'
 
+const formatters = require('web3/lib/web3/formatters')
+const axios = require('axios')
+
 const Web3 = require('web3')
 
 export function ethToWei(amount: BigNumber) {
@@ -127,9 +130,6 @@ export function initializeWeb3(ethereumConfig: Web3EthereumClientConfig, web3?: 
   }
   return web3
 }
-
-const formatters = require('web3/lib/web3/formatters')
-const axios = require('axios')
 
 export interface ContractEvent {
   transactionHash: string

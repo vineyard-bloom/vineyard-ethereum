@@ -314,7 +314,7 @@ export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, blo
 }
 
 // TODO: type this return
-export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
+export async function traceTransaction(web3: Web3Client, txid: string) {
   const body = {
     jsonrpc: '2.0',
     method: 'debug_traceTransaction',
@@ -322,13 +322,19 @@ export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
     id: 1
   }
   const response = await axios.post(web3.currentProvider.host, body)
-  const callLogs = response.data.result.structLogs.filter(x => x.op === 'CALL')
-    .map(x => ({
-      gas: parseInt(x.stack[x.stack.length - 1], 10),
-      address: '0x' + x.stack[x.stack.length - 2].slice(24),
-      value: parseInt(x.stack[x.stack.length - 3], 16),
-    })
-  )
+  return response.data.result
+}
+
+// TODO: type this return
+export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
+  const result = await traceTransaction(web3, txid)
+  const callLogs = result.structLogs.filter((x: any) => x.op === 'CALL')
+    .map((x: any) => ({
+        gas: parseInt(x.stack[x.stack.length - 1], 10),
+        address: '0x' + x.stack[x.stack.length - 2].slice(24),
+        value: parseInt(x.stack[x.stack.length - 3], 16),
+      })
+    )
   return callLogs
 }
 

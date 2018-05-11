@@ -303,7 +303,8 @@ function loadTransaction(web3, tx, block, events) {
     });
 }
 exports.loadTransaction = loadTransaction;
-function traceWeb3Transaction(web3, txid) {
+// TODO: type this return
+function traceTransaction(web3, txid) {
     return __awaiter(this, void 0, void 0, function* () {
         const body = {
             jsonrpc: '2.0',
@@ -312,8 +313,16 @@ function traceWeb3Transaction(web3, txid) {
             id: 1
         };
         const response = yield axios.post(web3.currentProvider.host, body);
-        const callLogs = response.data.result.structLogs.filter(x => x.op === 'CALL')
-            .map(x => ({
+        return response.data.result;
+    });
+}
+exports.traceTransaction = traceTransaction;
+// TODO: type this return
+function traceWeb3Transaction(web3, txid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = yield traceTransaction(web3, txid);
+        const callLogs = result.structLogs.filter((x) => x.op === 'CALL')
+            .map((x) => ({
             gas: parseInt(x.stack[x.stack.length - 1], 10),
             address: '0x' + x.stack[x.stack.length - 2].slice(24),
             value: parseInt(x.stack[x.stack.length - 3], 16),
@@ -365,4 +374,14 @@ function getFullBlock(web3, blockIndex) {
     });
 }
 exports.getFullBlock = getFullBlock;
+function isContractAddress(web3, address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const code = yield web3.eth.getCode(address);
+        if (code === '0x') {
+            return false;
+        }
+        return true;
+    });
+}
+exports.isContractAddress = isContractAddress;
 //# sourceMappingURL=client-functions.js.map

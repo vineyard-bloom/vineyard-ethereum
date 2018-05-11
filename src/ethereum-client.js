@@ -95,6 +95,11 @@ class Web3EthereumClient {
             return client_functions_1.traceWeb3Transaction(this.web3, txid);
         });
     }
+    isContractAddress(address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return client_functions_1.isContractAddress(this.web3, address);
+        });
+    }
     send(from, to, amount) {
         const transaction = from && typeof from === 'object'
             ? from

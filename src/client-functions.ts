@@ -313,6 +313,7 @@ export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, blo
   }
 }
 
+// TODO: type this return
 export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
   const body = {
     jsonrpc: '2.0',
@@ -372,4 +373,12 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
     timeMined: new Date(block.timestamp * 1000),
     transactions: transactions
   }
+}
+
+export async function isContractAddress(web3: Web3Client, address: string): Promise<boolean> {
+  const code = await web3.eth.getCode(address)
+  if (code === '0x') {
+    return false
+  }
+  return true
 }

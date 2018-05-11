@@ -4,7 +4,7 @@ import { Block, EthereumTransaction, EthereumTransactionOld, Web3TransactionRece
 import {
   blockchain, BaseBlock, BlockInfo, ExternalSingleTransaction as ExternalTransaction, FullBlock, ReadClient, Resolve
 } from 'vineyard-blockchain'
-import { convertStatus, SendTransaction, sendWeb3Transaction, unlockWeb3Account, Web3Client, traceWeb3Transaction } from './client-functions'
+import { convertStatus, SendTransaction, sendWeb3Transaction, unlockWeb3Account, Web3Client, traceWeb3Transaction, isContractAddress } from './client-functions'
 import { isNullOrUndefined } from 'util'
 
 const util = require('util')
@@ -93,6 +93,10 @@ export class Web3EthereumClient implements ReadClient<ExternalTransaction> {
 
   async traceTransaction(txid: string) {
     return traceWeb3Transaction(this.web3, txid)
+  }
+
+  async isContractAddress(address: string): Promise<boolean> {
+    return isContractAddress(this.web3, address)
   }
 
   send(from: string | object, to?: string, amount?: string): Promise<EthereumTransactionOld> {

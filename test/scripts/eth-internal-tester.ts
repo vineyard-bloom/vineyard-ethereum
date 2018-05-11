@@ -1,6 +1,9 @@
 import { Web3EthereumClient } from '../../src'
-
 const ethereumClient = new Web3EthereumClient({ http: 'http://localhost:8545' })
+
+const startIndex = process.argv[2]
+const endIndex = process.argv[3]
+const blocks = []
 
 async function getBlockTransactions(index: number) {
   const block = await ethereumClient.getBlock(index)
@@ -15,4 +18,12 @@ async function getBlockTransactions(index: number) {
     }
     return tx
   })
+  return block
 }
+
+for (let i = startIndex; i <= endIndex; i++) {
+  const block = getBlockTransactions(i)
+  blocks.push(block)
+}
+
+console.log(blocks)

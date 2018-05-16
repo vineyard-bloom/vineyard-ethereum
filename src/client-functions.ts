@@ -4,7 +4,7 @@ import { BaseBlock, blockchain, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
 
 const Web3 = require('web3')
-
+const SolidityCoder = require('web3/lib/solidity/coder')
 const SolidityFunction = require('web3/lib/web3/function')
 const SolidityEvent = require('web3/lib/web3/event')
 const promisify = require('util').promisify
@@ -378,6 +378,101 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
     hash: block.hash,
     timeMined: new Date(block.timestamp * 1000),
     transactions: transactions
+  }
+}
+
+export async function getFullTokenBlock(web3: Web3Client, blockIndex: number, tokenContractAddress: string, methodIDs: any[]): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
+  let fullBlock = await getBlock(web3, blockIndex)
+  let blockHeight = await getBlockIndex(web3)
+  const filteredTransactions = filterTokenTransaction(web3, fullBlock.transactions, tokenContractAddress)
+  const decodedTransactions = await decodeTransactions(web3, filteredTransactions, methodIDs)
+  const transactions = decodedTransactions.map(t => ({
+    txid: t.hash,
+    to: t.to,
+    from: t.from,
+    amount: t.value,
+    timeReceived: new Date(fullBlock.timestamp * 1000),
+    confirmations: blockHeight - blockIndex,
+    block: t.blockNumber,
+    status: t.status
+  }))
+  return {
+    hash: fullBlock.hash,
+    index: fullBlock.number,
+    timeMined: new Date(fullBlock.timestamp * 1000),
+    transactions: transactions
+  }
+}
+
+export function filterTokenTransaction(web3: Web3Client, transactions: Web3Transaction[], tokenContractAddress: string) {
+  return transactions.filter(tx => {
+    if (tx && tx.to) {
+      return tx.to.toLowerCase() === tokenContractAddress.toLowerCase()
+    }
+  })
+}
+
+export async function decodeTransactions(web3: Web3Client, transactions: any[], methodIDs: any[]) {
+  let decodedTransactions = []
+  for (let t of transactions) {
+    const transaction = await web3.eth.getTransactionReceipt(t.hash)
+    if (transaction && transaction.blockNumber && transaction.status === '0x1') {
+      let decoded = decodeTransaction(t, methodIDs)
+      t.to = decoded.to
+      t.value = decoded.value
+      decodedTransactions.push(t)
+    }
+  }
+  return decodedTransactions
+}
+
+export function decodeTransaction(transaction: any, methodIDs: any[]) {
+  let transferTo
+  let transferValue
+  const decodedData = decodeMethod(transaction.input, methodIDs)
+  if (decodedData) {
+    const params = decodedData.params
+  
+    for (let i = 0; i < params.length; ++i) {
+      if (params[i].name === '_to') {
+        transferTo = params[i].value
+      }
+      if (params[i].name === '_value') {
+        transferValue = params[i].value / 100000000
+      }
+    }
+    return {
+      to: transferTo,
+      value: transferValue
+    }
+  } else {
+    return {
+      to: '',
+      value: 0
+    }
+  }
+}
+
+export function decodeMethod(data: any, methodIDs: any[]) {
+  const methodID = data.slice(2, 10)
+  const abiItem = methodIDs[methodID]
+  if (abiItem) {
+    const params = abiItem.inputs.map((item: any) => item.type)
+    let decoded = SolidityCoder.decodeParams(params, data.slice(10))
+    return {
+      name: abiItem.name,
+      params: decoded.map((param: any, index: number) => {
+        let parsedParam = param
+        if (abiItem.inputs[index].type.indexOf('uint') !== -1) {
+          parsedParam = new Web3().toBigNumber(param).toString()
+        }
+        return {
+          name: abiItem.inputs[index].name,
+          value: parsedParam,
+          type: abiItem.inputs[index].type
+        }
+      })
+    }
   }
 }
 

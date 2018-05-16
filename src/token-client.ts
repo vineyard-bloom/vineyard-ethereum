@@ -3,7 +3,7 @@ import { Web3EthereumClientConfig } from './ethereum-client'
 import { Block, EthereumTransaction, Web3TransactionReceipt } from './types'
 import {
   getBlock, getBlockIndex, getFullBlock, getLastBlock, getNextBlockInfo, getTransactionReceipt,
-  getTransactionStatus, SendTransaction, sendWeb3Transaction, Web3Client
+  getTransactionStatus, SendTransaction, sendWeb3Transaction, Web3Client, getFullTokenBlock
 } from './client-functions'
 import { initializeWeb3 } from './utility'
 
@@ -51,7 +51,7 @@ export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
   }
 
   async getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
-    return getFullBlock(this.web3, blockIndex)
+    return getFullTokenBlock(this.web3, blockIndex, this.tokenContractAddress, this.methodIDs)
   }
 
   async getBlock(blockIndex: number): Promise<Block> {

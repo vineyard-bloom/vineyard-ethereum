@@ -8,6 +8,7 @@ const Web3 = require('web3')
 const SolidityFunction = require('web3/lib/web3/function')
 const SolidityEvent = require('web3/lib/web3/event')
 const promisify = require('util').promisify
+const axios = require('axios')
 
 export type Resolve2<T> = (value: T) => void
 
@@ -312,6 +313,31 @@ export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, blo
   }
 }
 
+// TODO: type this return
+export async function traceTransaction(web3: Web3Client, txid: string) {
+  const body = {
+    jsonrpc: '2.0',
+    method: 'debug_traceTransaction',
+    params: [txid, {}],
+    id: 1
+  }
+  const response = await axios.post(web3.currentProvider.host, body)
+  return response.data.result
+}
+
+// TODO: type this return
+export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
+  const result = await traceTransaction(web3, txid)
+  const callLogs = result.structLogs.filter((x: any) => x.op === 'CALL')
+    .map((x: any) => ({
+        gas: parseInt(x.stack[x.stack.length - 1], 10),
+        address: '0x' + x.stack[x.stack.length - 2].slice(24),
+        value: parseInt(x.stack[x.stack.length - 3], 16),
+      })
+    )
+  return callLogs
+}
+
 export function partitionArray<T>(partitionSize: number, items: T[]): T[][] {
   const result: T[][] = []
   for (let i = 0; i < items.length; i += partitionSize) {
@@ -353,4 +379,12 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
     timeMined: new Date(block.timestamp * 1000),
     transactions: transactions
   }
+}
+
+export async function isContractAddress(web3: Web3Client, address: string): Promise<boolean> {
+  const code = await web3.eth.getCode(address)
+  if (code === '0x') {
+    return false
+  }
+  return true
 }

@@ -56,4 +56,5 @@ describe('a local ethereum network', function () {
       value: new BigNumber('124004000010000')
     })
   })
+
 })

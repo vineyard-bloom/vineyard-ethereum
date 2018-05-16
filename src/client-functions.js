@@ -14,6 +14,7 @@ const Web3 = require('web3');
 const SolidityFunction = require('web3/lib/web3/function');
 const SolidityEvent = require('web3/lib/web3/event');
 const promisify = require('util').promisify;
+const axios = require('axios');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -302,6 +303,34 @@ function loadTransaction(web3, tx, block, events) {
     });
 }
 exports.loadTransaction = loadTransaction;
+// TODO: type this return
+function traceTransaction(web3, txid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = {
+            jsonrpc: '2.0',
+            method: 'debug_traceTransaction',
+            params: [txid, {}],
+            id: 1
+        };
+        const response = yield axios.post(web3.currentProvider.host, body);
+        return response.data.result;
+    });
+}
+exports.traceTransaction = traceTransaction;
+// TODO: type this return
+function traceWeb3Transaction(web3, txid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = yield traceTransaction(web3, txid);
+        const callLogs = result.structLogs.filter((x) => x.op === 'CALL')
+            .map((x) => ({
+            gas: parseInt(x.stack[x.stack.length - 1], 10),
+            address: '0x' + x.stack[x.stack.length - 2].slice(24),
+            value: parseInt(x.stack[x.stack.length - 3], 16),
+        }));
+        return callLogs;
+    });
+}
+exports.traceWeb3Transaction = traceWeb3Transaction;
 function partitionArray(partitionSize, items) {
     const result = [];
     for (let i = 0; i < items.length; i += partitionSize) {
@@ -345,4 +374,14 @@ function getFullBlock(web3, blockIndex) {
     });
 }
 exports.getFullBlock = getFullBlock;
+function isContractAddress(web3, address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const code = yield web3.eth.getCode(address);
+        if (code === '0x') {
+            return false;
+        }
+        return true;
+    });
+}
+exports.isContractAddress = isContractAddress;
 //# sourceMappingURL=client-functions.js.map

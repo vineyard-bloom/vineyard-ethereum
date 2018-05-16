@@ -52,6 +52,9 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     events: ContractEvent[];
     nonce: number;
 }>;
+export declare function traceTransaction(web3: Web3Client, txid: string): Promise<any>;
+export declare function traceWeb3Transaction(web3: Web3Client, txid: string): Promise<any>;
 export declare function partitionArray<T>(partitionSize: number, items: T[]): T[][];
 export declare function partitionedMap<T, O>(partitionSize: number, action: (item: T) => Promise<O>, items: T[]): Promise<O[]>;
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;
+export declare function isContractAddress(web3: Web3Client, address: string): Promise<boolean>;

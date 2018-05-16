@@ -1,5 +1,7 @@
 import { Web3EthereumClient } from '../src'
 
+const axios = require('axios')
+
 const ChildProcess = require('child_process')
 const rimraf = require('rimraf')
 
@@ -59,16 +61,17 @@ export class GethNode {
   private config: GethNodeConfig
   private datadir: string
   private keydir: string
-  private port?: number
+  private rpcPort?: number
   private index: number
   private isMiner = false
+  private rpcRequestId = 1 // Probably not needed but just in case.
 
   constructor(config?: GethNodeConfig, port?: number) {
     this.config = config || {} as any
     this.index = GethNode.instanceIndex++
     this.datadir = './temp/eth/geth' + this.index
     this.keydir = './temp/eth/keystore' + this.index
-    this.port = port
+    this.rpcPort = port
     this.config.gethPath = this.config.gethPath || 'geth'
   }
 
@@ -94,15 +97,17 @@ export class GethNode {
   getCommonFlags() {
     // const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
 
-    return ' --ipcdisable --nodiscover --keystore ' + this.keydir
+    // return ' --ipcdisable --nodiscover --keystore ' + this.keydir
+    return ' --nodiscover --keystore ' + this.keydir
       + ' --datadir ' + this.datadir
       + ' --networkid 101 --port=' + (30303 + this.index)
       + ' ' + this.getEtherbaseFlags()
+      + ' --ipcdisable'
   }
 
   getRPCFlags() {
-    return ' --rpc --rpcport ' + this.port
-      + ' --rpcapi=\"db,eth,net,web3,personal,miner,web3\" '
+    return ' --rpc --rpcport ' + this.rpcPort
+      + ' --rpcapi=\"db,eth,net,personal,debug,miner,admin,web3\" '
   }
 
   getEtherbaseFlags() {
@@ -140,10 +145,28 @@ export class GethNode {
     this.execSync('init ' + genesisPath)
   }
 
-  getNodeUrl(): string {
-    return this.execSync('--exec admin.nodeInfo.enode console')
-      .replace(/\r|\n/g, '')
-      .replace('[::]', '127.0.0.1')
+  async invoke(method: string, params: any[] = []): Promise<any> {
+    // console.log('Geth RPC', this.rpcPort, method, params)
+    const body = {
+      jsonrpc: '2.0',
+      method: method,
+      id: this.rpcRequestId++,
+      params: params,
+    }
+
+    const response = await axios.post('http://localhost:' + this.rpcPort, body)
+    const result = response.data.result
+
+    // console.log('Geth Responded', this.rpcPort, method, result)
+    return result
+  }
+
+  async getNodeUrl(): Promise<string> {
+    const nodeInfo = await this.invoke('admin_nodeInfo')
+    return nodeInfo.enode
+    // return this.execSync('--exec admin.nodeInfo.enode console')
+    //   .replace(/\r|\n/g, '')
+    //   .replace('[::]', '127.0.0.1')
   }
 
   isRunning() {
@@ -180,9 +203,10 @@ export class GethNode {
     return next(0)
   }
 
-  addPeer(enode: string) {
-    console.log(this.index, 'admin.addPeer(' + enode + ')')
-    this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
+  addPeer(enode: string): Promise<void> {
+    return this.invoke('admin_addPeer', [enode])
+    // console.log(this.index, 'admin.addPeer(' + enode + ')')
+    // this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
   }
 
   listPeers() {
@@ -218,23 +242,23 @@ export class GethNode {
     })
   }
 
-  private launch(flags: any) {
+  private launch(flags: any): Promise<void> {
     this.childProcess = ChildProcess.exec(this.config.gethPath + flags)
-    // childProcess.stdout.on('data', (data: any) => {
-    //   if (this.config.verbosity)
-    //     console.log(this.index, 'stdout:', `${data}`)
-    // })
-    //
-    // childProcess.stderr.on('data', (data: any) => {
-    //   handlePossibleErrorMessage(this.index, data, this.config.verbosity)
-    // })
+    this.childProcess.stdout.on('data', (data: any) => {
+      if (this.config.verbosity)
+        console.log(this.index, 'stdout:', `${data}`)
+    })
+
+    this.childProcess.stderr.on('data', (data: any) => {
+      handlePossibleErrorMessage(this.index, data, this.config.verbosity)
+    })
 
     this.childProcess.on('close', (code: any) => {
       console.log(this.index, `child process exited with code ${code}`)
     })
 
     this.client = new Web3EthereumClient({
-      http: 'http://localhost:' + this.port
+      http: 'http://localhost:' + this.rpcPort
     })
 
     return new Promise<void>(resolve => {

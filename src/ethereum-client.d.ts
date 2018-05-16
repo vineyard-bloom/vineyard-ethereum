@@ -16,6 +16,8 @@ export declare class Web3EthereumClient implements ReadClient<ExternalTransactio
     getFullBlock(blockIndex: number): Promise<FullBlock<ExternalTransaction>>;
     getTransactionStatus(txid: string): Promise<blockchain.TransactionStatus>;
     unlockAccount(address: string): Promise<boolean>;
+    traceTransaction(txid: string): Promise<any>;
+    isContractAddress(address: string): Promise<boolean>;
     send(from: string | object, to?: string, amount?: string): Promise<EthereumTransactionOld>;
     getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt>;
     getTransaction(txid: string): Promise<ExternalTransaction>;

@@ -3,12 +3,12 @@ export declare class EthereumNetwork {
     private config;
     private nextPort;
     private coinbase;
-    private enode?;
     private enodes;
     private nodes;
     constructor(config: GethNodeConfig);
     getCoinbase(): string;
-    createNode(): GethNode;
+    createNode(): Promise<GethNode>;
+    addEnode(node: GethNode): Promise<void>;
     createMiner(): Promise<GethNode>;
     createControlNode(): Promise<GethNode>;
     createMiners(count: number): Promise<GethNode[]>;

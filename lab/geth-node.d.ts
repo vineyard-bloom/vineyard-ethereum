@@ -16,9 +16,10 @@ export declare class GethNode {
     private config;
     private datadir;
     private keydir;
-    private port?;
+    private rpcPort?;
     private index;
     private isMiner;
+    private rpcRequestId;
     constructor(config?: GethNodeConfig, port?: number);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
@@ -31,11 +32,12 @@ export declare class GethNode {
     startMining(): Promise<void>;
     execSync(suffix: string): any;
     initialize(genesisPath: string): void;
-    getNodeUrl(): string;
+    invoke(method: string, params?: any[]): Promise<any>;
+    getNodeUrl(): Promise<string>;
     isRunning(): boolean;
     isConnected(): any;
     mineBlocks(blockCount: number, timeout?: number): Promise<any>;
-    addPeer(enode: string): void;
+    addPeer(enode: string): Promise<void>;
     listPeers(): void;
     stop(): Promise<void> | Promise<{}>;
     private launch(flags);

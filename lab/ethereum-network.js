@@ -16,9 +16,7 @@ const fs = require('fs');
 class EthereumNetwork {
     constructor(config) {
         this.nextPort = 8546;
-        // private mainNode: GethNode
         this.coinbase = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba';
-        this.enode = undefined;
         this.enodes = [];
         this.nodes = [];
         this.config = config;
@@ -29,22 +27,29 @@ class EthereumNetwork {
         return this.coinbase;
     }
     createNode() {
-        const config = Object.assign({
-            // bootnodes: this.enode,
-            enodes: [].concat(this.enodes)
-        }, this.config);
-        const node = new geth_node_1.GethNode(config, this.nextPort++);
-        const GenesisPath = config.tempPath + '/genesis.json';
-        node.initialize(GenesisPath);
-        fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}');
-        this.nodes.push(node);
-        this.enodes.push(node.getNodeUrl());
-        return node;
+        return __awaiter(this, void 0, void 0, function* () {
+            const config = Object.assign({
+                enodes: [].concat(this.enodes)
+            }, this.config);
+            const node = new geth_node_1.GethNode(config, this.nextPort++);
+            const GenesisPath = config.tempPath + '/genesis.json';
+            node.initialize(GenesisPath);
+            fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}');
+            this.nodes.push(node);
+            return node;
+        });
+    }
+    addEnode(node) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enode = yield node.getNodeUrl();
+            this.enodes.push(enode);
+        });
     }
     createMiner() {
         return __awaiter(this, void 0, void 0, function* () {
             const node = yield this.createNode();
-            node.startMining();
+            yield node.startMining();
+            yield this.addEnode(node);
             return node;
         });
     }
@@ -52,6 +57,7 @@ class EthereumNetwork {
         return __awaiter(this, void 0, void 0, function* () {
             const node = yield this.createNode();
             yield node.start();
+            yield this.addEnode(node);
             return node;
         });
     }

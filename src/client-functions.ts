@@ -123,7 +123,7 @@ export async function getTransactionStatus(web3: Web3Client, txid: string): Prom
 }
 
 export async function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number | undefined): Promise<BaseBlock | undefined> {
-  const nextBlockIndex = previousBlockIndex ? previousBlockIndex + 1 : 0
+  const nextBlockIndex = !!(previousBlockIndex + 1) > 0 ? previousBlockIndex + 1 : 0
   let nextBlock: Block = await getBlock(web3, nextBlockIndex)
   if (!nextBlock) {
     return undefined

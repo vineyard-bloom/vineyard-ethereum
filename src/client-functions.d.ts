@@ -43,12 +43,12 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     from: string | undefined;
     amount: BigNumber;
     timeReceived: Date;
-    status: blockchain.TransactionStatus;
+    status: any;
     blockIndex: number;
     gasUsed: number;
     gasPrice: BigNumber;
     fee: BigNumber;
-    newContract: blockchain.Contract | undefined;
+    newContract: any;
     events: ContractEvent[];
     nonce: number;
 }>;
@@ -57,4 +57,15 @@ export declare function traceWeb3Transaction(web3: Web3Client, txid: string): Pr
 export declare function partitionArray<T>(partitionSize: number, items: T[]): T[][];
 export declare function partitionedMap<T, O>(partitionSize: number, action: (item: T) => Promise<O>, items: T[]): Promise<O[]>;
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;
+export declare function getFullTokenBlock(web3: Web3Client, blockIndex: number, tokenContractAddress: string, methodIDs: any[]): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;
+export declare function filterTokenTransaction(web3: Web3Client, transactions: Web3Transaction[], tokenContractAddress: string): Web3Transaction[];
+export declare function decodeTransactions(web3: Web3Client, transactions: any[], methodIDs: any[]): Promise<any[]>;
+export declare function decodeTransaction(transaction: any, methodIDs: any[]): {
+    to: any;
+    value: number | undefined;
+};
+export declare function decodeMethod(data: any, methodIDs: any[]): {
+    name: any;
+    params: any;
+} | undefined;
 export declare function isContractAddress(web3: Web3Client, address: string): Promise<boolean>;

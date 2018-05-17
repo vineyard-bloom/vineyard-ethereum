@@ -47,7 +47,7 @@ class TokenClient {
     }
     getFullBlock(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            return client_functions_1.getFullBlock(this.web3, blockIndex);
+            return client_functions_1.getFullTokenBlock(this.web3, blockIndex, this.tokenContractAddress, this.methodIDs);
         });
     }
     getBlock(blockIndex) {

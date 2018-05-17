@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vineyard_blockchain_1 = require("vineyard-blockchain");
 const utility_1 = require("./utility");
 const Web3 = require('web3');
+const SolidityCoder = require('web3/lib/solidity/coder');
 const SolidityFunction = require('web3/lib/web3/function');
 const SolidityEvent = require('web3/lib/web3/event');
 const promisify = require('util').promisify;
@@ -125,7 +126,7 @@ function getTransactionStatus(web3, txid) {
 exports.getTransactionStatus = getTransactionStatus;
 function getNextBlockInfo(web3, previousBlockIndex) {
     return __awaiter(this, void 0, void 0, function* () {
-        const nextBlockIndex = previousBlockIndex ? previousBlockIndex + 1 : 0;
+        const nextBlockIndex = !!(previousBlockIndex + 1) > 0 ? previousBlockIndex + 1 : 0;
         let nextBlock = yield getBlock(web3, nextBlockIndex);
         if (!nextBlock) {
             return undefined;
@@ -374,6 +375,105 @@ function getFullBlock(web3, blockIndex) {
     });
 }
 exports.getFullBlock = getFullBlock;
+function getFullTokenBlock(web3, blockIndex, tokenContractAddress, methodIDs) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let fullBlock = yield getBlock(web3, blockIndex);
+        let blockHeight = yield getBlockIndex(web3);
+        const filteredTransactions = filterTokenTransaction(web3, fullBlock.transactions, tokenContractAddress);
+        const decodedTransactions = yield decodeTransactions(web3, filteredTransactions, methodIDs);
+        const transactions = decodedTransactions.map(t => ({
+            txid: t.hash,
+            to: t.to,
+            from: t.from,
+            amount: t.value,
+            timeReceived: new Date(fullBlock.timestamp * 1000),
+            confirmations: blockHeight - blockIndex,
+            block: t.blockNumber,
+            status: t.status
+        }));
+        return {
+            hash: fullBlock.hash,
+            index: fullBlock.number,
+            timeMined: new Date(fullBlock.timestamp * 1000),
+            transactions: transactions
+        };
+    });
+}
+exports.getFullTokenBlock = getFullTokenBlock;
+function filterTokenTransaction(web3, transactions, tokenContractAddress) {
+    return transactions.filter(tx => {
+        if (tx && tx.to) {
+            return tx.to.toLowerCase() === tokenContractAddress.toLowerCase();
+        }
+    });
+}
+exports.filterTokenTransaction = filterTokenTransaction;
+function decodeTransactions(web3, transactions, methodIDs) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let decodedTransactions = [];
+        for (let t of transactions) {
+            const transaction = yield web3.eth.getTransactionReceipt(t.hash);
+            if (transaction && transaction.blockNumber && transaction.status === '0x1') {
+                let decoded = decodeTransaction(t, methodIDs);
+                t.to = decoded.to;
+                t.value = decoded.value;
+                decodedTransactions.push(t);
+            }
+        }
+        return decodedTransactions;
+    });
+}
+exports.decodeTransactions = decodeTransactions;
+function decodeTransaction(transaction, methodIDs) {
+    let transferTo;
+    let transferValue;
+    const decodedData = decodeMethod(transaction.input, methodIDs);
+    if (decodedData) {
+        const params = decodedData.params;
+        for (let i = 0; i < params.length; ++i) {
+            if (params[i].name === '_to') {
+                transferTo = params[i].value;
+            }
+            if (params[i].name === '_value') {
+                transferValue = params[i].value / 100000000;
+            }
+        }
+        return {
+            to: transferTo,
+            value: transferValue
+        };
+    }
+    else {
+        return {
+            to: '',
+            value: 0
+        };
+    }
+}
+exports.decodeTransaction = decodeTransaction;
+function decodeMethod(data, methodIDs) {
+    const methodID = data.slice(2, 10);
+    const abiItem = methodIDs[methodID];
+    if (abiItem) {
+        const params = abiItem.inputs.map((item) => item.type);
+        let decoded = SolidityCoder.decodeParams(params, data.slice(10));
+        return {
+            name: abiItem.name,
+            params: decoded.map((param, index) => {
+                let parsedParam = param;
+                if (abiItem.inputs[index].type.indexOf('uint') !== -1) {
+                    parsedParam = new Web3().toBigNumber(param).toString();
+                }
+                return {
+                    name: abiItem.inputs[index].name,
+                    value: parsedParam,
+                    type: abiItem.inputs[index].type
+                };
+            })
+        };
+    }
+}
+exports.decodeMethod = decodeMethod;
 function isContractAddress(web3, address) {
     return __awaiter(this, void 0, void 0, function* () {
         const code = yield web3.eth.getCode(address);

@@ -17,6 +17,7 @@ export declare function getBlock(web3: Web3Client, blockIndex: number): Promise<
 export declare function getBlockIndex(web3: Web3Client): Promise<number>;
 export declare function getLastBlock(web3: Web3Client): Promise<BaseBlock>;
 export declare function getTransactionReceipt(web3: Web3Client, txid: string): Promise<Web3TransactionReceipt>;
+export declare function getTransaction(web3: Web3Client, txid: string): Promise<any>;
 export declare function getTransactionStatus(web3: Web3Client, txid: string): Promise<blockchain.TransactionStatus>;
 export declare function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number | undefined): Promise<BaseBlock | undefined>;
 export declare function convertStatus(gethStatus: string): blockchain.TransactionStatus;
@@ -52,8 +53,25 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     events: ContractEvent[];
     nonce: number;
 }>;
-export declare function traceTransaction(web3: Web3Client, txid: string): Promise<any>;
-export declare function traceWeb3Transaction(web3: Web3Client, txid: string): Promise<any>;
+export interface VmOperation {
+    op: string;
+    stack: string[];
+}
+export interface VmTrace {
+    structLogs: VmOperation[];
+}
+export interface InternalTransfer {
+    gas: BigNumber;
+    address: string;
+    value: BigNumber;
+}
+export declare function traceTransaction(web3: Web3Client, txid: string): Promise<VmTrace>;
+export declare function getInternalTransactions(web3: Web3Client, txid: string): Promise<InternalTransfer[]>;
+export declare function traceWeb3Transaction(web3: Web3Client, txid: string): Promise<{
+    gas: number;
+    address: string;
+    value: number;
+}[]>;
 export declare function partitionArray<T>(partitionSize: number, items: T[]): T[][];
 export declare function partitionedMap<T, O>(partitionSize: number, action: (item: T) => Promise<O>, items: T[]): Promise<O[]>;
 export declare function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;

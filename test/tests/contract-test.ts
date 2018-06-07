@@ -2,7 +2,7 @@ import { EthereumNetwork } from '../../lab'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 import {
-  deployContract, getTransactionReceipt, traceTransaction, unlockWeb3Account,
+  deployContract, getInternalTransactions, getTransaction, getTransactionReceipt, traceTransaction, unlockWeb3Account,
   Web3EthereumClient
 } from '../../src'
 import { Web3Client } from '../../src/client-functions'
@@ -44,7 +44,7 @@ function compileContract(web3: Web3Client, name: string, code: string): Contract
 }
 
 describe('ethereum-contract', function () {
-  this.timeout(4 * minute)
+  this.timeout(8 * minute)
   let state: TestState | undefined
 
   const sendAmount = new BigNumber('124004000010000')
@@ -63,6 +63,12 @@ describe('ethereum-contract', function () {
     })
     await miners[0].mineBlocks(5, 200 * 1000)
     let receipt = await getTransactionReceipt(web3, txid)
+    if (!receipt) {
+      const tx = await getTransaction(web3, txid)
+      console.log('tx', tx)
+      throw new Error('Could not get receipt for transaction ' + txid)
+    }
+
     let tx = await client.sendTransaction({
       from: network.getCoinbase(),
       to: receipt.contractAddress,
@@ -123,10 +129,10 @@ describe('ethereum-contract', function () {
     })
     await miners[0].mineBlocks(5, 200 * 1000)
     assert(web3.eth.getBalance(address2).toString() === '7')
-    let callLog = await traceTransaction(web3, contractSendTx)
-    console.log('callLog', callLog)
-    // assert(callLog[0].address === address2)
-    // assert(callLog[0].value === 7)
+    let calls = await getInternalTransactions(web3, contractSendTx)
+    console.log('callLog', calls)
+    assert(calls[0].address === address2)
+    assert.equal(calls[0].value.toNumber(), 7)
   })
   // END OF CALL.VALUE TRANSFER
 

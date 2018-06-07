@@ -117,6 +117,19 @@ export function getTransactionReceipt(web3: Web3Client, txid: string): Promise<W
   })
 }
 
+export function getTransaction(web3: Web3Client, txid: string): Promise<any> {
+  return new Promise((resolve: Resolve<any>, reject) => {
+    web3.eth.getTransaction(txid, (err: any, transaction: any) => {
+      if (err) {
+        console.error('Error querying transaction', txid, 'with message', err.message)
+        reject(err)
+      } else {
+        resolve(transaction)
+      }
+    })
+  })
+}
+
 export async function getTransactionStatus(web3: Web3Client, txid: string): Promise<blockchain.TransactionStatus> {
   let transactionReceipt: Web3TransactionReceipt = await getTransactionReceipt(web3, txid)
   return transactionReceipt.status.substring(2) === '0' ? blockchain.TransactionStatus.rejected : blockchain.TransactionStatus.accepted
@@ -292,6 +305,9 @@ export function mapTransactionEvents(events: ContractEvent[], txid: string) {
 
 export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, block: Block, events: ContractEvent[]) {
   const receipt = await getTransactionReceipt(web3, tx.hash)
+  if (!receipt)
+    throw new Error('Could not find receipt for transaction ' + tx.hash)
+
   const contract = receipt.contractAddress
     ? await getTokenContractFromReceipt(web3, receipt)
     : undefined
@@ -313,8 +329,22 @@ export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, blo
   }
 }
 
-// TODO: type this return
-export async function traceTransaction(web3: Web3Client, txid: string) {
+export interface VmOperation {
+  op: string
+  stack: string[]
+}
+
+export interface VmTrace {
+  structLogs: VmOperation[]
+}
+
+export interface InternalTransfer {
+  gas: BigNumber,
+  address: string,
+  value: BigNumber
+}
+
+export async function traceTransaction(web3: Web3Client, txid: string): Promise<VmTrace> {
   const body = {
     jsonrpc: '2.0',
     method: 'debug_traceTransaction',
@@ -325,7 +355,20 @@ export async function traceTransaction(web3: Web3Client, txid: string) {
   return response.data.result
 }
 
-// TODO: type this return
+export async function getInternalTransactions(web3: Web3Client, txid: string): Promise<InternalTransfer[]> {
+  const result = await traceTransaction(web3, txid)
+  const calls = result.structLogs.filter(x => x.op === 'CALL')
+  return calls.map(call => {
+    const { stack } = call
+    const offset = stack.length - 3
+    return {
+      gas: new BigNumber('0x' + stack[offset]),
+      address: '0x' + stack[offset + 1].slice(24),
+      value: new BigNumber('0x' + stack[offset + 2]),
+    }
+  })
+}
+
 export async function traceWeb3Transaction(web3: Web3Client, txid: string) {
   const result = await traceTransaction(web3, txid)
   const callLogs = result.structLogs.filter((x: any) => x.op === 'CALL')

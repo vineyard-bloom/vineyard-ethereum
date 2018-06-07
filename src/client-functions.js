@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bignumber_js_1 = require("bignumber.js");
 const vineyard_blockchain_1 = require("vineyard-blockchain");
 const utility_1 = require("./utility");
 const Web3 = require('web3');
@@ -117,6 +118,20 @@ function getTransactionReceipt(web3, txid) {
     });
 }
 exports.getTransactionReceipt = getTransactionReceipt;
+function getTransaction(web3, txid) {
+    return new Promise((resolve, reject) => {
+        web3.eth.getTransaction(txid, (err, transaction) => {
+            if (err) {
+                console.error('Error querying transaction', txid, 'with message', err.message);
+                reject(err);
+            }
+            else {
+                resolve(transaction);
+            }
+        });
+    });
+}
+exports.getTransaction = getTransaction;
 function getTransactionStatus(web3, txid) {
     return __awaiter(this, void 0, void 0, function* () {
         let transactionReceipt = yield getTransactionReceipt(web3, txid);
@@ -283,6 +298,8 @@ exports.mapTransactionEvents = mapTransactionEvents;
 function loadTransaction(web3, tx, block, events) {
     return __awaiter(this, void 0, void 0, function* () {
         const receipt = yield getTransactionReceipt(web3, tx.hash);
+        if (!receipt)
+            throw new Error('Could not find receipt for transaction ' + tx.hash);
         const contract = receipt.contractAddress
             ? yield getTokenContractFromReceipt(web3, receipt)
             : undefined;
@@ -304,7 +321,6 @@ function loadTransaction(web3, tx, block, events) {
     });
 }
 exports.loadTransaction = loadTransaction;
-// TODO: type this return
 function traceTransaction(web3, txid) {
     return __awaiter(this, void 0, void 0, function* () {
         const body = {
@@ -318,7 +334,22 @@ function traceTransaction(web3, txid) {
     });
 }
 exports.traceTransaction = traceTransaction;
-// TODO: type this return
+function getInternalTransactions(web3, txid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = yield traceTransaction(web3, txid);
+        const calls = result.structLogs.filter(x => x.op === 'CALL');
+        return calls.map(call => {
+            const { stack } = call;
+            const offset = stack.length - 3;
+            return {
+                gas: new bignumber_js_1.default('0x' + stack[offset]),
+                address: '0x' + stack[offset + 1].slice(24),
+                value: new bignumber_js_1.default('0x' + stack[offset + 2]),
+            };
+        });
+    });
+}
+exports.getInternalTransactions = getInternalTransactions;
 function traceWeb3Transaction(web3, txid) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = yield traceTransaction(web3, txid);

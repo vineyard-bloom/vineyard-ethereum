@@ -13,6 +13,7 @@
     "abi-decoder": "^1.1.0",
     "axios": "^0.18.0",
     "bignumber.js": "^4.1.0",
+    "ethereumjs-block": "^1.7.1",
     "promise-each2": "^1.0.0",
     "truffle-contract": "^3.0.0",
     "vineyard-blockchain": "vineyard-bloom/vineyard-blockchain#1.0.0-beta",

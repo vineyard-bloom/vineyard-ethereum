@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
 import { BaseBlock, blockchain, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
+import { Block } from 'bitcoinjs-lib';
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder')
@@ -9,6 +10,7 @@ const SolidityFunction = require('web3/lib/web3/function')
 const SolidityEvent = require('web3/lib/web3/event')
 const promisify = require('util').promisify
 const axios = require('axios')
+const ethereumBlocks = require('ethereumjs-block')
 
 export type Resolve2<T> = (value: T) => void
 
@@ -525,4 +527,26 @@ export async function isContractAddress(web3: Web3Client, address: string): Prom
     return false
   }
   return true
+}
+
+export async function validateBlock(blockParams: any): Promise<any> {
+  const header = new ethereumBlocks.Header({
+    parentHash: blockParams.parentHash,
+    uncleHash: blockParams.sha3Uncles,
+    coinbase: blockParams.miner,
+    stateRoot: blockParams.stateRoot,
+    transactionsTrie: blockParams.transactionsRoot,
+    receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot,
+    bloom: blockParams.logsBloom,
+    difficulty: blockParams.difficulty,
+    number: blockParams.number,
+    gasLimit: blockParams.gasLimit,
+    gasUsed: blockParams.gasUsed,
+    timestamp: blockParams.timestamp,
+    extraData: blockParams.extraData,
+    mixHash: blockParams.mixHash,
+    nonce: blockParams.nonce
+  })
+  const hashedBlock = header.hash().toString('hex')
+  return Promise.resolve(hashedBlock)
 }

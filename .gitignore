@@ -12,3 +12,4 @@ init
 config/geth
 config/genesis.json
 .vscode
+temp

@@ -53,8 +53,9 @@ class GethNode {
         this.rpcRequestId = 1; // Probably not needed but just in case.
         this.config = config || {};
         this.index = GethNode.instanceIndex++;
-        this.datadir = './temp/eth/geth' + this.index;
-        this.keydir = './temp/eth/keystore' + this.index;
+        const tempPath = this.config.tempPath || '.';
+        this.datadir = tempPath + '/temp/eth/geth' + this.index;
+        this.keydir = tempPath + '/temp/eth/keystore' + this.index;
         this.rpcPort = port;
         this.config.gethPath = this.config.gethPath || 'geth';
     }
@@ -101,7 +102,7 @@ class GethNode {
     }
     startMining() {
         this.isMiner = true;
-        return this.start('--mine --minerthreads=4');
+        return this.start('--mine --minerthreads=4 --dev.period=0');
     }
     execSync(suffix) {
         const command = this.config.gethPath

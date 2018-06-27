@@ -69,8 +69,9 @@ export class GethNode {
   constructor(config?: GethNodeConfig, port?: number) {
     this.config = config || {} as any
     this.index = GethNode.instanceIndex++
-    this.datadir = './temp/eth/geth' + this.index
-    this.keydir = './temp/eth/keystore' + this.index
+    const tempPath = this.config.tempPath || '.'
+    this.datadir = tempPath + '/temp/eth/geth' + this.index
+    this.keydir = tempPath + '/temp/eth/keystore' + this.index
     this.rpcPort = port
     this.config.gethPath = this.config.gethPath || 'geth'
   }
@@ -128,7 +129,7 @@ export class GethNode {
 
   startMining() {
     this.isMiner = true
-    return this.start('--mine --minerthreads=4')
+    return this.start('--mine --minerthreads=4 --dev.period=0')
   }
 
   execSync(suffix: string) {

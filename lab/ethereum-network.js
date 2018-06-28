@@ -56,6 +56,8 @@ class EthereumNetwork {
         if (!fs.existsSync(this.config.tempPath)) {
             console.log('Creating new temp directory');
             fs.mkdirSync(this.config.tempPath);
+            fs.mkdirSync(this.config.tempPath + '/keystore');
+            fs.mkdirSync(this.config.tempPath + '/geth');
         }
         else {
             console.warn('Error rim-raffing temp eth directory');

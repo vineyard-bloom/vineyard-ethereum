@@ -154,8 +154,6 @@ export class GethNode {
 
   addPeer(enode: string): Promise<void> {
     return this.invoke('admin_addPeer', [enode])
-    // console.log(this.index, 'admin.addPeer(' + enode + ')')
-    // this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
   }
 
   listPeers() {

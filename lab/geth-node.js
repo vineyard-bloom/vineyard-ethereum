@@ -128,8 +128,6 @@ class GethNode {
     }
     addPeer(enode) {
         return this.invoke('admin_addPeer', [enode]);
-        // console.log(this.index, 'admin.addPeer(' + enode + ')')
-        // this.childProcess.stdin.write('admin.addPeer(' + enode + ')\n')
     }
     listPeers() {
         this.childProcess.stdin.write('admin.peers\n');

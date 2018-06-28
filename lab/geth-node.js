@@ -21,6 +21,7 @@ class GethNode {
     constructor(config) {
         this.isMiner = false;
         this.rpcRequestId = 1; // Probably not needed but just in case.
+        config.verbosity = config.verbosity || 1;
         this.config = config;
         const tempPath = this.config.tempPath || '.';
         this.datadir = tempPath + '/eth/geth/' + config.index;

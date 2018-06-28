@@ -32,6 +32,7 @@ export class GethNode {
   private rpcRequestId = 1 // Probably not needed but just in case.
 
   constructor(config: GethNodeConfig) {
+    config.verbosity = config.verbosity || 1
     this.config = config
     const tempPath = this.config.tempPath || '.'
     this.datadir = tempPath + '/eth/geth/' + config.index

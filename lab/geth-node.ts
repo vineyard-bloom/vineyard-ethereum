@@ -17,8 +17,6 @@ export interface GethNodeConfig {
   coinbase?: string
 }
 
-
-
 export class GethNode {
   private static instanceIndex: number = 0
   private childProcess: any
@@ -35,8 +33,8 @@ export class GethNode {
     config.verbosity = config.verbosity || 1
     this.config = config
     const tempPath = this.config.tempPath || '.'
-    this.datadir = tempPath + '/eth/geth/' + config.index
-    this.keydir = tempPath + '/eth/keystore/' + config.index
+    this.datadir = tempPath + '/geth/' + config.index
+    this.keydir = tempPath + '/keystore/' + config.index
     this.gethPath = this.datadir
     this.rpcPort = 8545 + config.index
     this.client = new Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` })
@@ -242,25 +240,6 @@ export class GethNode {
         }
       })
   }
-
-// export function mine(node, milliseconds: number) {
-//   console.log('Mining for ' + milliseconds + ' milliseconds.')
-//   let previousBlockNumber
-//   const wasRunning = node.isRunning()
-//   return node.stop()
-//     .then(() => node.startMiner())
-//     .then(() => node.getClient().getBlockNumber())
-//     .then(blockNumber => previousBlockNumber = blockNumber)
-//     .then(() => new Promise<void>(resolve => setTimeout(resolve, milliseconds)))
-//     .then(() => node.getClient().getBlockNumber())
-//     .then(blockNumber => console.log('Mined ' + (blockNumber - previousBlockNumber) + " blocks."))
-//     .then(() => node.stop())
-//     .then(() => {
-//       if (wasRunning) {
-//         return node.start(port)
-//       }
-//     })
-// }
 }
 
 const errorMessagePattern = /err="(.*?)"/

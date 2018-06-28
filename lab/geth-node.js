@@ -24,8 +24,8 @@ class GethNode {
         config.verbosity = config.verbosity || 1;
         this.config = config;
         const tempPath = this.config.tempPath || '.';
-        this.datadir = tempPath + '/eth/geth/' + config.index;
-        this.keydir = tempPath + '/eth/keystore/' + config.index;
+        this.datadir = tempPath + '/geth/' + config.index;
+        this.keydir = tempPath + '/keystore/' + config.index;
         this.gethPath = this.datadir;
         this.rpcPort = 8545 + config.index;
         this.client = new src_1.Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` });

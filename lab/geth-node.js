@@ -42,7 +42,7 @@ class GethNode {
     getCommonFlags() {
         return ' --nodiscover --keystore ' + this.keydir
             + ' --datadir ' + this.datadir
-            + ' --networkid 101 --port=' + (30303 + this.index)
+            + ' --networkid 101 --port=' + (30303 + this.config.index)
             + ' ' + this.getEtherbaseFlags()
             + ' --ipcdisable';
     }
@@ -157,16 +157,16 @@ class GethNode {
         });
     }
     launch(flags) {
-        this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
+        this.childProcess = ChildProcess.exec(this.gethPath + flags);
         this.childProcess.stdout.on('data', (data) => {
             if (this.config.verbosity)
-                console.log(this.index, 'stdout:', `${data}`);
+                console.log(this.config.index, 'stdout:', `${data}`);
         });
         this.childProcess.stderr.on('data', (data) => {
-            handlePossibleErrorMessage(this.index, data, this.config.verbosity);
+            handlePossibleErrorMessage(this.config.index, data, this.config.verbosity);
         });
         this.childProcess.on('close', (code) => {
-            console.log(this.index, `child process exited with code ${code}`);
+            console.log(this.config.index, `child process exited with code ${code}`);
         });
         return new Promise(resolve => {
             let isFinished = false;

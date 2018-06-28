@@ -68,7 +68,7 @@ class GethNode {
     execSync(suffix) {
         const command = this.gethPath
             + this.getCommonFlags()
-            + ' --verbosity ' + this.verbosity
+            + ' --verbosity ' + this.config.verbosity
             + ' ' + suffix;
         console.log(command);
         const result = ChildProcess.execSync(command);

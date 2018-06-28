@@ -1,17 +1,15 @@
-import { EthereumNetwork } from './ethereum-network'
+import { createNetwork, EthereumNetwork, Keystore } from './ethereum-network'
 import { GethNode } from './geth-node'
 
 export class EthereumLab {
   network: EthereumNetwork
-  miner: GethNode
 
-  constructor(coinbaseAddress?: string) {
-    this.network = new EthereumNetwork({ coinbase: coinbaseAddress })
+  constructor(tempPath: string, startingPort: number, coinbase?: Keystore) {
+    this.network = createNetwork({ tempPath: tempPath, startingPort: startingPort, coinbase: coinbase })
   }
 
   async start (): Promise<void> {
-    this.network.initialize()
-    this.miner = await this.network.createMiner()
+    await this.network.initialize()
   }
 
   async stop (): Promise<void> {

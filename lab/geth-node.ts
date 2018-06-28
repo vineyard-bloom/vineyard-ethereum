@@ -11,69 +11,34 @@ enum Status {
 }
 
 export interface GethNodeConfig {
-  gethPath?: string
   verbosity?: number // 0 - 6
   tempPath?: string
-  port?: number
-  index?: number
-  bootnodes?: string
-  coinbase: string
-  enodes?: string[]
+  index: number
+  coinbase?: string
 }
 
-const errorMessagePattern = /err="(.*?)"/
 
-function preparePossibleErrorMessage(message: string) {
-  // Currently Geth is outputting non-error messages to stderr.  (Which makes perfect sense in Geth-logic.)
-  if (message.substring(0, 4) == 'INFO') {
-    return { message, verbosity: 2 }
-  }
-  else if (message.substring(0, 5) == 'DEBUG') {
-    const match = message.match(errorMessagePattern)
-    if (match) {
-      const message = match[1]
-      return { message, verbosity: 1 }
-    }
-    else {
-      return { message, verbosity: 2 }
-    }
-  }
-  else {
-    return { message, verbosity: 2 }
-  }
-}
-
-function handlePossibleErrorMessage(index: number, message: string, verbosity: number = 0) {
-  // This may always be a string but just in case...
-  if (typeof message !== 'string')
-    return
-
-  const info = preparePossibleErrorMessage(message)
-  if (info.verbosity >= verbosity) {
-    // console.error(message)
-  }
-}
 
 export class GethNode {
   private static instanceIndex: number = 0
   private childProcess: any
-  private client: Web3EthereumClient | undefined = undefined
+  private client: Web3EthereumClient
   private config: GethNodeConfig
   private datadir: string
   private keydir: string
-  private rpcPort?: number
-  private index: number
+  private gethPath: string
+  private rpcPort: number
   private isMiner = false
   private rpcRequestId = 1 // Probably not needed but just in case.
 
-  constructor(config?: GethNodeConfig, port?: number) {
-    this.config = config || {} as any
-    this.index = GethNode.instanceIndex++
+  constructor(config: GethNodeConfig) {
+    this.config = config
     const tempPath = this.config.tempPath || '.'
-    this.datadir = tempPath + '/temp/eth/geth' + this.index
-    this.keydir = tempPath + '/temp/eth/keystore' + this.index
-    this.rpcPort = port
-    this.config.gethPath = this.config.gethPath || 'geth'
+    this.datadir = tempPath + '/eth/geth/' + config.index
+    this.keydir = tempPath + '/eth/keystore/' + config.index
+    this.gethPath = this.datadir
+    this.rpcPort = 8545 + config.index
+    this.client = new Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` })
   }
 
   getWeb3() {
@@ -88,17 +53,7 @@ export class GethNode {
     return this.keydir
   }
 
-  getBootNodeFlags() {
-    return ''
-    // return this.config.bootnodes
-    //   ? ' --bootnodes ' + this.config.bootnodes + ' '
-    //   : ''
-  }
-
   getCommonFlags() {
-    // const verbosity = 4 // this.isMiner ? 4 : 1 // this.config.verbosity || 0
-
-    // return ' --ipcdisable --nodiscover --keystore ' + this.keydir
     return ' --nodiscover --keystore ' + this.keydir
       + ' --datadir ' + this.datadir
       + ' --networkid 101 --port=' + (30303 + this.index)
@@ -120,7 +75,6 @@ export class GethNode {
     const command = this.getCommonFlags()
       + ' --verbosity ' + 4
       + this.getRPCFlags()
-      + this.getBootNodeFlags()
       + flags + ' console'
 
     console.log('geth ' + command)
@@ -133,9 +87,9 @@ export class GethNode {
   }
 
   execSync(suffix: string) {
-    const command = this.config.gethPath
+    const command = this.gethPath
       + this.getCommonFlags()
-      + ' --verbosity ' + 2
+      + ' --verbosity ' + this.verbosity 
       + ' ' + suffix
     console.log(command)
     const result = ChildProcess.execSync(command)
@@ -147,7 +101,6 @@ export class GethNode {
   }
 
   async invoke(method: string, params: any[] = []): Promise<any> {
-    // console.log('Geth RPC', this.rpcPort, method, params)
     const body = {
       jsonrpc: '2.0',
       method: method,
@@ -158,16 +111,12 @@ export class GethNode {
     const response = await axios.post('http://localhost:' + this.rpcPort, body)
     const result = response.data.result
 
-    // console.log('Geth Responded', this.rpcPort, method, result)
     return result
   }
 
   async getNodeUrl(): Promise<string> {
     const nodeInfo = await this.invoke('admin_nodeInfo')
     return nodeInfo.enode
-    // return this.execSync('--exec admin.nodeInfo.enode console')
-    //   .replace(/\r|\n/g, '')
-    //   .replace('[::]', '127.0.0.1')
   }
 
   isRunning() {
@@ -258,10 +207,6 @@ export class GethNode {
       console.log(this.index, `child process exited with code ${code}`)
     })
 
-    this.client = new Web3EthereumClient({
-      http: 'http://localhost:' + this.rpcPort
-    })
-
     return new Promise<void>(resolve => {
       let isFinished = false
       const finished = () => {
@@ -315,4 +260,37 @@ export class GethNode {
 //       }
 //     })
 // }
+}
+
+const errorMessagePattern = /err="(.*?)"/
+
+function preparePossibleErrorMessage(message: string) {
+  // Currently Geth is outputting non-error messages to stderr.  (Which makes perfect sense in Geth-logic.)
+  if (message.substring(0, 4) == 'INFO') {
+    return { message, verbosity: 2 }
+  }
+  else if (message.substring(0, 5) == 'DEBUG') {
+    const match = message.match(errorMessagePattern)
+    if (match) {
+      const message = match[1]
+      return { message, verbosity: 1 }
+    }
+    else {
+      return { message, verbosity: 2 }
+    }
+  }
+  else {
+    return { message, verbosity: 2 }
+  }
+}
+
+function handlePossibleErrorMessage(index: number, message: string, verbosity: number = 0) {
+  // This may always be a string but just in case...
+  if (typeof message !== 'string')
+    return
+
+  const info = preparePossibleErrorMessage(message)
+  if (info.verbosity >= verbosity) {
+    // console.error(message)
+  }
 }

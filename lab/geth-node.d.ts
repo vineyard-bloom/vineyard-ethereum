@@ -1,13 +1,9 @@
 import { Web3EthereumClient } from '../src';
 export interface GethNodeConfig {
-    gethPath?: string;
     verbosity?: number;
     tempPath?: string;
-    port?: number;
-    index?: number;
-    bootnodes?: string;
-    coinbase: string;
-    enodes?: string[];
+    index: number;
+    coinbase?: string;
 }
 export declare class GethNode {
     private static instanceIndex;
@@ -16,15 +12,14 @@ export declare class GethNode {
     private config;
     private datadir;
     private keydir;
-    private rpcPort?;
-    private index;
+    private gethPath;
+    private rpcPort;
     private isMiner;
     private rpcRequestId;
-    constructor(config?: GethNodeConfig, port?: number);
+    constructor(config: GethNodeConfig);
     getWeb3(): any;
     getClient(): Web3EthereumClient;
     getKeydir(): string;
-    getBootNodeFlags(): string;
     getCommonFlags(): string;
     getRPCFlags(): string;
     getEtherbaseFlags(): string;

@@ -1,21 +1,33 @@
-import { GethNode, GethNodeConfig } from './geth-node';
+import { GethNode } from './geth-node';
+export interface Keystore {
+    address: string;
+    path: string;
+    jsonData: string;
+}
+export declare const defaultKeystore: {
+    address: string;
+    path: string;
+    jsonData: string;
+};
+export interface EthereumNetworkConfig {
+    tempPath: string;
+    startingPort: number;
+    coinbase?: Keystore;
+}
 export declare class EthereumNetwork {
     private config;
-    private nextPort;
+    private currentPort;
     private coinbase;
-    private enodes;
+    mainNode?: GethNode;
     private nodes;
-    constructor(config: GethNodeConfig);
-    getCoinbase(): string;
+    constructor(config: EthereumNetworkConfig);
+    getCoinbase(): Keystore;
     createNode(): Promise<GethNode>;
-    addEnode(node: GethNode): Promise<void>;
     createMiner(): Promise<GethNode>;
     createControlNode(): Promise<GethNode>;
-    createMiners(count: number): Promise<GethNode[]>;
     resetTempDir(): void;
-    initialize(): void;
-    start(): void;
+    initialize(): Promise<GethNode>;
     stop(): any;
     private createGenesisFile(path);
 }
-export declare function createNetwork(config: GethNodeConfig): EthereumNetwork;
+export declare function createNetwork(config: EthereumNetworkConfig): EthereumNetwork;

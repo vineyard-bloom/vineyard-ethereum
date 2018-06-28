@@ -1,9 +1,7 @@
-import { EthereumNetwork } from './ethereum-network';
-import { GethNode } from './geth-node';
+import { EthereumNetwork, Keystore } from './ethereum-network';
 export declare class EthereumLab {
     network: EthereumNetwork;
-    miner: GethNode;
-    constructor(coinbaseAddress?: string);
+    constructor(tempPath: string, startingPort: number, coinbase?: Keystore);
     start(): Promise<void>;
     stop(): Promise<void>;
     send(address: string, amount: number): Promise<void>;

@@ -13,80 +13,71 @@ const promise_each2_1 = require("promise-each2");
 const childProcess = require('child_process');
 const rimraf = require('rimraf');
 const fs = require('fs');
+exports.defaultKeystore = {
+    address: '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba',
+    path: '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba',
+    jsonData: '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}'
+};
 class EthereumNetwork {
     constructor(config) {
-        this.nextPort = 8546;
-        this.coinbase = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba';
-        this.enodes = [];
-        this.nodes = [];
         this.config = config;
-        this.config.tempPath = './temp/eth';
-        this.config.coinbase = this.coinbase;
+        this.currentPort = config.startingPort || 8545;
+        this.coinbase = this.config.coinbase || exports.defaultKeystore;
+        this.nodes = [];
     }
     getCoinbase() {
         return this.coinbase;
     }
     createNode() {
         return __awaiter(this, void 0, void 0, function* () {
-            const config = Object.assign({
-                enodes: [].concat(this.enodes)
-            }, this.config);
-            const node = new geth_node_1.GethNode(config, this.nextPort++);
-            const GenesisPath = config.tempPath + '/genesis.json';
-            node.initialize(GenesisPath);
-            fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}');
+            const node = yield this.createNode();
+            yield node.startMining();
             this.nodes.push(node);
             return node;
         });
     }
-    addEnode(node) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const enode = yield node.getNodeUrl();
-            this.enodes.push(enode);
-        });
-    }
     createMiner() {
         return __awaiter(this, void 0, void 0, function* () {
-            const node = yield this.createNode();
-            yield node.startMining();
-            yield this.addEnode(node);
+            const node = new geth_node_1.GethNode({ index: this.nodes.length });
+            const genesisPath = this.config.tempPath + '/genesis.json';
+            node.initialize(genesisPath);
+            yield node.start();
+            this.nodes.push(node);
             return node;
         });
     }
     createControlNode() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.nodes.length > 0) {
+                console.log('Control node already created');
+                return Promise.resolve(this.nodes[0]);
+            }
             const node = yield this.createNode();
-            yield node.start();
-            yield this.addEnode(node);
+            fs.writeFileSync(node.getKeydir() + this.coinbase.path, this.coinbase.jsonData);
+            this.nodes.push(node);
             return node;
         });
     }
-    createMiners(count) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = [];
-            for (let i = 0; i < count; ++i) {
-                result.push(yield this.createMiner());
-            }
-            return result;
-        });
-    }
-    // getMainNode() {
-    //   return this.mainNode
-    // }
     resetTempDir() {
-        rimraf.sync('./temp/eth'); // Right now still hard-coded because I don't trust rm -rf.
+        console.log('Resetting temp eth directory');
+        rimraf.sync(this.config.tempPath); // triple-check that this works!!!
         if (!fs.existsSync(this.config.tempPath)) {
+            console.log('Creating new temp directory');
             fs.mkdirSync(this.config.tempPath);
+        }
+        else {
+            console.warn('Error rim-raffing temp eth directory');
         }
     }
     initialize() {
-        this.resetTempDir();
-        const GenesisPath = this.config.tempPath + '/genesis.json';
-        this.createGenesisFile(GenesisPath);
-        // this.mainNode = this.createNode()
-    }
-    start() {
-        // return this.mainNode.start()
+        return __awaiter(this, void 0, void 0, function* () {
+            this.resetTempDir();
+            const genesisPath = this.config.tempPath + '/genesis.json';
+            this.createGenesisFile(genesisPath);
+            const mainNode = yield this.createControlNode();
+            this.nodes.push(mainNode);
+            return mainNode;
+        });
     }
     stop() {
         return promise_each2_1.each(this.nodes, (node) => node.stop());
@@ -100,9 +91,9 @@ class EthereumNetwork {
                 'eip158Block': 0
             },
             'alloc': {
-                [this.coinbase]: { 'balance': '111100113120000000000052' }
+                [this.coinbase.address]: { 'balance': '111100113120000000000052' }
             },
-            'coinbase': this.coinbase,
+            'coinbase': this.coinbase.address,
             'difficulty': '0x20000',
             'extraData': '',
             'gasLimit': '0x2fefd8',

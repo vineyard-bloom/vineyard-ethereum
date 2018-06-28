@@ -5,86 +5,90 @@ const childProcess = require('child_process')
 const rimraf = require('rimraf')
 const fs = require('fs')
 
-export class EthereumNetwork {
-  private config: GethNodeConfig
-  private nextPort = 8546
-  private coinbase: string = '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba'
-  private enodes: string[] = []
-  private nodes: GethNode [] = []
+export interface Keystore {
+  address: string
+  path: string
+  jsonData: string
+}
 
-  constructor(config: GethNodeConfig) {
+export const defaultKeystore = { 
+  address: '0x0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba',
+  path: '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba',
+  jsonData: '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}'
+}
+export interface EthereumNetworkConfig {
+  tempPath: string
+  startingPort: number
+  coinbase?: Keystore
+}
+
+export class EthereumNetwork {
+  private config: EthereumNetworkConfig
+  private currentPort: number
+  private coinbase: Keystore
+  public mainNode?: GethNode
+  private nodes: GethNode []
+
+  constructor(config: EthereumNetworkConfig) {
     this.config = config
-    this.config.tempPath = './temp/eth'
-    this.config.coinbase = this.coinbase
+    this.currentPort = config.startingPort || 8545
+    this.coinbase = this.config.coinbase || defaultKeystore
+    this.nodes = []
   }
 
-  getCoinbase() {
+  getCoinbase(): Keystore {
     return this.coinbase
   }
 
   async createNode(): Promise<GethNode> {
-    const config = Object.assign({
-      enodes: ([] as string[]).concat(this.enodes)
-    }, this.config)
-    const node = new GethNode(config, this.nextPort++)
-    const GenesisPath = config.tempPath + '/genesis.json'
-    node.initialize(GenesisPath)
-    fs.writeFileSync(node.getKeydir() + '/UTC--2017-08-01T22-03-26.486575100Z--0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba', '{"address":"0b7ffe7140d55b39f200557ef0f9ec1dd2e8f1ba","crypto":{"cipher":"aes-128-ctr","ciphertext":"4ce91950a0afbd17a8a171ce0cbac5e16b5c1a326d65d567e3f870324a36605f","cipherparams":{"iv":"1c765de19104d873b165e6043d006c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"d5c37ef44846f7fcef185c71e7f4c588a973fbbde13224a6f76ffa8924b7e0e0"},"mac":"b514587de559a69ce5080c8e6820fbc5a30495320d408be07b4f2253526265f7"},"id":"3d845d15-e801-4096-830b-84f8d5d50df9","version":3}')
+    const node = await this.createNode()
+    await node.startMining()
+    this.nodes.push(node)
+    return node   
+  }
+
+  async createMiner(): Promise<GethNode> {
+    const node = new GethNode({ index: this.nodes.length })
+    const genesisPath = this.config.tempPath + '/genesis.json'
+    node.initialize(genesisPath)
+    await node.start()
     this.nodes.push(node)
     return node
   }
 
-  async addEnode(node: GethNode): Promise<void> {
-    const enode = await node.getNodeUrl()
-    this.enodes.push(enode)
-  }
-
-  async createMiner(): Promise<GethNode> {
-    const node = await this.createNode()
-    await node.startMining()
-    await this.addEnode(node)
-    return node
-  }
-
   async createControlNode(): Promise<GethNode> {
+    if (this.nodes.length > 0) {
+      console.log('Control node already created')
+      return Promise.resolve(this.nodes[0])
+    }
     const node = await this.createNode()
-    await node.start()
-    await this.addEnode(node)
+    fs.writeFileSync(node.getKeydir() + this.coinbase.path, this.coinbase.jsonData)
+    this.nodes.push(node)
     return node
   }
 
-  async createMiners(count: number): Promise<GethNode[]> {
-    const result: GethNode[] = []
-    for (let i = 0; i < count; ++i) {
-      result.push(await this.createMiner())
-    }
-    return result
-  }
-
-  // getMainNode() {
-  //   return this.mainNode
-  // }
-
-  resetTempDir() {
-    rimraf.sync('./temp/eth') // Right now still hard-coded because I don't trust rm -rf.
+  resetTempDir(): void {
+    console.log('Resetting temp eth directory')
+    rimraf.sync(this.config.tempPath) // triple-check that this works!!!
     if (!fs.existsSync(this.config.tempPath)) {
+      console.log('Creating new temp directory')
       fs.mkdirSync(this.config.tempPath)
+    } else {
+      console.warn('Error rim-raffing temp eth directory')
     }
   }
 
-  initialize() {
+  async initialize() {
     this.resetTempDir()
-    const GenesisPath = this.config.tempPath + '/genesis.json'
-    this.createGenesisFile(GenesisPath)
-    // this.mainNode = this.createNode()
-  }
-
-  start() {
-    // return this.mainNode.start()
+    const genesisPath = this.config.tempPath + '/genesis.json'
+    this.createGenesisFile(genesisPath)
+    const mainNode = await this.createControlNode()
+    this.nodes.push(mainNode)
+    return mainNode
   }
 
   stop() {
-    return promiseEach(this.nodes, (node: any) => node.stop())
+    return promiseEach(this.nodes, (node: GethNode) => node.stop())
   }
 
   private createGenesisFile(path: string) {
@@ -96,9 +100,9 @@ export class EthereumNetwork {
         'eip158Block': 0
       },
       'alloc': {
-        [this.coinbase]: { 'balance': '111100113120000000000052' }
+        [this.coinbase.address]: { 'balance': '111100113120000000000052' }
       },
-      'coinbase': this.coinbase,
+      'coinbase': this.coinbase.address,
       'difficulty': '0x20000',
       'extraData': '',
       'gasLimit': '0x2fefd8',
@@ -113,7 +117,7 @@ export class EthereumNetwork {
   }
 }
 
-export function createNetwork(config: GethNodeConfig): EthereumNetwork {
+export function createNetwork(config: EthereumNetworkConfig): EthereumNetwork {
   const network = new EthereumNetwork(config)
   network.initialize()
   return network

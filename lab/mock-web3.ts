@@ -90,8 +90,6 @@ export class MockEth {
     this.transactions.push(transactionWithId as any)
     return callback(null, hash)
   }
-
-
 }
 
 export class MockPersonal {

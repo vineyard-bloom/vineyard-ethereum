@@ -23,7 +23,6 @@ export declare class EthereumNetwork {
     constructor(config: EthereumNetworkConfig);
     getCoinbase(): Keystore;
     createNode(): Promise<GethNode>;
-    createMiner(): Promise<GethNode>;
     createControlNode(): Promise<GethNode>;
     resetTempDir(): void;
     initialize(): Promise<GethNode>;

@@ -41,19 +41,12 @@ export class EthereumNetwork {
   }
 
   async createNode(): Promise<GethNode> {
-    const node = await this.createNode()
-    await node.startMining()
-    this.nodes.push(node)
-    return node   
-  }
-
-  async createMiner(): Promise<GethNode> {
     const node = new GethNode({ index: this.nodes.length })
     const genesisPath = this.config.tempPath + '/genesis.json'
     node.initialize(genesisPath)
-    await node.start()
+    await node.startMining()
     this.nodes.push(node)
-    return node
+    return node   
   }
 
   async createControlNode(): Promise<GethNode> {

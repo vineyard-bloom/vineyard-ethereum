@@ -14,7 +14,7 @@ export interface GethNodeConfig {
   verbosity?: number // 0 - 6
   tempPath: string
   index: number
-  coinbase?: string
+  coinbase: string
   gethPath: string
 }
 
@@ -25,7 +25,6 @@ export class GethNode {
   private config: GethNodeConfig
   private datadir: string
   private keydir: string
-  private gethPath: string
   private rpcPort: number
   private isMiner = false
   private rpcRequestId = 1 // Probably not needed but just in case.
@@ -37,7 +36,6 @@ export class GethNode {
     this.keydir = this.config.tempPath + '/keystore/' + config.index
     fs.mkdirSync(this.datadir)
     fs.mkdirSync(this.keydir)
-    this.gethPath = config.gethPath
     this.rpcPort = 8545 + config.index
     this.client = new Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` })
   }
@@ -88,7 +86,7 @@ export class GethNode {
   }
 
   execSync(suffix: string) {
-    const command = this.gethPath
+    const command = this.config.gethPath
       + this.getCommonFlags()
       + ' --verbosity ' + this.config.verbosity 
       + ' ' + suffix
@@ -192,7 +190,7 @@ export class GethNode {
   }
 
   private launch(flags: any): Promise<void> {
-    this.childProcess = ChildProcess.exec(this.gethPath + flags)
+    this.childProcess = ChildProcess.exec(this.config.gethPath + flags)
     this.childProcess.stdout.on('data', (data: any) => {
       if (this.config.verbosity)
         console.log(this.config.index, 'stdout:', `${data}`)

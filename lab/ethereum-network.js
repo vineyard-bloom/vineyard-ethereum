@@ -33,7 +33,8 @@ class EthereumNetwork {
             const node = new geth_node_1.GethNode({
                 index: this.nodes.length,
                 tempPath: this.config.tempPath,
-                gethPath: this.config.gethPath
+                gethPath: this.config.gethPath,
+                coinbase: this.coinbase.path
             });
             const genesisPath = this.config.tempPath + '/genesis.json';
             node.initialize(genesisPath);

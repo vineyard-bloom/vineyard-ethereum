@@ -28,7 +28,6 @@ class GethNode {
         this.keydir = this.config.tempPath + '/keystore/' + config.index;
         fs.mkdirSync(this.datadir);
         fs.mkdirSync(this.keydir);
-        this.gethPath = config.gethPath;
         this.rpcPort = 8545 + config.index;
         this.client = new src_1.Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` });
     }
@@ -69,7 +68,7 @@ class GethNode {
         return this.start('--mine --minerthreads=4 --dev.period=0');
     }
     execSync(suffix) {
-        const command = this.gethPath
+        const command = this.config.gethPath
             + this.getCommonFlags()
             + ' --verbosity ' + this.config.verbosity
             + ' ' + suffix;
@@ -159,7 +158,7 @@ class GethNode {
         });
     }
     launch(flags) {
-        this.childProcess = ChildProcess.exec(this.gethPath + flags);
+        this.childProcess = ChildProcess.exec(this.config.gethPath + flags);
         this.childProcess.stdout.on('data', (data) => {
             if (this.config.verbosity)
                 console.log(this.config.index, 'stdout:', `${data}`);

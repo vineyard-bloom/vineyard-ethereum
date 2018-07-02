@@ -3,7 +3,7 @@ export interface GethNodeConfig {
     verbosity?: number;
     tempPath: string;
     index: number;
-    coinbase?: string;
+    coinbase: string;
     gethPath: string;
 }
 export declare class GethNode {
@@ -13,7 +13,6 @@ export declare class GethNode {
     private config;
     private datadir;
     private keydir;
-    private gethPath;
     private rpcPort;
     private isMiner;
     private rpcRequestId;

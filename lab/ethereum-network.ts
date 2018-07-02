@@ -19,6 +19,7 @@ export const defaultKeystore = {
 export interface EthereumNetworkConfig {
   tempPath: string
   startingPort: number
+  gethPath: string
   coinbase?: Keystore
 }
 
@@ -43,7 +44,8 @@ export class EthereumNetwork {
   async createNode(): Promise<GethNode> {
     const node = new GethNode({
       index: this.nodes.length,
-      tempPath: this.config.tempPath
+      tempPath: this.config.tempPath,
+      gethPath: this.config.gethPath
     })
     const genesisPath = this.config.tempPath + '/genesis.json'
     node.initialize(genesisPath)

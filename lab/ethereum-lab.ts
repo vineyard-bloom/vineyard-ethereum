@@ -4,8 +4,13 @@ import { GethNode } from './geth-node'
 export class EthereumLab {
   network: EthereumNetwork
 
-  constructor(tempPath: string, startingPort: number, coinbase?: Keystore) {
-    this.network = createNetwork({ tempPath: tempPath, startingPort: startingPort, coinbase: coinbase })
+  constructor(tempPath: string, startingPort: number, gethPath?: string, coinbase?: Keystore) {
+    this.network = createNetwork({
+      tempPath: tempPath,
+      startingPort: startingPort,
+      coinbase: coinbase,
+      gethPath: gethPath || ''
+    })
   }
 
   async start (): Promise<void> {

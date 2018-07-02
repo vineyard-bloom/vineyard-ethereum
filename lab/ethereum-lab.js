@@ -10,8 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const ethereum_network_1 = require("./ethereum-network");
 class EthereumLab {
-    constructor(tempPath, startingPort, coinbase) {
-        this.network = ethereum_network_1.createNetwork({ tempPath: tempPath, startingPort: startingPort, coinbase: coinbase });
+    constructor(tempPath, startingPort, gethPath, coinbase) {
+        this.network = ethereum_network_1.createNetwork({
+            tempPath: tempPath,
+            startingPort: startingPort,
+            coinbase: coinbase,
+            gethPath: gethPath || ''
+        });
     }
     start() {
         return __awaiter(this, void 0, void 0, function* () {

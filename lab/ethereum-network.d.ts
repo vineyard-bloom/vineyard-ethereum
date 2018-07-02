@@ -12,6 +12,7 @@ export declare const defaultKeystore: {
 export interface EthereumNetworkConfig {
     tempPath: string;
     startingPort: number;
+    gethPath: string;
     coinbase?: Keystore;
 }
 export declare class EthereumNetwork {

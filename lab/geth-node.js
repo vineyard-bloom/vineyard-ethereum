@@ -28,7 +28,7 @@ class GethNode {
         this.keydir = this.config.tempPath + '/keystore/' + config.index;
         fs.mkdirSync(this.datadir);
         fs.mkdirSync(this.keydir);
-        this.gethPath = this.datadir;
+        this.gethPath = config.gethPath;
         this.rpcPort = 8545 + config.index;
         this.client = new src_1.Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` });
     }

@@ -15,6 +15,7 @@ export interface GethNodeConfig {
   tempPath: string
   index: number
   coinbase?: string
+  gethPath: string
 }
 
 export class GethNode {
@@ -36,7 +37,7 @@ export class GethNode {
     this.keydir = this.config.tempPath + '/keystore/' + config.index
     fs.mkdirSync(this.datadir)
     fs.mkdirSync(this.keydir)
-    this.gethPath = this.datadir
+    this.gethPath = config.gethPath
     this.rpcPort = 8545 + config.index
     this.client = new Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` })
   }

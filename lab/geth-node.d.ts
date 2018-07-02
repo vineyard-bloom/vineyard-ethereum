@@ -4,6 +4,7 @@ export interface GethNodeConfig {
     tempPath: string;
     index: number;
     coinbase?: string;
+    gethPath: string;
 }
 export declare class GethNode {
     private static instanceIndex;

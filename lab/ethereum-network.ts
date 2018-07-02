@@ -33,7 +33,8 @@ export class EthereumNetwork {
   constructor(config: EthereumNetworkConfig) {
     this.config = config
     this.currentPort = config.startingPort || 8545
-    this.coinbase = this.config.keystore ? this.config.keystore.address : defaultKeystore.address
+    this.config.keystore = config.keystore || defaultKeystore
+    this.coinbase = this.config.keystore.address
     this.nodes = []
   }
 
@@ -61,7 +62,7 @@ export class EthereumNetwork {
       return Promise.resolve(this.nodes[0])
     }
     const node = await this.createNode()
-    fs.writeFileSync(node.getKeydir() + this.coinbase.path, this.coinbase.jsonData)
+    fs.writeFileSync(node.getKeydir() + this.config.keystore.path, this.coinbase.jsonData)
     this.nodes.push(node)
     return node
   }

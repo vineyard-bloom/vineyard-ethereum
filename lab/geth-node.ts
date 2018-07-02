@@ -12,7 +12,7 @@ enum Status {
 
 export interface GethNodeConfig {
   verbosity?: number // 0 - 6
-  tempPath?: string
+  tempPath: string
   index: number
   coinbase?: string
 }
@@ -32,9 +32,8 @@ export class GethNode {
   constructor(config: GethNodeConfig) {
     config.verbosity = config.verbosity || 1
     this.config = config
-    const tempPath = this.config.tempPath || '.'
-    this.datadir = tempPath + '/geth/' + config.index
-    this.keydir = tempPath + '/keystore/' + config.index
+    this.datadir = this.config.tempPath + '/geth/' + config.index
+    this.keydir = this.config.tempPath + '/keystore/' + config.index
     fs.mkdirSync(this.datadir)
     fs.mkdirSync(this.keydir)
     this.gethPath = this.datadir

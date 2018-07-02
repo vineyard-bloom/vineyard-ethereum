@@ -20,7 +20,7 @@ export interface EthereumNetworkConfig {
   tempPath: string
   startingPort: number
   gethPath: string
-  keystore?: Keystore
+  keystore: Keystore
 }
 
 export class EthereumNetwork {
@@ -62,7 +62,7 @@ export class EthereumNetwork {
       return Promise.resolve(this.nodes[0])
     }
     const node = await this.createNode()
-    fs.writeFileSync(node.getKeydir() + this.config.keystore.path, this.coinbase.jsonData)
+    fs.writeFileSync(node.getKeydir() + this.config.keystore.path, this.config.keystore.jsonData)
     this.nodes.push(node)
     return node
   }
@@ -102,9 +102,9 @@ export class EthereumNetwork {
         'eip158Block': 0
       },
       'alloc': {
-        [this.coinbase.address]: { 'balance': '111100113120000000000052' }
+        [this.coinbase]: { 'balance': '111100113120000000000052' }
       },
-      'coinbase': this.coinbase.address,
+      'coinbase': this.coinbase,
       'difficulty': '0x20000',
       'extraData': '',
       'gasLimit': '0x2fefd8',

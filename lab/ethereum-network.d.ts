@@ -13,7 +13,7 @@ export interface EthereumNetworkConfig {
     tempPath: string;
     startingPort: number;
     gethPath: string;
-    keystore?: Keystore;
+    keystore: Keystore;
 }
 export declare class EthereumNetwork {
     private config;

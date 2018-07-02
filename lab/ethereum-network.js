@@ -22,7 +22,7 @@ class EthereumNetwork {
     constructor(config) {
         this.config = config;
         this.currentPort = config.startingPort || 8545;
-        this.coinbase = this.config.coinbase || exports.defaultKeystore;
+        this.coinbase = this.config.keystore ? this.config.keystore.address : exports.defaultKeystore.address;
         this.nodes = [];
     }
     getCoinbase() {
@@ -34,7 +34,7 @@ class EthereumNetwork {
                 index: this.nodes.length,
                 tempPath: this.config.tempPath,
                 gethPath: this.config.gethPath,
-                coinbase: this.coinbase.path
+                coinbase: this.coinbase
             });
             const genesisPath = this.config.tempPath + '/genesis.json';
             node.initialize(genesisPath);

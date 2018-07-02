@@ -20,24 +20,24 @@ export interface EthereumNetworkConfig {
   tempPath: string
   startingPort: number
   gethPath: string
-  coinbase?: Keystore
+  keystore?: Keystore
 }
 
 export class EthereumNetwork {
   private config: EthereumNetworkConfig
   private currentPort: number
-  private coinbase: Keystore
+  private coinbase: string
   public mainNode?: GethNode
   private nodes: GethNode []
 
   constructor(config: EthereumNetworkConfig) {
     this.config = config
     this.currentPort = config.startingPort || 8545
-    this.coinbase = this.config.coinbase || defaultKeystore
+    this.coinbase = this.config.keystore ? this.config.keystore.address : defaultKeystore.address
     this.nodes = []
   }
 
-  getCoinbase(): Keystore {
+  getCoinbase(): string {
     return this.coinbase
   }
 
@@ -46,7 +46,7 @@ export class EthereumNetwork {
       index: this.nodes.length,
       tempPath: this.config.tempPath,
       gethPath: this.config.gethPath,
-      coinbase: this.coinbase.path
+      coinbase: this.coinbase
     })
     const genesisPath = this.config.tempPath + '/genesis.json'
     node.initialize(genesisPath)

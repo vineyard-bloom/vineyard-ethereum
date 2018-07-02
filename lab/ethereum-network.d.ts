@@ -13,7 +13,7 @@ export interface EthereumNetworkConfig {
     tempPath: string;
     startingPort: number;
     gethPath: string;
-    coinbase?: Keystore;
+    keystore?: Keystore;
 }
 export declare class EthereumNetwork {
     private config;
@@ -22,7 +22,7 @@ export declare class EthereumNetwork {
     mainNode?: GethNode;
     private nodes;
     constructor(config: EthereumNetworkConfig);
-    getCoinbase(): Keystore;
+    getCoinbase(): string;
     createNode(): Promise<GethNode>;
     createControlNode(): Promise<GethNode>;
     resetTempDir(): void;

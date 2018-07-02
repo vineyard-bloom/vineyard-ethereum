@@ -165,7 +165,7 @@ export class GethNode {
       return Promise.resolve()
     }
 
-    console.log(this.index, 'Stopping node.')
+    console.log(this.config.index, 'Stopping node.')
     this.client!.getWeb3().reset()
 
     return new Promise((resolve, reject) => {
@@ -174,7 +174,7 @@ export class GethNode {
       const onStop = () => {
         if (this.childProcess) {
           this.childProcess = null
-          console.log(this.index, 'Node stopped.')
+          console.log(this.config.index, 'Node stopped.')
           resolve()
         }
       }

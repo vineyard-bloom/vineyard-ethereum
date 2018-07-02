@@ -24,9 +24,8 @@ class GethNode {
         this.rpcRequestId = 1; // Probably not needed but just in case.
         config.verbosity = config.verbosity || 1;
         this.config = config;
-        const tempPath = this.config.tempPath || '.';
-        this.datadir = tempPath + '/geth/' + config.index;
-        this.keydir = tempPath + '/keystore/' + config.index;
+        this.datadir = this.config.tempPath + '/geth/' + config.index;
+        this.keydir = this.config.tempPath + '/keystore/' + config.index;
         fs.mkdirSync(this.datadir);
         fs.mkdirSync(this.keydir);
         this.gethPath = this.datadir;

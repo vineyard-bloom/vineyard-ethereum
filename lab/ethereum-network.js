@@ -30,7 +30,10 @@ class EthereumNetwork {
     }
     createNode() {
         return __awaiter(this, void 0, void 0, function* () {
-            const node = new geth_node_1.GethNode({ index: this.nodes.length });
+            const node = new geth_node_1.GethNode({
+                index: this.nodes.length,
+                tempPath: this.config.tempPath
+            });
             const genesisPath = this.config.tempPath + '/genesis.json';
             node.initialize(genesisPath);
             yield node.startMining();

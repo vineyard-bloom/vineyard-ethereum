@@ -1,7 +1,7 @@
 import { Web3EthereumClient } from '../src';
 export interface GethNodeConfig {
     verbosity?: number;
-    tempPath?: string;
+    tempPath: string;
     index: number;
     coinbase?: string;
 }

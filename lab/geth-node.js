@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../src");
 const axios = require('axios');
+const fs = require('fs');
 const ChildProcess = require('child_process');
 const rimraf = require('rimraf');
 var Status;
@@ -26,6 +27,8 @@ class GethNode {
         const tempPath = this.config.tempPath || '.';
         this.datadir = tempPath + '/geth/' + config.index;
         this.keydir = tempPath + '/keystore/' + config.index;
+        fs.mkdirSync(this.datadir);
+        fs.mkdirSync(this.keydir);
         this.gethPath = this.datadir;
         this.rpcPort = 8545 + config.index;
         this.client = new src_1.Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` });

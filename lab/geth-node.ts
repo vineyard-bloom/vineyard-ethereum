@@ -1,7 +1,7 @@
 import { Web3EthereumClient } from '../src'
 
 const axios = require('axios')
-
+const fs = require('fs')
 const ChildProcess = require('child_process')
 const rimraf = require('rimraf')
 
@@ -35,6 +35,8 @@ export class GethNode {
     const tempPath = this.config.tempPath || '.'
     this.datadir = tempPath + '/geth/' + config.index
     this.keydir = tempPath + '/keystore/' + config.index
+    fs.mkdirSync(this.datadir)
+    fs.mkdirSync(this.keydir)
     this.gethPath = this.datadir
     this.rpcPort = 8545 + config.index
     this.client = new Web3EthereumClient({ http: `http://localhost:${this.rpcPort}` })

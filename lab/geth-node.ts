@@ -211,7 +211,7 @@ export class GethNode {
       const finished = () => {
         if (!isFinished) {
           isFinished = true
-          console.log(this.index, 'Connected to web3', ' (is connected):', this.isConnected())
+          console.log(this.config.index, 'Connected to web3', ' (is connected):', this.isConnected())
           resolve()
         }
       }
@@ -233,12 +233,6 @@ export class GethNode {
 
       next()
     })
-      .then(() => {
-        const enodes = this.config.enodes || []
-        for (let i = 0; i < enodes.length; ++i) {
-          this.addPeer(enodes[i])
-        }
-      })
   }
 }
 

@@ -9,7 +9,7 @@ export class EthereumLab {
       tempPath: tempPath,
       startingPort: startingPort,
       coinbase: coinbase,
-      gethPath: gethPath || ''
+      gethPath: gethPath || 'geth'
     })
   }
 

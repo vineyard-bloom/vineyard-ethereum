@@ -1,10 +1,10 @@
-import { EthereumNetwork } from '../../lab'
+import { EthereumNetwork } from '../../lab/index'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 import {
   deployContract, getInternalTransactions, getTransaction, getTransactionReceipt, traceTransaction, unlockWeb3Account,
   Web3EthereumClient
-} from '../../src'
+} from '../../src/index'
 import { Web3Client } from '../../src/client-functions'
 import { GethNode } from '../../lab/geth-node'
 

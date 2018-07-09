@@ -17,6 +17,7 @@ const SolidityFunction = require('web3/lib/web3/function');
 const SolidityEvent = require('web3/lib/web3/event');
 const promisify = require('util').promisify;
 const axios = require('axios');
+const ethereumBlocks = require('ethereumjs-block');
 function unlockWeb3Account(web3, address) {
     return new Promise((resolve, reject) => {
         try {
@@ -400,6 +401,21 @@ function getFullBlock(web3, blockIndex) {
         return {
             index: blockIndex,
             hash: block.hash,
+            parentHash: block.parentHash,
+            uncleHash: block.sha3Uncles,
+            coinbase: block.miner,
+            stateRoot: block.stateRoot,
+            transactionsTrie: block.transactionsRoot,
+            receiptTrie: block.receiptRoot || block.receiptsRoot,
+            bloom: block.logsBloom,
+            difficulty: block.difficulty.toString(),
+            number: block.number,
+            gasLimit: block.gasLimit,
+            gasUsed: block.gasUsed,
+            timestamp: block.timestamp,
+            extraData: block.extraData,
+            mixHash: block.mixHash,
+            nonce: block.nonce,
             timeMined: new Date(block.timestamp * 1000),
             transactions: transactions
         };
@@ -508,11 +524,83 @@ exports.decodeMethod = decodeMethod;
 function isContractAddress(web3, address) {
     return __awaiter(this, void 0, void 0, function* () {
         const code = yield web3.eth.getCode(address);
-        if (code === '0x') {
-            return false;
-        }
-        return true;
+        return code !== '0x';
     });
 }
 exports.isContractAddress = isContractAddress;
+function hashBlock(blockParams) {
+    const web3Header = new ethereumBlocks.Header({
+        parentHash: blockParams.parentHash,
+        uncleHash: blockParams.sha3Uncles,
+        coinbase: blockParams.miner,
+        stateRoot: blockParams.stateRoot,
+        transactionsTrie: blockParams.transactionsRoot,
+        receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot,
+        bloom: blockParams.logsBloom,
+        difficulty: blockParams.difficulty.toString(),
+        number: blockParams.number,
+        gasLimit: blockParams.gasLimit,
+        gasUsed: blockParams.gasUsed,
+        timestamp: blockParams.timestamp,
+        extraData: blockParams.extraData,
+        mixHash: blockParams.mixHash,
+        nonce: blockParams.nonce
+    });
+    return web3Header.hash().toString('hex');
+}
+function getParentBlockHash(model, parentBlock) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // doing this _COULD_ result in the block being null if it does not exist
+        const parentBlockHash = yield model.Block.filter({ 'number': parentBlock }).first();
+        if (parentBlockHash == null) {
+            let err = 'Parent Block is Null at block: ' + (parentBlock).toString();
+            throw new Error(err);
+        }
+        return Promise.resolve(parentBlockHash);
+    });
+}
+exports.getParentBlockHash = getParentBlockHash;
+function validateBlock(model, blockNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let validationInfo;
+        try {
+            const block = yield model.Block.filter({ 'number': blockNumber }).first();
+            const parentBlockHash = yield getParentBlockHash(model, blockNumber - 1); // needs updating
+            const currentBlockHash = hashBlock(block);
+            if (currentBlockHash == parentBlockHash) {
+                validationInfo = {
+                    'isValid': true,
+                    'error': null,
+                    'currentBlockHash': currentBlockHash,
+                    'currentBlock': blockNumber,
+                    'parentBlockHash': parentBlockHash,
+                    'parentBlock': blockNumber - 1
+                };
+            }
+            else {
+                validationInfo = {
+                    'isValid': false,
+                    'error': 'Block hashes do not match at block ' + blockNumber.toString(),
+                    'currentBlockHash': currentBlockHash,
+                    'currentBlock': blockNumber,
+                    'parentBlockHash': parentBlockHash,
+                    'parentBlock': blockNumber - 1
+                };
+            }
+            return validationInfo;
+        }
+        catch (error) {
+            validationInfo = {
+                'isValid': false,
+                'error': error,
+                'currentBlockHash': '',
+                'currentBlock': blockNumber,
+                'parentBlockHash': '',
+                'parentBlock': blockNumber - 1
+            };
+            return validationInfo;
+        }
+    });
+}
+exports.validateBlock = validateBlock;
 //# sourceMappingURL=client-functions.js.map

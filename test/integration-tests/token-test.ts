@@ -1,4 +1,4 @@
-import { getBlockContractTransfers, getFullBlock } from '../../src'
+import { getBlockContractTransfers, getFullBlock } from '../../src/index'
 
 require('source-map-support').install()
 const Web3 = require('web3')

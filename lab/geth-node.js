@@ -153,6 +153,7 @@ class GethNode {
             const pauseDuration = 50;
             const next = (duration) => __awaiter(this, void 0, void 0, function* () {
                 yield new Promise(resolve => setTimeout(resolve, pauseDuration));
+                const connected = yield this.isConnected();
                 const blockNumber = yield this.getClient().getBlockNumber();
                 if (blockNumber < targetBlock) {
                     if (duration >= timeout) {

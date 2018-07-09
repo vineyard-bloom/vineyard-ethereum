@@ -1,7 +1,7 @@
-import { EthereumNetwork } from '../../lab'
+import { EthereumNetwork } from '../../lab/index'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
-import { deployContract, getTransactionReceipt, unlockWeb3Account } from '../../src'
+import { deployContract, getTransactionReceipt, unlockWeb3Account } from '../../src/index'
 const promisify = require('util').promisify
 const fs = require('fs')
 const solc = require('solc')

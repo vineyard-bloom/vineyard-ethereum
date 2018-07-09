@@ -1,5 +1,5 @@
-import { EthereumNetwork } from '../../lab'
-import { cloneClient } from '../../src'
+import { EthereumNetwork } from '../../lab/index'
+import { cloneClient } from '../../src/index'
 import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 

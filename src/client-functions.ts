@@ -421,6 +421,21 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
   return {
     index: blockIndex,
     hash: block.hash,
+    parentHash: block.parentHash,
+    uncleHash: block.sha3Uncles,
+    coinbase: block.miner,
+    stateRoot: block.stateRoot,
+    transactionsTrie: block.transactionsRoot,
+    receiptTrie: block.receiptRoot || block.receiptsRoot,
+    bloom: block.logsBloom,
+    difficulty: block.difficulty.toString(),
+    number: block.number,
+    gasLimit: block.gasLimit,
+    gasUsed: block.gasUsed,
+    timestamp: block.timestamp,
+    extraData: block.extraData,
+    mixHash: block.mixHash,
+    nonce: block.nonce,
     timeMined: new Date(block.timestamp * 1000),
     transactions: transactions
   }
@@ -523,14 +538,11 @@ export function decodeMethod(data: any, methodIDs: any[]) {
 
 export async function isContractAddress(web3: Web3Client, address: string): Promise<boolean> {
   const code = await web3.eth.getCode(address)
-  if (code === '0x') {
-    return false
-  }
-  return true
+  return code !== '0x'
 }
 
-export async function validateBlock(blockParams: any): Promise<any> {
-  const header = new ethereumBlocks.Header({
+function hashBlock(blockParams: any) {
+  const web3Header = new ethereumBlocks.Header({
     parentHash: blockParams.parentHash,
     uncleHash: blockParams.sha3Uncles,
     coinbase: blockParams.miner,
@@ -538,7 +550,7 @@ export async function validateBlock(blockParams: any): Promise<any> {
     transactionsTrie: blockParams.transactionsRoot,
     receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot,
     bloom: blockParams.logsBloom,
-    difficulty: blockParams.difficulty,
+    difficulty: blockParams.difficulty.toString(),
     number: blockParams.number,
     gasLimit: blockParams.gasLimit,
     gasUsed: blockParams.gasUsed,
@@ -547,6 +559,55 @@ export async function validateBlock(blockParams: any): Promise<any> {
     mixHash: blockParams.mixHash,
     nonce: blockParams.nonce
   })
-  const hashedBlock = header.hash().toString('hex')
-  return Promise.resolve(hashedBlock)
+
+  return web3Header.hash().toString('hex')
+}
+
+export async function getParentBlockHash(model: any, parentBlock: any): Promise<string> {
+  // doing this _COULD_ result in the block being null if it does not exist
+  const parentBlockHash = await model.Block.filter({ 'number': parentBlock }).first();
+  if (parentBlockHash == null) {
+    let err = 'Parent Block is Null at block: ' + (parentBlock).toString()
+    throw new Error(err)
+  }
+  return Promise.resolve(parentBlockHash)
+}
+
+export async function validateBlock(model: any, blockNumber: number): Promise<any> {
+  let validationInfo;
+  try {
+    const block = await model.Block.filter({ 'number': blockNumber }).first();
+    const parentBlockHash: string = await getParentBlockHash(model, blockNumber - 1) // needs updating
+    const currentBlockHash: string = hashBlock(block)
+    if (currentBlockHash == parentBlockHash) {
+      validationInfo = {
+        'isValid': true,
+        'error': null,
+        'currentBlockHash': currentBlockHash,
+        'currentBlock': blockNumber,
+        'parentBlockHash': parentBlockHash,
+        'parentBlock': blockNumber - 1
+      }
+    } else {
+      validationInfo = {
+        'isValid': false,
+        'error': 'Block hashes do not match at block ' + blockNumber.toString(),
+        'currentBlockHash': currentBlockHash,
+        'currentBlock': blockNumber,
+        'parentBlockHash': parentBlockHash,
+        'parentBlock': blockNumber - 1
+      }
+    }
+    return validationInfo
+  } catch (error) {
+    validationInfo = {
+      'isValid': false,
+      'error': error,
+      'currentBlockHash': '',
+      'currentBlock': blockNumber,
+      'parentBlockHash': '',
+      'parentBlock': blockNumber - 1
+    }
+    return validationInfo
+  }
 }

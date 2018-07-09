@@ -185,6 +185,7 @@ export class GethNode {
 
     const next = async (duration: number): Promise<any> => {
       await new Promise<void>(resolve => setTimeout(resolve, pauseDuration))
+      const connected = await this.isConnected()
       const blockNumber = await this.getClient().getBlockNumber()
       if (blockNumber < targetBlock) {
         if (duration >= timeout) {

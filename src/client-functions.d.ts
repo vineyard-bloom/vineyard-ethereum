@@ -44,12 +44,12 @@ export declare function loadTransaction(web3: Web3Client, tx: Web3Transaction, b
     from: string | undefined;
     amount: BigNumber;
     timeReceived: Date;
-    status: blockchain.TransactionStatus;
+    status: any;
     blockIndex: number;
     gasUsed: number;
     gasPrice: BigNumber;
     fee: BigNumber;
-    newContract: blockchain.Contract | undefined;
+    newContract: any;
     events: ContractEvent[];
     nonce: number;
 }>;
@@ -87,3 +87,5 @@ export declare function decodeMethod(data: any, methodIDs: any[]): {
     params: any;
 } | undefined;
 export declare function isContractAddress(web3: Web3Client, address: string): Promise<boolean>;
+export declare function getParentBlockHash(model: any, parentBlock: any): Promise<string>;
+export declare function validateBlock(model: any, blockNumber: number): Promise<any>;

@@ -1,4 +1,4 @@
-import { partitionArray } from '../../src'
+import { partitionArray } from '../../src/index'
 import { assert } from 'chai'
 import { getEvents } from "../../src/utility";
 

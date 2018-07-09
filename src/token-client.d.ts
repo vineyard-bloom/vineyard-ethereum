@@ -19,7 +19,7 @@ export declare class TokenClient implements ReadClient<blockchain.ContractTransa
     getLastBlock(): Promise<BaseBlock>;
     getTransactionStatus(txid: string): Promise<blockchain.TransactionStatus>;
     getNextBlockInfo(blockIndex: number | undefined): Promise<BaseBlock | undefined>;
-    getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>>;
+    getFullBlock(blockIndex: number): Promise<any>;
     getBlock(blockIndex: number): Promise<Block>;
     getTransactionReceipt(txid: string): Promise<Web3TransactionReceipt>;
     addAbi(abiArray: any): any[];

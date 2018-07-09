@@ -140,9 +140,9 @@ function getTransactionStatus(web3, txid) {
     });
 }
 exports.getTransactionStatus = getTransactionStatus;
-function getNextBlockInfo(web3, previousBlockIndex) {
+function getNextBlockInfo(web3, previousBlockIndex = 0) {
     return __awaiter(this, void 0, void 0, function* () {
-        const nextBlockIndex = !!(previousBlockIndex + 1) > 0 ? previousBlockIndex + 1 : 0;
+        const nextBlockIndex = previousBlockIndex + 1 > 0 ? previousBlockIndex + 1 : 0;
         let nextBlock = yield getBlock(web3, nextBlockIndex);
         if (!nextBlock) {
             return undefined;
@@ -398,7 +398,7 @@ function getFullBlock(web3, blockIndex) {
         // console.log('Loaded', events.length, 'events for block', blockIndex)
         const transactions = yield partitionedMap(10, tx => loadTransaction(web3, tx, block, events), block.transactions);
         // console.log('Loaded', block.transactions.length, 'transactions for block', blockIndex)
-        return {
+        const finalBlock = {
             index: blockIndex,
             hash: block.hash,
             parentHash: block.parentHash,
@@ -417,7 +417,11 @@ function getFullBlock(web3, blockIndex) {
             mixHash: block.mixHash,
             nonce: block.nonce,
             timeMined: new Date(block.timestamp * 1000),
-            transactions: transactions
+            rlp: block.rlp
+        };
+        return {
+            block: finalBlock,
+            transactions
         };
     });
 }

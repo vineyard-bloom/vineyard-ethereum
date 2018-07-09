@@ -29,7 +29,7 @@ class EthereumBlockReader {
                 : undefined;
         });
     }
-    getFullBlock(blockIndex) {
+    getBlockBundle(blockIndex) {
         return client_functions_1.getFullBlock(this.web3, blockIndex);
     }
     getBlockTransactions(blockIndex) {

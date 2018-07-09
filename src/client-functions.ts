@@ -1,8 +1,7 @@
 import BigNumber from 'bignumber.js'
-import { Block, EthereumTransaction, Web3Transaction, Web3TransactionReceipt } from './types'
+import { Block, EthereumTransaction, Web3Block, Web3Transaction, Web3TransactionReceipt } from './types'
 import { BaseBlock, blockchain, Resolve } from 'vineyard-blockchain'
 import { ContractEvent, EventFilter, getEvents } from './utility'
-import { Block } from 'bitcoinjs-lib';
 
 const Web3 = require('web3')
 const SolidityCoder = require('web3/lib/solidity/coder')
@@ -71,9 +70,9 @@ export function sendWeb3Transaction(web3: any, transaction: SendTransaction): Pr
     })
 }
 
-export function getBlock(web3: Web3Client, blockIndex: number): Promise<Block> {
-  return new Promise((resolve: Resolve<Block>, reject) => {
-    web3.eth.getBlock(blockIndex, true, (err: any, block: Block) => {
+export function getBlock(web3: Web3Client, blockIndex: number): Promise<Web3Block> {
+  return new Promise((resolve: Resolve<Web3Block>, reject) => {
+    web3.eth.getBlock(blockIndex, true, (err: any, block: Web3Block) => {
       if (err) {
         // console.error('Error processing ethereum block', blockIndex, 'with message', err.message)
         reject(new Error(err))
@@ -97,8 +96,8 @@ export function getBlockIndex(web3: Web3Client): Promise<number> {
   })
 }
 
-export async function getLastBlock(web3: Web3Client): Promise<BaseBlock> {
-  let lastBlock: Block = await getBlock(web3, await getBlockIndex(web3))
+export async function getLastBlock(web3: Web3Client): Promise<any> {
+  let lastBlock = await getBlock(web3, await getBlockIndex(web3))
   return {
     hash: lastBlock.hash,
     index: lastBlock.number,
@@ -137,8 +136,8 @@ export async function getTransactionStatus(web3: Web3Client, txid: string): Prom
   return transactionReceipt.status.substring(2) === '0' ? blockchain.TransactionStatus.rejected : blockchain.TransactionStatus.accepted
 }
 
-export async function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number | undefined): Promise<BaseBlock | undefined> {
-  const nextBlockIndex = !!(previousBlockIndex + 1) > 0 ? previousBlockIndex + 1 : 0
+export async function getNextBlockInfo(web3: Web3Client, previousBlockIndex: number = 0): Promise<any | undefined> {
+  const nextBlockIndex = previousBlockIndex + 1 > 0 ? previousBlockIndex + 1 : 0
   let nextBlock: Block = await getBlock(web3, nextBlockIndex)
   if (!nextBlock) {
     return undefined
@@ -305,7 +304,7 @@ export function mapTransactionEvents(events: ContractEvent[], txid: string) {
   return events.filter(c => c.transactionHash == txid)
 }
 
-export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, block: Block, events: ContractEvent[]) {
+export async function loadTransaction(web3: Web3Client, tx: Web3Transaction, block: Block, events: ContractEvent[]): Promise<blockchain.ContractTransaction> {
   const receipt = await getTransactionReceipt(web3, tx.hash)
   if (!receipt)
     throw new Error('Could not find receipt for transaction ' + tx.hash)
@@ -404,7 +403,7 @@ export async function partitionedMap<T, O>(partitionSize: number, action: (item:
   return result
 }
 
-export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
+export async function getFullBlock(web3: Web3Client, blockIndex: number): Promise<blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>> {
   let block = await getBlock(web3, blockIndex)
   const events = await getEvents(web3, {
     toBlock: blockIndex,
@@ -418,7 +417,7 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
   const transactions = await partitionedMap(10, tx => loadTransaction(web3, tx, block, events), block.transactions)
   // console.log('Loaded', block.transactions.length, 'transactions for block', blockIndex)
 
-  return {
+  const finalBlock: blockchain.EthereumBlock = {
     index: blockIndex,
     hash: block.hash,
     parentHash: block.parentHash,
@@ -426,7 +425,7 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
     coinbase: block.miner,
     stateRoot: block.stateRoot,
     transactionsTrie: block.transactionsRoot,
-    receiptTrie: block.receiptRoot || block.receiptsRoot,
+    receiptTrie: block.receiptRoot || block.receiptsRoot!,
     bloom: block.logsBloom,
     difficulty: block.difficulty.toString(),
     number: block.number,
@@ -437,11 +436,16 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
     mixHash: block.mixHash,
     nonce: block.nonce,
     timeMined: new Date(block.timestamp * 1000),
-    transactions: transactions
+    rlp: block.rlp
+  }
+
+  return {
+    block: finalBlock,
+    transactions
   }
 }
 
-export async function getFullTokenBlock(web3: Web3Client, blockIndex: number, tokenContractAddress: string, methodIDs: any[]): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
+export async function getFullTokenBlock(web3: Web3Client, blockIndex: number, tokenContractAddress: string, methodIDs: any[]): Promise<any> {
   let fullBlock = await getBlock(web3, blockIndex)
   let blockHeight = await getBlockIndex(web3)
   const filteredTransactions = filterTokenTransaction(web3, fullBlock.transactions, tokenContractAddress)
@@ -565,7 +569,7 @@ function hashBlock(blockParams: any) {
 
 export async function getParentBlockHash(model: any, parentBlock: any): Promise<string> {
   // doing this _COULD_ result in the block being null if it does not exist
-  const parentBlockHash = await model.Block.filter({ 'number': parentBlock }).first();
+  const parentBlockHash = await model.Block.filter({ 'number': parentBlock }).first()
   if (parentBlockHash == null) {
     let err = 'Parent Block is Null at block: ' + (parentBlock).toString()
     throw new Error(err)
@@ -574,9 +578,9 @@ export async function getParentBlockHash(model: any, parentBlock: any): Promise<
 }
 
 export async function validateBlock(model: any, blockNumber: number): Promise<any> {
-  let validationInfo;
+  let validationInfo
   try {
-    const block = await model.Block.filter({ 'number': blockNumber }).first();
+    const block = await model.Block.filter({ 'number': blockNumber }).first()
     const parentBlockHash: string = await getParentBlockHash(model, blockNumber - 1) // needs updating
     const currentBlockHash: string = hashBlock(block)
     if (currentBlockHash == parentBlockHash) {

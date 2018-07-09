@@ -50,7 +50,7 @@ export class TokenClient implements ReadClient<blockchain.ContractTransaction> {
     return getNextBlockInfo(this.web3, blockIndex)
   }
 
-  async getFullBlock(blockIndex: number): Promise<blockchain.FullBlock<blockchain.ContractTransaction>> {
+  async getFullBlock(blockIndex: number): Promise<any> {
     return getFullTokenBlock(this.web3, blockIndex, this.tokenContractAddress, this.methodIDs)
   }
 

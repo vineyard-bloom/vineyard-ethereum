@@ -421,6 +421,21 @@ export async function getFullBlock(web3: Web3Client, blockIndex: number): Promis
   return {
     index: blockIndex,
     hash: block.hash,
+    parentHash: block.parentHash,
+    uncleHash: block.sha3Uncles,
+    coinbase: block.miner,
+    stateRoot: block.stateRoot,
+    transactionsTrie: block.transactionsRoot,
+    receiptTrie: block.receiptRoot || block.receiptsRoot,
+    bloom: block.logsBloom,
+    difficulty: block.difficulty.toString(),
+    number: block.number,
+    gasLimit: block.gasLimit,
+    gasUsed: block.gasUsed,
+    timestamp: block.timestamp,
+    extraData: block.extraData,
+    mixHash: block.mixHash,
+    nonce: block.nonce,
     timeMined: new Date(block.timestamp * 1000),
     transactions: transactions
   }

@@ -53,7 +53,21 @@ export interface Web3TransactionReceipt {
   logs: {}[]
   status: string
 }
-
+// parentHash,
+// sha3Uncles,
+// miner,
+// stateRoot,
+// transactionsRoot,
+// receiptRoot,
+// logsBloom,
+// difficulty,
+// number,
+// gasLimit,
+// gasUsed,
+// timestamp,
+// extraData,
+// mixHash,
+// nonce
 export interface Block {
   transactions: Web3Transaction[]
   hash: string

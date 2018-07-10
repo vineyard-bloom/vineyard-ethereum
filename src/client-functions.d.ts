@@ -4,6 +4,7 @@ import { blockchain } from 'vineyard-blockchain';
 import { ContractEvent, EventFilter } from './utility';
 export declare type Resolve2<T> = (value: T) => void;
 export declare type Web3Client = any;
+export declare type EthereumBlockBundle = blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>;
 export interface SendTransaction {
     from: string;
     to: string;
@@ -74,4 +75,5 @@ export declare function decodeMethod(data: any, methodIDs: any[]): {
 } | undefined;
 export declare function isContractAddress(web3: Web3Client, address: string): Promise<boolean>;
 export declare function getParentBlockHash(model: any, parentBlock: any): Promise<string>;
-export declare function validateBlock(model: any, blockNumber: number): Promise<any>;
+export declare type ValidationInfo = any;
+export declare function validateBlock(bundle: EthereumBlockBundle): Promise<ValidationInfo>;

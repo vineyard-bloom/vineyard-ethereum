@@ -564,37 +564,40 @@ function getParentBlockHash(model, parentBlock) {
     });
 }
 exports.getParentBlockHash = getParentBlockHash;
-function validateBlock(model, blockNumber) {
+function validateBlock(bundle) {
     return __awaiter(this, void 0, void 0, function* () {
-        let validationInfo;
+        // TODO: Move database calls outside of vineyard-ethereum (In this case into vineyard-minotaur)
+        // TODO: Create a function to hash transactions
+        // TODO: Get the transactions from the bundle, hash them, and use the result in the block hash
+        const block = bundle.block;
+        const blockNumber = block.index;
         try {
-            const block = yield model.Block.filter({ 'number': blockNumber }).first();
-            const parentBlockHash = yield getParentBlockHash(model, blockNumber - 1); // needs updating
+            // const block = await model.Block.filter({ 'number': blockNumber }).first()
+            // const parentBlockHash: string = await getParentBlockHash(model, blockNumber - 1) // needs updating
             const currentBlockHash = hashBlock(block);
-            if (currentBlockHash == parentBlockHash) {
-                validationInfo = {
+            if (currentBlockHash == block.parentHash) {
+                return {
                     'isValid': true,
                     'error': null,
                     'currentBlockHash': currentBlockHash,
                     'currentBlock': blockNumber,
-                    'parentBlockHash': parentBlockHash,
+                    'parentBlockHash': block.parentHash,
                     'parentBlock': blockNumber - 1
                 };
             }
             else {
-                validationInfo = {
+                return {
                     'isValid': false,
                     'error': 'Block hashes do not match at block ' + blockNumber.toString(),
                     'currentBlockHash': currentBlockHash,
                     'currentBlock': blockNumber,
-                    'parentBlockHash': parentBlockHash,
+                    'parentBlockHash': block.parentHash,
                     'parentBlock': blockNumber - 1
                 };
             }
-            return validationInfo;
         }
         catch (error) {
-            validationInfo = {
+            return {
                 'isValid': false,
                 'error': error,
                 'currentBlockHash': '',
@@ -602,7 +605,6 @@ function validateBlock(model, blockNumber) {
                 'parentBlockHash': '',
                 'parentBlock': blockNumber - 1
             };
-            return validationInfo;
         }
     });
 }

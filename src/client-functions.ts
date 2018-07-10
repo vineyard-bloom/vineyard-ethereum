@@ -15,6 +15,8 @@ export type Resolve2<T> = (value: T) => void
 
 export type Web3Client = any
 
+export type EthereumBlockBundle = blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>
+
 export interface SendTransaction {
   from: string
   to: string
@@ -577,34 +579,39 @@ export async function getParentBlockHash(model: any, parentBlock: any): Promise<
   return Promise.resolve(parentBlockHash)
 }
 
-export async function validateBlock(model: any, blockNumber: number): Promise<any> {
-  let validationInfo
+export type ValidationInfo = any // TODO: Replace any with a precise interface
+
+export async function validateBlock(bundle: EthereumBlockBundle): Promise<ValidationInfo> {
+  // TODO: Move database calls outside of vineyard-ethereum (In this case into vineyard-minotaur)
+  // TODO: Create a function to hash transactions
+  // TODO: Get the transactions from the bundle, hash them, and use the result in the block hash
+  const block = bundle.block
+  const blockNumber = block.index
   try {
-    const block = await model.Block.filter({ 'number': blockNumber }).first()
-    const parentBlockHash: string = await getParentBlockHash(model, blockNumber - 1) // needs updating
+    // const block = await model.Block.filter({ 'number': blockNumber }).first()
+    // const parentBlockHash: string = await getParentBlockHash(model, blockNumber - 1) // needs updating
     const currentBlockHash: string = hashBlock(block)
-    if (currentBlockHash == parentBlockHash) {
-      validationInfo = {
+    if (currentBlockHash == block.parentHash) {
+     return {
         'isValid': true,
         'error': null,
         'currentBlockHash': currentBlockHash,
         'currentBlock': blockNumber,
-        'parentBlockHash': parentBlockHash,
+        'parentBlockHash': block.parentHash,
         'parentBlock': blockNumber - 1
       }
     } else {
-      validationInfo = {
+      return {
         'isValid': false,
         'error': 'Block hashes do not match at block ' + blockNumber.toString(),
         'currentBlockHash': currentBlockHash,
         'currentBlock': blockNumber,
-        'parentBlockHash': parentBlockHash,
+        'parentBlockHash': block.parentHash,
         'parentBlock': blockNumber - 1
       }
     }
-    return validationInfo
   } catch (error) {
-    validationInfo = {
+    return {
       'isValid': false,
       'error': error,
       'currentBlockHash': '',
@@ -612,6 +619,5 @@ export async function validateBlock(model: any, blockNumber: number): Promise<an
       'parentBlockHash': '',
       'parentBlock': blockNumber - 1
     }
-    return validationInfo
   }
 }

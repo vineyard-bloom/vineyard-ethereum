@@ -15,17 +15,6 @@ export class EthereumBlockReader implements blockchain.BlockReader<blockchain.Et
     return getBlockIndex(this.web3)
   }
 
-  async getBlockInfo(index: number): Promise<blockchain.Block | undefined> {
-    const block = await getBlock(this.web3, index)
-    return block
-      ? {
-        index: block.number,
-        hash: block.hash,
-        timeMined: new Date(block.timestamp * 1000)
-      }
-      : undefined
-  }
-
   getBlockBundle(blockIndex: number): Promise<blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>> {
     return getFullBlock(this.web3, blockIndex)
   }
@@ -36,10 +25,6 @@ export class EthereumBlockReader implements blockchain.BlockReader<blockchain.Et
       ? block.transactions
       : []
   }
-
-  // getBlockContractTransfers(toBlock: number, fromBlock: number, watchAddresses: string[]): Promise<blockchain.TokenTransfer[]> {
-  //   return getBlockContractTransfers(this.web3, toBlock, fromBlock, watchAddresses)
-  // }
 
   static createFromConfig(config: Web3EthereumClientConfig) {
     return new EthereumBlockReader(initializeWeb3(config))

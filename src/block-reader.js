@@ -17,18 +17,6 @@ class EthereumBlockReader {
     getHeighestBlockIndex() {
         return client_functions_1.getBlockIndex(this.web3);
     }
-    getBlockInfo(index) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const block = yield client_functions_1.getBlock(this.web3, index);
-            return block
-                ? {
-                    index: block.number,
-                    hash: block.hash,
-                    timeMined: new Date(block.timestamp * 1000)
-                }
-                : undefined;
-        });
-    }
     getBlockBundle(blockIndex) {
         return client_functions_1.getFullBlock(this.web3, blockIndex);
     }
@@ -40,9 +28,6 @@ class EthereumBlockReader {
                 : [];
         });
     }
-    // getBlockContractTransfers(toBlock: number, fromBlock: number, watchAddresses: string[]): Promise<blockchain.TokenTransfer[]> {
-    //   return getBlockContractTransfers(this.web3, toBlock, fromBlock, watchAddresses)
-    // }
     static createFromConfig(config) {
         return new EthereumBlockReader(utility_1.initializeWeb3(config));
     }

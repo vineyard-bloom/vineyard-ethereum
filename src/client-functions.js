@@ -532,6 +532,7 @@ function isContractAddress(web3, address) {
     });
 }
 exports.isContractAddress = isContractAddress;
+// TODO: Should hashBlock use `rlp`
 function hashBlock(blockParams) {
     const web3Header = new ethereumBlocks.Header({
         parentHash: blockParams.parentHash,

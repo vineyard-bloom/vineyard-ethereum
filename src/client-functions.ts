@@ -547,6 +547,7 @@ export async function isContractAddress(web3: Web3Client, address: string): Prom
   return code !== '0x'
 }
 
+// TODO: Should hashBlock use `rlp`
 function hashBlock(blockParams: any) {
   const web3Header = new ethereumBlocks.Header({
     parentHash: blockParams.parentHash,

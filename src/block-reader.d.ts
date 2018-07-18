@@ -6,6 +6,7 @@ export declare class EthereumBlockReader implements blockchain.BlockReader<block
     constructor(web3: Web3Client);
     getHeighestBlockIndex(): Promise<number>;
     getBlockBundle(blockIndex: number): Promise<blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>>;
+    private incrementDatadogCounters();
     getBlockTransactions(blockIndex: number): Promise<blockchain.ContractTransaction[]>;
     static createFromConfig(config: Web3EthereumClientConfig): EthereumBlockReader;
 }

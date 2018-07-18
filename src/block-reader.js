@@ -10,15 +10,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_functions_1 = require("./client-functions");
 const utility_1 = require("./utility");
+const hot_shots_1 = require("hot-shots");
+const dogstatsd = new hot_shots_1.StatsD();
 class EthereumBlockReader {
     constructor(web3) {
         this.web3 = web3;
     }
     getHeighestBlockIndex() {
+        dogstatsd.increment('geth.rpc.getblocknumber');
         return client_functions_1.getBlockIndex(this.web3);
     }
     getBlockBundle(blockIndex) {
+        this.incrementDatadogCounters();
         return client_functions_1.getFullBlock(this.web3, blockIndex);
+    }
+    incrementDatadogCounters() {
+        dogstatsd.increment('geth.rpc.gettransactionreceipt');
+        dogstatsd.increment('geth.rpc.getblock');
+        dogstatsd.increment('geth.rpc.getlogs');
     }
     getBlockTransactions(blockIndex) {
         return __awaiter(this, void 0, void 0, function* () {

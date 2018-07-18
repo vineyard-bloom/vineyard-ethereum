@@ -2,6 +2,9 @@ import { blockchain } from 'vineyard-blockchain'
 import { getBlock, getBlockContractTransfers, getBlockIndex, getFullBlock, Web3Client } from './client-functions'
 import { initializeWeb3 } from './utility'
 import { Web3EthereumClientConfig } from './ethereum-client'
+import { StatsD } from 'hot-shots'
+const dogstatsd = new StatsD()
+
 
 export class EthereumBlockReader implements blockchain.BlockReader<blockchain.EthereumBlock, blockchain.ContractTransaction>
 {
@@ -12,11 +15,19 @@ export class EthereumBlockReader implements blockchain.BlockReader<blockchain.Et
   }
 
   getHeighestBlockIndex(): Promise<number> {
+    dogstatsd.increment('geth.rpc.getblocknumber')
     return getBlockIndex(this.web3)
   }
 
   getBlockBundle(blockIndex: number): Promise<blockchain.BlockBundle<blockchain.EthereumBlock, blockchain.ContractTransaction>> {
+    this.incrementDatadogCounters()
     return getFullBlock(this.web3, blockIndex)
+  }
+
+  private incrementDatadogCounters() {
+    dogstatsd.increment('geth.rpc.gettransactionreceipt')
+    dogstatsd.increment('geth.rpc.getblock')
+    dogstatsd.increment('geth.rpc.getlogs')
   }
 
   async getBlockTransactions(blockIndex: number): Promise<blockchain.ContractTransaction[]> {

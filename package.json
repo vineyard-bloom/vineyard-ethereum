@@ -1,6 +1,6 @@
 {
   "name": "vineyard-ethereum",
-  "version": "1.0.0-beta.56",
+  "version": "1.0.0-beta.57",
   "description": "Ethereum monitor",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -14,6 +14,7 @@
     "axios": "^0.18.0",
     "bignumber.js": "^4.1.0",
     "ethereumjs-block": "^1.7.1",
+    "hot-shots": "^5.8.0",
     "promise-each2": "^1.0.0",
     "truffle-contract": "^3.0.0",
     "vineyard-blockchain": "vineyard-bloom/vineyard-blockchain#1.0.0-beta",

@@ -4,7 +4,7 @@ Ethereum transaction monitor
 
 ### Mocha Testing Info
 
-For all mocha tests to pass,
+Follow these steps for all mocha tests to pass:
 
   1. In the project root, create the folder `temp`, and then the folder `temp/eth`.
   1. In the `test/config` folder, copy the file `config-sample.json` and rename it `config.json`.

@@ -39,6 +39,6 @@ export declare class GethNode {
     mineBlocks(blockCount: number, timeout?: number): Promise<any>;
     addPeer(enode: string): Promise<void>;
     listPeers(): void;
-    stop(): Promise<{}> | Promise<void>;
+    stop(): Promise<void> | Promise<{}>;
     private launch(flags);
 }
